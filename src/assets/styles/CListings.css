@@ -1,0 +1,94 @@
+/* General Page Styling */
+body, html {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    font-family: 'Arial', sans-serif;
+    background-color: #ffe6e6;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+/* Conference Page Container */
+.clistings-page {
+    width: 100%;
+    max-width: 1200px;
+    padding: 40px;
+    background: #ffefef;
+    border-radius: 15px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+/* Page Title */
+.page-title {
+    text-align: center;
+    font-size: 28px;
+    font-weight: bold;
+    color: #b30000;
+    margin-bottom: 30px;
+}
+
+/* Conference List */
+.clistings-list {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+/* Conference Card */
+.clistings-card {
+    display: flex;
+    align-items: center;
+    background: #fff;
+    padding: 20px;
+    border-radius: 12px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s ease-in-out;
+}
+
+.clistings-card:hover {
+    transform: scale(1.02);
+}
+
+/* Conference Info */
+.clistings-info {
+    flex: 1;
+    padding: 20px;
+}
+
+.clistings-title {
+    font-size: 20px;
+    font-weight: bold;
+    color: #800000;
+}
+
+.clistings-description {
+    font-size: 16px;
+    color: #b30000;
+    margin: 10px 0;
+}
+
+/* Learn More Button */
+.learn-more {
+    background: #b30000;
+    color: #fff;
+    padding: 10px 15px;
+    border: none;
+    border-radius: 8px;
+    font-size: 14px;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+.learn-more:hover {
+    background: #800000;
+}
+
+/* Conference Image */
+.clistings-image img {
+    width: 200px;
+    height: 120px;
+    border-radius: 10px;
+    object-fit: cover;
+}
