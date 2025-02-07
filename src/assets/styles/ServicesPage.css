@@ -1,0 +1,109 @@
+/* General Styling */
+body, html {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    height: 100%;
+    font-family: 'Arial', sans-serif;
+    background-color: #ffffff;
+}
+
+/* Services Page Container */
+.services-page {
+    width: 100%;
+    max-width: 1400px;
+    margin: auto;
+    padding: 40px;
+    position: relative;
+}
+
+/* Back Button - Moves it to the top */
+.back-button {
+    font-size: 22px;
+    font-weight: bold;
+    position: absolute;
+    top: 20px;
+    left: 40px;
+    margin-bottom: 0;
+}
+
+.back-button a {
+    text-decoration: none;
+    color: #000;
+}
+
+.back-button a:hover {
+    color: #007BFF;
+}
+
+/* Services Grid */
+.services-grid {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 50px;
+    flex-wrap: wrap;
+    margin-top: 80px; /* Pushes content down */
+}
+
+/* Service Item */
+.service-item {
+    text-align: center;
+    flex: 1;
+    min-width: 500px;
+    cursor: pointer;
+    transition: transform 0.3s ease-in-out;
+}
+
+/* Hover effect for service item */
+.service-item:hover {
+    transform: scale(1.05);
+}
+
+/* Service Image */
+.service-image {
+    width: 100%;
+    height: 400px;
+    object-fit: cover;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    transition: transform 0.3s ease-in-out;
+}
+
+/* Service Title */
+.service-title {
+    font-size: 20px;
+    font-style: italic;
+    margin-top: 15px;
+    color: #333;
+}
+
+/* Dropdown Styling */
+.dropdown {
+    margin-top: 15px;
+    padding: 15px;
+    background-color: #f9f9f9;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    width: 80%;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+/* Styling for React-DatePicker */
+.react-datepicker-wrapper {
+    width: 100%;
+}
+
+.react-datepicker__input-container input {
+    width: 100%;
+    padding: 8px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    text-align: center;
+    font-size: 16px;
+    background-color: #fff;
+}
