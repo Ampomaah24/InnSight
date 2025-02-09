@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom"; // Import useNavigate
 import "../assets/styles/SignUp.css"; // Import external CSS file
 
 export default function SignUp() {
@@ -9,13 +10,29 @@ export default function SignUp() {
     confirmPassword: "",
   });
 
+  const navigate = useNavigate(); // Initialize navigation
+
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    console.log("Form submitted:", formData);
+    
+    // Simulate form validation before redirecting
+    if (
+      formData.fullName &&
+      formData.email &&
+      formData.password &&
+      formData.password === formData.confirmPassword
+    ) {
+      console.log("Form submitted:", formData);
+
+      // Redirect to Services page
+      navigate("/services");
+    } else {
+      alert("Please fill out all fields and ensure passwords match.");
+    }
   };
 
   return (
@@ -37,6 +54,7 @@ export default function SignUp() {
                 onChange={handleChange}
                 placeholder="Name..."
                 className="signup-input"
+                required
               />
             </div>
             <div>
@@ -48,6 +66,7 @@ export default function SignUp() {
                 onChange={handleChange}
                 placeholder="Email address..."
                 className="signup-input"
+                required
               />
             </div>
             <div>
@@ -59,6 +78,7 @@ export default function SignUp() {
                 onChange={handleChange}
                 placeholder="Enter Password..."
                 className="signup-input"
+                required
               />
             </div>
             <div>
@@ -70,6 +90,7 @@ export default function SignUp() {
                 onChange={handleChange}
                 placeholder="Enter Password..."
                 className="signup-input"
+                required
               />
             </div>
             <button type="submit" className="signup-button">
