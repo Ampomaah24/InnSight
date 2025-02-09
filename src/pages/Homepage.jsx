@@ -6,17 +6,23 @@ import "../assets/styles/Homepage.css";
 const Homepage = () => {
   const [menuOpen, setMenuOpen] = useState(false);
 
+  const toggleMenu = () => {
+    setMenuOpen(!menuOpen);
+  };
+
   return (
     <div className="homepage">
       <nav className="nav">
         {/* Dropdown Menu */}
         <div className="menu-container">
-          <div className="menu-icon" onClick={() => setMenuOpen(!menuOpen)}>☰</div>
+          <div className="menu-icon" onClick={toggleMenu}>☰</div>
           {menuOpen && (
             <div className="dropdown-menu">
-              <Link to="/about">About</Link>
               <Link to="/services">Services</Link>
-              <Link to="/contact">Contact</Link>
+              <Link to="/room-listings">Room Listings</Link>
+              <Link to="/conference-rooms">Conference Room Listings</Link>
+              <Link to="/profile">Profile</Link>
+              <Link to="/contact">Contact Us</Link>
             </div>
           )}
         </div>
@@ -38,9 +44,9 @@ const Homepage = () => {
 
         <p className="or">OR</p>
 
-        <Link to="/guest">
-          <button className="guest-btn">Continue as a Guest</button>
-        </Link>
+        <button className="guest-btn" onClick={toggleMenu}>
+          Continue as a Guest
+        </button>
       </div>
     </div>
   );
