@@ -1,35 +1,49 @@
-import React from "react"; // Importing React library
-import "../assets/styles/Homepage.css"; // Importing external CSS file for styling
+import React, { useState } from "react";
+import { Link } from "react-router-dom";
+import backgroundImage from "../assets/images/360_F_29133877_bfA2n7cWV53fto2BomyZ6pyRujJTBwjd.jpg";
+import "../assets/styles/Homepage.css";
 
 const Homepage = () => {
+  const [menuOpen, setMenuOpen] = useState(false);
+
   return (
     <div className="homepage">
-      {/* Navbar Section  */}
-      <div className="navbar">
-       
-        <button className="menu-icon">
-          <div></div> 
-          <div></div> 
-          <div></div> 
-        </button>
-
-        <a href="/login" className="login">Log In</a>
-      </div>
-
-      {/* Main Content Section */}
-      <div className="content">
-        
-        <h1 className="title">AMPOMAAH TOURIST HOTEL</h1>
-        <p className="subtitle">Experience Hospitality, Embrace Tranquility</p>
-        <div className="options">
-          <p>Don't have an account? <a href="/signup" className="signup-link">Sign-Up</a></p>
-
-          <p className="or-text">OR</p>
-          <button className="guest-button">Continue as a Guest</button>
+      <nav className="nav">
+        {/* Dropdown Menu */}
+        <div className="menu-container">
+          <div className="menu-icon" onClick={() => setMenuOpen(!menuOpen)}>☰</div>
+          {menuOpen && (
+            <div className="dropdown-menu">
+              <Link to="/about">About</Link>
+              <Link to="/services">Services</Link>
+              <Link to="/contact">Contact</Link>
+            </div>
+          )}
         </div>
+        <Link to="/login" className="login">Log In</Link>
+      </nav>
+
+      <div className="content">
+        <h1>AMPOMAAH TOURIST HOTEL</h1>
+
+        <div className="image-container">
+          <img src={backgroundImage} alt="Hotel" className="hotel-image" />
+        </div>
+
+        <p className="tagline">Experience Hospitality, Embrace Tranquility</p>
+
+        <p className="signup">
+          Don't have an account? <Link to="/signup" className="signup-link">Sign Up</Link>
+        </p>
+
+        <p className="or">OR</p>
+
+        <Link to="/guest">
+          <button className="guest-btn">Continue as a Guest</button>
+        </Link>
       </div>
     </div>
   );
 };
 
-export default Homepage; // Exporting the Homepage component for use in the App
+export default Homepage;
