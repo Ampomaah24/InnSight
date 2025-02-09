@@ -6,7 +6,7 @@ import SignUp from "./pages/SignUp"; // Import Sign Up Page
 import LoginPage from "./pages/LoginPage"; // Import Login Page
 import CListings from "./pages/CListings"; // Import Conference Listings Page
 import RoomListings from "./pages/RoomListings"; // Import Conference Listings Page
-
+import RoomBooking from "./pages/RoomBooking"; // Import Conference Listings Page
 const App = () => {
   return (
     <Router>
@@ -17,6 +17,7 @@ const App = () => {
         <Route path="/login" element={<LoginPage />} /> {/* Login Page */}
         <Route path="/conference-listings" element={<CListings />} /> {/* Conference Listings Page */}
         <Route path="/room-listings" element={<RoomListings />} /> {/* Room Listings Page */}
+        <Route path="/room-booking" element={<RoomBooking />} /> {/* Room Booking Page */}
       </Routes>
     </Router>
   );
