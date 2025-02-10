@@ -73,6 +73,7 @@
     outline: none;
     background-color: transparent;
     text-indent: 2px; /* Ensures placeholder alignment */
+    color: black;
   }
   
   /* Ensure placeholders align with labels */
