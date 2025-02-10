@@ -17,8 +17,10 @@
   justify-content: center;
   position: relative;
   padding: 20px;
+  overflow: hidden; /* Prevents resizing */
 }
 
+/* Navbar */
 .nav {
   position: absolute;
   top: 15px;
@@ -33,6 +35,7 @@
   font-weight: bold;
 }
 
+/* Dropdown Menu */
 .menu-container {
   position: relative;
 }
@@ -53,18 +56,6 @@
   flex-direction: column;
   width: 180px;
   padding: 10px 0;
-  animation: fadeIn 0.3s ease-in-out;
-}
-
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(-10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
 }
 
 .dropdown-menu a {
@@ -72,14 +63,13 @@
   text-decoration: none;
   color: black;
   font-size: 16px;
-  transition: background 0.3s;
-  font-weight: 500;
 }
 
 .dropdown-menu a:hover {
   background: #f0f0f0;
 }
 
+/* Login Button */
 .login {
   text-decoration: none;
   color: black;
@@ -87,22 +77,24 @@
   font-size: 18px;
 }
 
+/* Content */
 .content {
   text-align: center;
-  width: 90%;
-  max-width: 1100px;
-  padding: 60px;
+  width: 900px; /* Fixed width */
+  max-width: 900px;
+  padding: 40px;
 }
 
 .image-container {
   display: flex;
   justify-content: center;
-  margin-bottom: 40px;
+  width: 100%;
+  margin-bottom: 20px;
 }
 
 .hotel-image {
-  width: 100%;
-  max-width: 800px;
+  width: 800px; /* Fixed size */
+  height: 450px;
   border-radius: 20px;
   box-shadow: 0px 10px 30px rgba(0, 0, 0, 0.15);
 }
@@ -123,6 +115,7 @@ h1 {
 
 .signup {
   font-size: 18px;
+  color:#555;
 }
 
 .signup-link {
@@ -143,6 +136,7 @@ h1 {
   color: #666;
 }
 
+/* Guest Button */
 .guest-btn {
   background-color: #007bff;
   color: white;
@@ -154,9 +148,12 @@ h1 {
   cursor: pointer;
   transition: all 0.3s ease-in-out;
   box-shadow: 0px 5px 15px rgba(0, 123, 255, 0.3);
+  width: 300px; /* Fixed width */
 }
 
 .guest-btn:hover {
   background-color: #0056b3;
   box-shadow: 0px 5px 20px rgba(0, 86, 179, 0.4);
 }
+
+/* REMOVE Media Queries (No device-based changes) */
