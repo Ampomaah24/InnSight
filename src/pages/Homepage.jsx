@@ -13,16 +13,15 @@ const Homepage = () => {
   return (
     <div className="homepage">
       <nav className="nav">
-        {/* Dropdown Menu */}
         <div className="menu-container">
           <div className="menu-icon" onClick={toggleMenu}>☰</div>
           {menuOpen && (
             <div className="dropdown-menu">
-              <Link to="/services">Services</Link>
-              <Link to="/room-listings">Room Listings</Link>
-              <Link to="/conference-rooms">Conference Room Listings</Link>
-              <Link to="/profile">Profile</Link>
-              <Link to="/contact">Contact Us</Link>
+              <Link to="/services" onClick={() => setMenuOpen(false)}>Services</Link>
+              <Link to="/room-listings" onClick={() => setMenuOpen(false)}>Room Listings</Link>
+              <Link to="/conference-listings" onClick={() => setMenuOpen(false)}>Conference Room Listings</Link>
+              <Link to="/profile" onClick={() => setMenuOpen(false)}>Profile</Link>
+              <Link to="/contact" onClick={() => setMenuOpen(false)}>Contact Us</Link>
             </div>
           )}
         </div>
@@ -44,9 +43,7 @@ const Homepage = () => {
 
         <p className="or">OR</p>
 
-        <button className="guest-btn" onClick={toggleMenu}>
-          Continue as a Guest
-        </button>
+        <button className="guest-btn">Continue as a Guest</button>
       </div>
     </div>
   );
