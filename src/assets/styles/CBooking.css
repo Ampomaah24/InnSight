@@ -16,7 +16,7 @@
     justify-content: center;
     width: 100vw;
     height: 100vh;
-    background-color: #ffe6e6; /* Light pink background */
+    background-color: white; /* Light pink background */
     font-family: Arial, sans-serif;
     padding-top: 80px; /* Push content down so it's not covered */
   }
@@ -28,7 +28,7 @@
     text-align: center;
     font-size: 32px;
     font-weight: bold;
-    background: #ffe6e6; /* Blend with background */
+    background: white; /* Blend with background */
     padding: 20px 0;
     z-index: 100;
   }
