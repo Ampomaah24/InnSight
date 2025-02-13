@@ -4,10 +4,11 @@ body, html {
     padding: 0;
     width: 100%;
     font-family: 'Arial', sans-serif;
-    background-color: #ffe6e6;
+    background-color: qhite;
     display: flex;
     justify-content: center;
     align-items: center;
+    background-image: none !important;
 }
 
 /* Room Page Container */
@@ -15,7 +16,7 @@ body, html {
     width: 100%;
     max-width: 1200px;
     padding: 40px;
-    background: #ffefef;
+    background: white;
     border-radius: 15px;
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
 }
