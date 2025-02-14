@@ -9,6 +9,10 @@ import RoomListings from "./pages/RoomListings"; // Import Conference Listings P
 import RoomBooking from "./pages/RoomBooking"; // Import Room Booking Page
 import CBooking from "./pages/CBooking"; // Import Conference Booking Page
 import Dashboard from "./pages/Dashboard"; // Import Conference Booking Page
+import Reservations from "./pages/Reservations";
+import CheckIn from "./pages/CheckIn";
+import Rooms from "./pages/Rooms";
+
 const App = () => {
   return (
     <Router>
@@ -22,6 +26,9 @@ const App = () => {
         <Route path="/room-booking" element={<RoomBooking />} /> {/* Room Booking Page */}
         <Route path="/conference-booking" element={<CBooking />} /> {/* Conference Booking Page */}
         <Route path="/admin-dashboard" element={<Dashboard />} /> {/* Conference Booking Page */}
+        <Route path="/reservations" element={<Reservations />} />
+        <Route path="/check-in" element={<CheckIn />} />
+        <Route path="/rooms" element={<Rooms />} />
       </Routes>
     </Router>
   );
