@@ -8,6 +8,7 @@ import CListings from "./pages/CListings"; // Import Conference Listings Page
 import RoomListings from "./pages/RoomListings"; // Import Conference Listings Page
 import RoomBooking from "./pages/RoomBooking"; // Import Room Booking Page
 import CBooking from "./pages/CBooking"; // Import Conference Booking Page
+import Dashboard from "./pages/Dashboard"; // Import Conference Booking Page
 const App = () => {
   return (
     <Router>
@@ -20,6 +21,7 @@ const App = () => {
         <Route path="/room-listings" element={<RoomListings />} /> {/* Room Listings Page */}
         <Route path="/room-booking" element={<RoomBooking />} /> {/* Room Booking Page */}
         <Route path="/conference-booking" element={<CBooking />} /> {/* Conference Booking Page */}
+        <Route path="/admin-dashboard" element={<Dashboard />} /> {/* Conference Booking Page */}
       </Routes>
     </Router>
   );
