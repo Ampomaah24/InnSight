@@ -17,7 +17,7 @@
   justify-content: center;
   position: relative;
   padding: 20px;
-  overflow: hidden; /* Prevents resizing */
+  overflow: hidden;
 }
 
 /* Navbar */
@@ -69,18 +69,27 @@
   background: #f0f0f0;
 }
 
-/* Login Button */
+/* Fixed Login Button */
 .login {
   text-decoration: none;
-  color: black;
-  font-weight: bold;
+  color: white;  /* Change text color */
+  background-color: #007bff; /* Add background color */
+  padding: 10px 20px;  /* Add padding */
+  border-radius: 6px;  /* Make it rounded */
   font-size: 18px;
+  font-weight: bold;
+  transition: 0.3s ease-in-out;
+  margin-left: 93%;
+}
+
+.login:hover {
+  background-color: #0056b3; /* Darken on hover */
 }
 
 /* Content */
 .content {
   text-align: center;
-  width: 900px; /* Fixed width */
+  width: 900px;
   max-width: 900px;
   padding: 40px;
 }
@@ -93,7 +102,7 @@
 }
 
 .hotel-image {
-  width: 800px; /* Fixed size */
+  width: 800px;
   height: 450px;
   border-radius: 20px;
   box-shadow: 0px 10px 30px rgba(0, 0, 0, 0.15);
@@ -115,7 +124,7 @@ h1 {
 
 .signup {
   font-size: 18px;
-  color:#555;
+  color: #555;
 }
 
 .signup-link {
@@ -148,12 +157,10 @@ h1 {
   cursor: pointer;
   transition: all 0.3s ease-in-out;
   box-shadow: 0px 5px 15px rgba(0, 123, 255, 0.3);
-  width: 300px; /* Fixed width */
+  width: 300px;
 }
 
 .guest-btn:hover {
   background-color: #0056b3;
   box-shadow: 0px 5px 20px rgba(0, 86, 179, 0.4);
 }
-
-/* REMOVE Media Queries (No device-based changes) */

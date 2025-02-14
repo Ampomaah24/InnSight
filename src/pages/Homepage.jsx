@@ -1,32 +1,15 @@
-import React, { useState } from "react";
+ import React from "react";
 import { Link } from "react-router-dom";
+import NavMenu from "../components/NavMenu"; // Import the NavMenu component
 import backgroundImage from "../assets/images/360_F_29133877_bfA2n7cWV53fto2BomyZ6pyRujJTBwjd.jpg";
 import "../assets/styles/Homepage.css";
 
 const Homepage = () => {
-  const [menuOpen, setMenuOpen] = useState(false);
-
-  const toggleMenu = () => {
-    setMenuOpen(!menuOpen);
-  };
-
   return (
     <div className="homepage">
-      <nav className="nav">
-        <div className="menu-container">
-          <div className="menu-icon" onClick={toggleMenu}>☰</div>
-          {menuOpen && (
-            <div className="dropdown-menu">
-              <Link to="/services" onClick={() => setMenuOpen(false)}>Services</Link>
-              <Link to="/room-listings" onClick={() => setMenuOpen(false)}>Room Listings</Link>
-              <Link to="/conference-listings" onClick={() => setMenuOpen(false)}>Conference Room Listings</Link>
-              <Link to="/profile" onClick={() => setMenuOpen(false)}>Profile</Link>
-              <Link to="/contact" onClick={() => setMenuOpen(false)}>Contact Us</Link>
-            </div>
-          )}
-        </div>
-        <Link to="/login" className="login">Log In</Link>
-      </nav>
+      <NavMenu /> {/* Use the extracted NavMenu component */}
+      <Link to="/login" className="login">Log In</Link>
+      
 
       <div className="content">
         <h1>AMPOMAAH TOURIST HOTEL</h1>

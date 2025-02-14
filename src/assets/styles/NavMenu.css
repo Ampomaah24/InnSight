@@ -1,0 +1,65 @@
+/* Navbar Container */
+.nav-container {
+    position: absolute;
+    top: 15px;
+    left: 20px;
+    right: 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 95%;
+  }
+  
+  /* Navigation Bar (Menu Only) */
+  .nav {
+    display: flex;
+    align-items: center;
+  }
+  
+  /* Menu Icon */
+  .menu-icon {
+    font-size: 28px;
+    cursor: pointer;
+  }
+  
+  /* Dropdown Menu */
+  .dropdown-menu {
+    position: absolute;
+    top: 40px;
+    left: 0;
+    background: white;
+    box-shadow: 0px 5px 10px rgba(0, 0, 0, 0.15);
+    border-radius: 10px;
+    display: flex;
+    flex-direction: column;
+    width: 180px;
+    padding: 10px 0;
+  }
+  
+  .dropdown-menu a {
+    padding: 14px 20px;
+    text-decoration: none;
+    color: black;
+    font-size: 16px;
+  }
+  
+  .dropdown-menu a:hover {
+    background: #f0f0f0;
+  }
+  
+  /* Log In Button */
+  .login {
+    text-decoration: none;
+    color: white;
+    background: #007bff;
+    padding: 10px 15px;
+    border-radius: 5px;
+    font-size: 18px;
+    font-weight: bold;
+    transition: 0.3s ease-in-out;
+  }
+  
+  .login:hover {
+    background: #0056b3;
+  }
+  
