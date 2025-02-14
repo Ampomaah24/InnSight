@@ -8,7 +8,7 @@ body, html {
     display: flex;
     justify-content: center;
     align-items: center;
-    background-image: none !important;
+    
 }
 
 /* Conference Page Container */
@@ -19,6 +19,7 @@ body, html {
     background: white;
     border-radius: 15px;
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  
 }
 
 /* Page Title */

@@ -1,35 +1,55 @@
 import React, { useState } from "react";
-import { Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
-import "../assets/styles/ServicesPage.css"; // Import updated CSS
+import NavMenu from "../components/NavMenu"; // Import the NavMenu component
+import "../assets/styles/ServicesPage.css";
 
 const ServicesPage = () => {
-  // State for dropdown visibility
+  const navigate = useNavigate();
+
   const [selectedService, setSelectedService] = useState(null);
   const [roomBookingDates, setRoomBookingDates] = useState({ checkIn: null, checkOut: null });
   const [conferenceBookingDates, setConferenceBookingDates] = useState({ checkIn: null, checkOut: null });
 
-  // Function to toggle dropdown when clicking on a service
   const toggleDropdown = (service) => {
     setSelectedService(selectedService === service ? null : service);
   };
 
+  const today = new Date();
+
+  const handleRoomBooking = () => {
+    if (!roomBookingDates.checkIn || !roomBookingDates.checkOut) {
+      alert("Please select check-in and check-out dates!");
+      return;
+    }
+
+    navigate(
+      `/room-booking?checkIn=${roomBookingDates.checkIn.toISOString()}&checkOut=${roomBookingDates.checkOut.toISOString()}`
+    );
+  };
+
+  const handleConferenceBooking = () => {
+    if (!conferenceBookingDates.checkIn || !conferenceBookingDates.checkOut) {
+      alert("Please select check-in and check-out dates!");
+      return;
+    }
+
+    navigate(
+      `/conference-booking?checkIn=${conferenceBookingDates.checkIn.toISOString()}&checkOut=${conferenceBookingDates.checkOut.toISOString()}`
+    );
+  };
+
   return (
     <div className="services-page">
-      {/* Back Button */}
-      <div className="back-button">
-        <Link to="/">← Booking Services</Link>
-      </div>
+      <NavMenu /> {/* Use NavMenu here instead of the back button */}
 
-      {/* Services Grid */}
       <div className="services-grid">
         {/* Room Booking */}
         <div className="service-item" onClick={() => toggleDropdown("room")}>
           <img src="src/assets/images/IMG_0111.JPG" alt="Room Booking" className="service-image" />
           <p className="service-title">Room Booking</p>
 
-          {/* Dropdown for Date Selection */}
           {selectedService === "room" && (
             <div className="dropdown" onClick={(e) => e.stopPropagation()}>
               <label>Check-in Date:</label>
@@ -37,6 +57,7 @@ const ServicesPage = () => {
                 selected={roomBookingDates.checkIn} 
                 onChange={date => setRoomBookingDates(prev => ({ ...prev, checkIn: date }))}
                 placeholderText="Select check-in date"
+                minDate={today} 
               />
 
               <label>Check-out Date:</label>
@@ -44,17 +65,19 @@ const ServicesPage = () => {
                 selected={roomBookingDates.checkOut} 
                 onChange={date => setRoomBookingDates(prev => ({ ...prev, checkOut: date }))}
                 placeholderText="Select check-out date"
+                minDate={roomBookingDates.checkIn || today} 
               />
+
+              <button className="learn-more" onClick={handleRoomBooking}>Proceed to Room Booking</button>
             </div>
           )}
         </div>
 
         {/* Conference Room Booking */}
         <div className="service-item" onClick={() => toggleDropdown("conference")}>
-          <img src="/src/assets/images/pixelcut-export.jpeg" alt="Conference Room Booking" className="service-image" />
+          <img src="src/assets/images/pixelcut-export.jpeg" alt="Conference Room Booking" className="service-image" />
           <p className="service-title">Conference Room Booking</p>
 
-          {/* Dropdown for Date Selection */}
           {selectedService === "conference" && (
             <div className="dropdown" onClick={(e) => e.stopPropagation()}>
               <label>Check-in Date:</label>
@@ -62,6 +85,7 @@ const ServicesPage = () => {
                 selected={conferenceBookingDates.checkIn} 
                 onChange={date => setConferenceBookingDates(prev => ({ ...prev, checkIn: date }))}
                 placeholderText="Select check-in date"
+                minDate={today} 
               />
 
               <label>Check-out Date:</label>
@@ -69,7 +93,10 @@ const ServicesPage = () => {
                 selected={conferenceBookingDates.checkOut} 
                 onChange={date => setConferenceBookingDates(prev => ({ ...prev, checkOut: date }))}
                 placeholderText="Select check-out date"
+                minDate={conferenceBookingDates.checkIn || today} 
               />
+
+              <button className="learn-more" onClick={handleConferenceBooking}>Proceed to Conference Booking</button>
             </div>
           )}
         </div>
