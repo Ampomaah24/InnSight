@@ -9,11 +9,11 @@ body, html {
     display: flex;
     justify-content: center;
     align-items: center;
-    background: url("src/assets/images/IMG_0123.JPG") no-repeat center center;
     
-   
+
 }
 
+/*background: url("src/assets/images/IMG_0123.JPG") no-repeat center center; */
 /* Centered Login Container */
 .login-container {
     width: 100%;
