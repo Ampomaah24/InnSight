@@ -1,16 +1,11 @@
 import React from "react";
 import { FaSearch, FaBell, FaThLarge, FaUserCircle } from "react-icons/fa";
-import "../assets/styles/Navbar.css";
 
 const Navbar = () => {
   return (
     <nav className="navbar">
-      {/* Left Side - Brand Name */}
-      <div className="navbar-left">
-        <span className="brand-name">InnSight</span>
-      </div>
+      <div className="navbar-left">InnSight</div>
 
-      {/* Center - Navigation Links */}
       <div className="navbar-center">
         <ul>
           <li><a href="#">Dashboard</a></li>
@@ -21,12 +16,11 @@ const Navbar = () => {
         </ul>
       </div>
 
-      {/* Right Side - Icons */}
       <div className="navbar-right">
         <FaSearch className="icon" />
         <FaBell className="icon" />
         <FaThLarge className="icon" />
-        <FaUserCircle className="profile-icon" />
+        <FaUserCircle className="icon" />
       </div>
     </nav>
   );
