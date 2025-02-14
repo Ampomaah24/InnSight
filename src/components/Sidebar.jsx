@@ -1,5 +1,5 @@
 import React from "react";
-import { FaHome, FaCalendarCheck, FaUsers, FaChartBar } from "react-icons/fa";
+import { FaHome, FaCalendarCheck, FaUsers, FaChartBar, FaBed, FaMoneyBillWave, FaCog, FaClipboardList, FaKey } from "react-icons/fa";
 
 const Sidebar = () => {
   return (
@@ -9,13 +9,36 @@ const Sidebar = () => {
           <FaHome /> Dashboard
         </li>
         <li className="sidebar-item">
-          <FaCalendarCheck /> Check-in
+  <a href="/reservations">
+    <FaCalendarCheck /> Reservations
+  </a>
+</li>
+
+<li className="sidebar-item">
+  <a href="/check-in">
+    <FaKey /> Check-in / Check-out
+  </a>
+</li>
+
+<li className="sidebar-item">
+  <a href="/rooms">
+    <FaBed /> Rooms & Availability
+  </a>
+</li>
+        <li className="sidebar-item">
+          <FaUsers /> Guests
         </li>
         <li className="sidebar-item">
-          <FaUsers /> Users
+          <FaMoneyBillWave /> Billing & Payments
         </li>
         <li className="sidebar-item">
-          <FaChartBar /> Reports
+          <FaClipboardList /> Staff Management
+        </li>
+        <li className="sidebar-item">
+          <FaChartBar /> Reports & Analytics
+        </li>
+        <li className="sidebar-item">
+          <FaCog /> Settings
         </li>
       </ul>
     </div>
