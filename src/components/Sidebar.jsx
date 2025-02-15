@@ -29,8 +29,11 @@ const Sidebar = () => {
           <FaUsers /> Guests
         </li>
         <li className="sidebar-item">
-          <FaMoneyBillWave /> Billing & Payments
-        </li>
+  <a href="/billing">
+    <FaMoneyBillWave /> Billing & Payments
+  </a>
+</li>
+
         <li className="sidebar-item">
           <FaClipboardList /> Staff Management
         </li>
