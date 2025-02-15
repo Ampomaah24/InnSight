@@ -38,8 +38,10 @@ const Sidebar = () => {
           <FaClipboardList /> Staff Management
         </li>
         <li className="sidebar-item">
-          <FaChartBar /> Reports & Analytics
-        </li>
+  <a href="/reports">
+    <FaChartBar /> Reports & Analytics
+  </a>
+</li>
         <li className="sidebar-item">
           <FaCog /> Settings
         </li>
