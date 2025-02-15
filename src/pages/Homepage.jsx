@@ -26,7 +26,7 @@ const Homepage = () => {
 
         <p className="or">OR</p>
 
-        <button className="guest-btn">Continue as a Guest</button>
+        <button ><Link to="/services" className="guest-btn"> Continue as a Guest </Link></button>
       </div>
     </div>
   );
