@@ -35,9 +35,6 @@ const Sidebar = () => {
 </li>
 
         <li className="sidebar-item">
-          <FaClipboardList /> Staff Management
-        </li>
-        <li className="sidebar-item">
   <a href="/reports">
     <FaChartBar /> Reports & Analytics
   </a>
