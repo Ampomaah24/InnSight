@@ -13,6 +13,7 @@ import Reservations from "./pages/Reservations";
 import CheckIn from "./pages/CheckIn";
 import Rooms from "./pages/Rooms";
 import Billing from "./pages/Billing";
+import Reports from "./pages/Reports";
 
 
 const App = () => {
@@ -32,6 +33,7 @@ const App = () => {
         <Route path="/check-in" element={<CheckIn />} />
         <Route path="/rooms" element={<Rooms />} />
         <Route path="/billing" element={<Billing />} />
+        <Route path="/reports" element={<Reports />} />
 
       </Routes>
     </Router>
