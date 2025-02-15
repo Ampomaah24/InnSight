@@ -145,11 +145,20 @@ h1 {
   color: #666;
 }
 
+/* Remove default button styles */
+button {
+  all: unset; /* Removes default button styles */
+  display: block;
+  width: 100%;
+}
+
 /* Guest Button */
 .guest-btn {
+  display: inline-block;
   background-color: #007bff;
   color: white;
-  border: none;
+  text-align: center;
+  text-decoration: none;
   padding: 16px 30px;
   border-radius: 30px;
   font-size: 20px;
@@ -157,9 +166,23 @@ h1 {
   cursor: pointer;
   transition: all 0.3s ease-in-out;
   box-shadow: 0px 5px 15px rgba(0, 123, 255, 0.3);
-  width: 300px;
+  border: none;
+  outline: none;
+  z-index: 2;
 }
 
+/* Ensure the link inside behaves properly */
+.guest-btn a {
+  text-decoration: none;
+  color: white;
+  display: block;
+  width: 100%;
+  height: 100%;
+  padding: 16px 30px;
+  border-radius: 30px;
+}
+
+/* Button Hover Effect */
 .guest-btn:hover {
   background-color: #0056b3;
   box-shadow: 0px 5px 20px rgba(0, 86, 179, 0.4);
