@@ -8,6 +8,15 @@ body, html {
     background-color: #ffffff;
 }
 
+/* Booking Services Heading */
+.booking-services-heading {
+    text-align: center;
+    font-size: 28px;
+    font-weight: bold;
+    margin-bottom: 20px;
+    color: #333;
+}
+
 /* Services Page Container */
 .services-page {
     width: 100%;
@@ -17,25 +26,6 @@ body, html {
     position: relative;
 }
 
-/* Back Button - Moves it to the top */
-.back-button {
-    font-size: 22px;
-    font-weight: bold;
-    position: absolute;
-    top: 20px;
-    left: 40px;
-    margin-bottom: 0;
-}
-
-.back-button a {
-    text-decoration: none;
-    color: #000;
-}
-
-.back-button a:hover {
-    color: #007BFF;
-}
-
 /* Services Grid */
 .services-grid {
     display: flex;
@@ -43,7 +33,7 @@ body, html {
     align-items: center;
     gap: 50px;
     flex-wrap: wrap;
-    margin-top: 80px; /* Pushes content down */
+    margin-top: 30px; /* Adjusted to fit new heading */
 }
 
 /* Service Item */
@@ -78,7 +68,7 @@ body, html {
     color: #333;
 }
 
-/* Dropdown Styling */
+/* Dropdown Styling with Smooth Transitions */
 .dropdown {
     margin-top: 15px;
     padding: 15px;
@@ -91,6 +81,18 @@ body, html {
     width: 80%;
     margin-left: auto;
     margin-right: auto;
+
+    /* Smooth Transition */
+    max-height: 0;
+    opacity: 0;
+    overflow: hidden;
+    transition: max-height 0.5s ease-out, opacity 0.5s ease-out;
+}
+
+/* When dropdown is active */
+.dropdown.active {
+    max-height: 300px; /* Adjust based on content */
+    opacity: 1;
 }
 
 /* Styling for React-DatePicker */
@@ -106,4 +108,25 @@ body, html {
     text-align: center;
     font-size: 16px;
     background-color: #fff;
+}
+
+/* Button Styling */
+.learn-more {
+    width: 80%; /* Reduce button width */
+    max-width: 250px; /* Limit max width */
+    padding: 10px 15px;
+    font-size: 16px;
+    font-weight: bold;
+    background-color: #e67e22; /* Warm orange color */
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background 0.3s ease-in-out;
+    margin: 10px auto;
+    display: block; /* Center button */
+}
+
+.learn-more:hover {
+    background-color: #d35400; /* Slightly darker warm orange */
 }

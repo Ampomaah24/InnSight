@@ -4,6 +4,7 @@
   height: 100vh;
   background: #F9FAFB; /* Corrected Light Gray */
   font-family: 'Poppins', sans-serif;
+  color: black;
 }
 
 /* ======= Sidebar Fixes ======= */
@@ -52,6 +53,7 @@
   width: calc(100% - 250px); /* Expands to full available width */
   max-width: 1400px; /* Stretches container */
   margin: auto;
+  
 }
 /* ======= Navbar Fixes ======= */
 .navbar {
@@ -93,6 +95,7 @@
   justify-content: space-between;
   width: 100%;
   align-items: center;
+  
 }
 
 .card {
@@ -113,6 +116,7 @@
   font-size: 24px;
   font-weight: bold;
   color: #111827;
+
 }
 
 /* ======= Table Fixes ======= */
@@ -124,6 +128,7 @@
   margin-top: 40px;
   overflow-x: auto;
   width: 100%;
+  
 }
 
 .reservations-table {
@@ -141,6 +146,7 @@
 .reservations-table th {
   background: #F3F4F6;
   font-weight: bold;
+  
 }
 
 /* Status Badges */
@@ -151,6 +157,7 @@
   font-size: 14px;
   font-weight: 600;
   text-align: center;
+  
 }
 
 .checked-in {
