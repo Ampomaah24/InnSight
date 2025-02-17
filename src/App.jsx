@@ -14,6 +14,7 @@ import CheckIn from "./pages/CheckIn";
 import Rooms from "./pages/Rooms";
 import Billing from "./pages/Billing";
 import Reports from "./pages/Reports";
+import BookingPage from "./pages/BookingPage";
 
 
 const App = () => {
@@ -34,6 +35,7 @@ const App = () => {
         <Route path="/rooms" element={<Rooms />} />
         <Route path="/billing" element={<Billing />} />
         <Route path="/reports" element={<Reports />} />
+        <Route path="/book-room" element={<BookingPage />} />
 
       </Routes>
     </Router>
