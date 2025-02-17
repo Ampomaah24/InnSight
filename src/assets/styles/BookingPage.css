@@ -1,102 +1,106 @@
 .booking-container {
-    max-width: 450px;
+    max-width: 900px;  /* Wider container */
+    width: 90%;
     margin: 50px auto;
-    padding: 25px;
+    padding: 40px;
     background: white;
     border-radius: 12px;
     box-shadow: 0px 5px 15px rgba(0, 0, 0, 0.15);
-    text-align: center;
     font-family: "Poppins", sans-serif;
-    transition: 0.3s ease-in-out;
-}
-
-.booking-container:hover {
-    box-shadow: 0px 8px 20px rgba(0, 0, 0, 0.2);
 }
 
 h2 {
-    font-size: 30px;
+    font-size: 32px;
     font-weight: bold;
     color: #333;
-    margin-bottom: 10px;
+    text-align: center;
 }
 
 p {
-    font-size: 15px;
+    font-size: 16px;
     color: #666;
+    text-align: center;
     margin-bottom: 20px;
 }
 
+/* Grid Layout to Reduce Length */
 .booking-form {
-    display: flex;
-    flex-direction: column;
-    gap: 14px;
-    margin-top: 15px;
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+}
+
+/* Full Width Elements */
+.full-width {
+    grid-column: span 2;
 }
 
 .booking-form label {
-    font-size: 14px;
+    font-size: 16px;
     font-weight: 600;
-    text-align: left;
     color: #444;
+    display: block;
+    margin-bottom: 5px;
 }
 
 .booking-form input,
-.booking-form select {
+.booking-form select,
+.booking-form textarea {
+    width: 100%;
     padding: 12px;
     font-size: 16px;
     border: 1px solid #ddd;
     border-radius: 8px;
-    outline: none;
     transition: 0.3s ease-in-out;
 }
 
 .booking-form input:focus,
-.booking-form select:focus {
+.booking-form select:focus,
+.booking-form textarea:focus {
     border-color: #007bff;
     box-shadow: 0px 0px 5px rgba(0, 123, 255, 0.3);
 }
 
+/* Radio Buttons */
+.radio-group {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.radio-group label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.radio-group input {
+    width: 18px;
+    height: 18px;
+}
+
+/* Button Styling */
 .confirm-booking {
     background: linear-gradient(135deg, #007bff, #0056b3);
     color: white;
     border: none;
-    padding: 14px;
+    padding: 16px;
     font-size: 18px;
     font-weight: bold;
     border-radius: 8px;
     cursor: pointer;
     transition: 0.3s ease-in-out;
+    width: 100%;
+    grid-column: span 2; /* Full width */
 }
 
 .confirm-booking:hover {
     background: linear-gradient(135deg, #0056b3, #003e7e);
 }
 
-.success-message {
-    margin-top: 20px;
-    padding: 18px;
-    background: #d4edda;
-    border: 1px solid #c3e6cb;
-    border-radius: 10px;
-    color: #155724;
-    font-size: 18px;
-    font-weight: 600;
-}
-
-.back-button {
-    background-color: #444;
-    color: white;
-    border: none;
-    padding: 12px;
-    font-size: 16px;
-    font-weight: bold;
-    border-radius: 8px;
-    cursor: pointer;
-    margin-top: 12px;
-    transition: 0.3s ease-in-out;
-}
-
-.back-button:hover {
-    background-color: #222;
+/* Responsive Adjustments */
+@media (max-width: 768px) {
+    .booking-form {
+        grid-template-columns: 1fr; /* Single column for mobile */
+    }
 }
