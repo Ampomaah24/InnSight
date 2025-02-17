@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom"; // Ensure you have React Router set up
+import NavMenu from "../components/NavMenu"; // Import NavMenu
 import "../assets/styles/RoomBooking.css";
 
 const rooms = [
@@ -25,12 +25,11 @@ const rooms = [
       "Spa Access",
     ],
   },
-  // Add more room objects as needed
 ];
 
 const RoomBooking = () => {
+  const [menuOpen, setMenuOpen] = useState(false); // Manage dropdown menu state
   const [currentIndex, setCurrentIndex] = useState(0);
-  const navigate = useNavigate(); // React Router navigation
 
   const prevRoom = () => {
     setCurrentIndex((prevIndex) =>
@@ -48,24 +47,30 @@ const RoomBooking = () => {
 
   return (
     <div className="room-booking-container">
-      {/* Back Button */}
-      <button className="back-button" onClick={() => navigate("/")}>
-        &#8592; Back
-      </button>
+      <div className="nav-container">
+        <NavMenu menuOpen={menuOpen} setMenuOpen={setMenuOpen} />
+      </div>
 
-      {/* Title */}
       <h2 className="title">Available Rooms</h2>
 
       <div className="room-content">
         <button className="nav-button left" onClick={prevRoom}>
           &lt;
         </button>
+
         <div className="room-image">
           <img src={currentRoom.image} alt="Room" />
+          <div className="room-pagination">
+            <span>{currentIndex + 1}</span>
+            <span>of</span>
+            <span>{rooms.length}</span>
+          </div>
         </div>
+
         <button className="nav-button right" onClick={nextRoom}>
           &gt;
         </button>
+
         <div className="room-details">
           <h3 className="price">Price: {currentRoom.price}</h3>
           <h4>Includes:</h4>
@@ -74,10 +79,10 @@ const RoomBooking = () => {
               <li key={index}>{item}</li>
             ))}
           </ul>
+          
+          {/* Book Now Button */}
+          <button className="book-now">Book Now</button>
         </div>
-      </div>
-      <div className="room-pagination">
-        {currentIndex + 1} of {rooms.length}
       </div>
     </div>
   );
