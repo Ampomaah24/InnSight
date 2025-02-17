@@ -1,18 +1,12 @@
-import React, { useState } from "react";
+import React from "react";
 import { Link } from "react-router-dom";
 import "../assets/styles/NavMenu.css";
 
-const NavMenu = () => {
-  const [menuOpen, setMenuOpen] = useState(false);
-
-  const toggleMenu = () => {
-    setMenuOpen(!menuOpen);
-  };
-
+const NavMenu = ({ menuOpen, setMenuOpen }) => {
   return (
     <nav className="nav">
       <div className="menu-container">
-        <div className="menu-icon" onClick={toggleMenu}>☰</div>
+        <div className="menu-icon" onClick={() => setMenuOpen(!menuOpen)}>☰</div>
         {menuOpen && (
           <div className="dropdown-menu">
             <Link to="/services" onClick={() => setMenuOpen(false)}>Services</Link>

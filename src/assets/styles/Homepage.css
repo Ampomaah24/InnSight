@@ -149,7 +149,7 @@ h1 {
 button {
   all: unset; /* Removes default button styles */
   display: block;
-  width: 100%;
+  width: 40%;
 }
 
 /* Guest Button */

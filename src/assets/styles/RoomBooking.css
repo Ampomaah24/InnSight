@@ -5,9 +5,14 @@
   }
   
   body, html {
+    margin: 0; 
+    padding: 0;
     width: 100%;
     height: 100%;
-  }
+    overflow-x: hidden; /* Prevents horizontal scrolling issues */
+}
+
+
   
   .room-booking-container {
     display: flex;
@@ -16,23 +21,24 @@
     justify-content: center;
     width: 100vw;
     height: 100vh;
-    background-color: white; /* Light pink background */
+    background-color: white;
     font-family: Arial, sans-serif;
-    padding-top: 80px; /* Push content down so it's not covered */
-  }
+    padding-top: 20px; /* Reduced padding */
+}
+
   
   .title {
-    position: fixed;
-    top: 0;
+    position: relative; /* Change from fixed */
     width: 100%;
     text-align: center;
     font-size: 32px;
     font-weight: bold;
-    background-color: white; /* Blend with background */
+    background-color: white; 
     padding: 20px 0;
     z-index: 100;
-    color:black;
-  }
+    color: black;
+}
+
   
   .room-content {
     display: flex;
@@ -89,11 +95,41 @@
     list-style-type: disc;
     padding-left: 20px;
   }
-  
-  .room-pagination {
-    margin-top: 15px;
+.room-pagination {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: fit-content;
+    background-color: #e0e0e0; /* Light gray background */
+    padding: 8px 20px; /* Adjust padding to enclose all text */
+    border-radius: 8px; /* Rounded corners */
     font-size: 18px;
     font-weight: bold;
     color: black;
-  }
-  
+    margin-top: 10px;
+    margin-left: auto;
+    margin-right: auto;
+    text-align: center;
+    gap: 5px; /* Ensure spacing between "1", "of", and "2" */
+}
+/* 📌 Book Now Button */
+.book-now {
+  display: block;
+  margin-top: 20px;
+  padding: 12px 24px;
+  background-color: #007bff;
+  color: white;
+  font-size: 18px;
+  font-weight: bold;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: 0.3s ease-in-out;
+  text-align: center;
+  width: 100%;
+  max-width: 200px;
+}
+
+.book-now:hover {
+  background-color: #0056b3;
+}

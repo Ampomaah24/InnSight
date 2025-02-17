@@ -1,15 +1,16 @@
- import React from "react";
+import React, { useState } from "react";
 import { Link } from "react-router-dom";
-import NavMenu from "../components/NavMenu"; // Import the NavMenu component
+import NavMenu from "../components/NavMenu"; 
 import backgroundImage from "../assets/images/360_F_29133877_bfA2n7cWV53fto2BomyZ6pyRujJTBwjd.jpg";
 import "../assets/styles/Homepage.css";
 
 const Homepage = () => {
+  const [menuOpen, setMenuOpen] = useState(false); // Manage dropdown menu state
+
   return (
     <div className="homepage">
-      <NavMenu /> {/* Use the extracted NavMenu component */}
+      <NavMenu menuOpen={menuOpen} setMenuOpen={setMenuOpen} /> 
       <Link to="/login" className="login">Log In</Link>
-      
 
       <div className="content">
         <h1>AMPOMAAH TOURIST HOTEL</h1>
@@ -26,7 +27,10 @@ const Homepage = () => {
 
         <p className="or">OR</p>
 
-        <button ><Link to="/services" className="guest-btn"> Continue as a Guest </Link></button>
+        {/* Guest Button now opens menu */}
+        <button className="guest-btn" onClick={() => setMenuOpen(!menuOpen)}>
+          Continue as a Guest
+        </button>
       </div>
     </div>
   );
