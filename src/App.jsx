@@ -14,7 +14,8 @@ import CheckIn from "./pages/CheckIn";
 import Rooms from "./pages/Rooms";
 import Billing from "./pages/Billing";
 import Reports from "./pages/Reports";
-import BookingPage from "./pages/BookingPage"; 
+import BookingPage from "./pages/BookingPage";
+import UserHistory from "./pages/UserHistory"; 
 
 
 const App = () => {
@@ -36,6 +37,7 @@ const App = () => {
         <Route path="/billing" element={<Billing />} />
         <Route path="/reports" element={<Reports />} />
         <Route path="/book-room" element={<BookingPage />} /> {/* Add this */}
+        <Route path="/user-history" element={<UserHistory />} />
 
       </Routes>
     </Router>
