@@ -33,8 +33,9 @@ const BookingPage = () => {
 
   return (
     <div className="booking-container">
-      <h2>Booking</h2>
-     
+      <h2>Hotel Booking</h2>
+      <p>Experience something new every moment.</p>
+
       {isSubmitted ? (
         <div className="success-message">
           <h3>Booking Confirmed!</h3>
