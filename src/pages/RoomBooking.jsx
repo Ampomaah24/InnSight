@@ -1,6 +1,10 @@
 import React, { useState } from "react";
 import NavMenu from "../components/NavMenu"; // Import NavMenu
 import "../assets/styles/RoomBooking.css";
+import { useNavigate } from "react-router-dom"; // Add this at the top
+
+
+
 
 const rooms = [
   {
@@ -27,8 +31,10 @@ const rooms = [
   },
 ];
 
+
 const RoomBooking = () => {
-  const [menuOpen, setMenuOpen] = useState(false); // Manage dropdown menu state
+  const navigate = useNavigate(); 
+  const [menuOpen, setMenuOpen] = useState(false); 
   const [currentIndex, setCurrentIndex] = useState(0);
 
   const prevRoom = () => {
@@ -81,7 +87,7 @@ const RoomBooking = () => {
           </ul>
           
           {/* Book Now Button */}
-          <button className="book-now">Book Now</button>
+          <button className="book-now" onClick={() => navigate("/book-room")}>Book Now</button>
         </div>
       </div>
     </div>
