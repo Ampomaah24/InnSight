@@ -1,8 +1,9 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { createUserWithEmailAndPassword } from "firebase/auth"; // Import Firebase auth
-import { auth } from "../config/firebase"; // Import auth instance
-import "../assets/styles/SignUp.css";
+import { createUserWithEmailAndPassword } from "firebase/auth";
+import { setDoc, doc } from "firebase/firestore"; // Firestore functions
+import { auth, db } from "../config/firebase"; // Import Firestore
+import "../assets/styles/SignUp.css"
 
 export default function SignUp() {
   const [formData, setFormData] = useState({
@@ -28,9 +29,19 @@ export default function SignUp() {
     }
 
     try {
-      await createUserWithEmailAndPassword(auth, formData.email, formData.password);
-      console.log("User signed up:", formData.email);
-      navigate("/services"); // Redirect after successful signup
+      const userCredential = await createUserWithEmailAndPassword(auth, formData.email, formData.password);
+      const user = userCredential.user;
+
+      // ✅ Save user data in Firestore
+      await setDoc(doc(db, "users", user.uid), {
+        fullName: formData.fullName,
+        email: formData.email,
+        uid: user.uid,
+        createdAt: new Date(),
+      });
+
+      console.log("User registered and saved to Firestore:", user.email);
+      navigate("/");
     } catch (err) {
       setError("Error signing up. Please try again.");
     }
@@ -39,7 +50,6 @@ export default function SignUp() {
   return (
     <div className="signup-container">
       <div className="signup-image"></div>
-
       <div className="signup-form-container">
         <div className="signup-form">
           <h2 className="signup-title">Sign Up</h2>

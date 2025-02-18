@@ -17,7 +17,7 @@ const LoginPage = () => {
     try {
       await signInWithEmailAndPassword(auth, email, password);
       console.log("User logged in:", email);
-      navigate("/room-booking"); // Redirect to dashboard after successful login
+      navigate("/services"); // Redirect to dashboard after successful login
     } catch (err) {
       setError("Invalid email or password. Please try again.");
     }
