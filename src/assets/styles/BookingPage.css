@@ -1,64 +1,81 @@
+/* General Styling */
 .booking-container {
-    max-width: 900px;  /* Wider container */
+    max-width: 56.25rem; /* 900px */
     width: 90%;
-    margin: 50px auto;
-    padding: 40px;
+    margin: 3.125rem auto; /* 50px */
+    padding: 2.5rem; /* 40px */
     background: white;
-    border-radius: 12px;
-    box-shadow: 0px 5px 15px rgba(0, 0, 0, 0.15);
+    border-radius: 0.75rem; /* 12px */
+    box-shadow: 0rem 0.3125rem 0.9375rem rgba(0, 0, 0, 0.15); /* 5px 15px */
     font-family: "Poppins", sans-serif;
 }
 
+/* Form Heading */
 h2 {
-    font-size: 32px;
+    font-size: 2rem;
     font-weight: bold;
     color: #333;
     text-align: center;
 }
 
 p {
-    font-size: 16px;
+    font-size: 1rem;
     color: #666;
     text-align: center;
-    margin-bottom: 20px;
+    margin-bottom: 1.25rem; /* 20px */
 }
 
-/* Grid Layout to Reduce Length */
+/* Grid Layout to Make Form Wider */
 .booking-form {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
-    gap: 20px;
+    gap: 1.25rem; /* 20px */
+    align-items: center;
 }
 
-/* Full Width Elements */
+/* Full Width Elements (Dropdowns, Textareas, etc.) */
 .full-width {
     grid-column: span 2;
 }
 
+/* Labels */
 .booking-form label {
-    font-size: 16px;
+    font-size: 1rem;
     font-weight: 600;
     color: #444;
     display: block;
-    margin-bottom: 5px;
+    margin-bottom: 0.3125rem; /* 5px */
 }
 
+/* Input Fields & Select Dropdown */
 .booking-form input,
 .booking-form select,
 .booking-form textarea {
     width: 100%;
-    padding: 12px;
-    font-size: 16px;
-    border: 1px solid #ddd;
-    border-radius: 8px;
+    padding: 0.75rem; /* 12px */
+    font-size: 1rem;
+    border: 0.0625rem solid #ddd; /* 1px */
+    border-radius: 0.5rem; /* 8px */
     transition: 0.3s ease-in-out;
+    background-color: white !important;
+    color: black !important;
 }
 
+/* Override dark mode autofill */
+.booking-form input:-webkit-autofill,
+.booking-form select:-webkit-autofill,
+.booking-form textarea:-webkit-autofill {
+    background-color: white !important;
+    color: black !important;
+    -webkit-box-shadow: 0 0 0rem 1000rem white inset !important;
+}
+
+/* Focus State */
 .booking-form input:focus,
 .booking-form select:focus,
 .booking-form textarea:focus {
     border-color: #007bff;
-    box-shadow: 0px 0px 5px rgba(0, 123, 255, 0.3);
+    box-shadow: 0rem 0rem 0.3125rem rgba(0, 123, 255, 0.3); /* 5px */
 }
 
 /* Radio Buttons */
@@ -71,12 +88,23 @@ p {
 .radio-group label {
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 0.5rem; /* 8px */
 }
 
-.radio-group input {
-    width: 18px;
-    height: 18px;
+/* Radio Button Styling */
+.radio-group input[type="radio"] {
+    accent-color: #007bff;
+    width: 1.125rem; /* 18px */
+    height: 1.125rem; /* 18px */
+}
+
+/* Payment Option & Alert */
+.warning-text {
+    font-size: 1rem;
+    color: red;
+    text-align: center;
+    font-weight: bold;
+    margin-bottom: 1rem;
 }
 
 /* Button Styling */
@@ -84,14 +112,15 @@ p {
     background: linear-gradient(135deg, #007bff, #0056b3);
     color: white;
     border: none;
-    padding: 16px;
-    font-size: 18px;
+    padding: 1rem; /* 16px */
+    font-size: 1.1rem;
     font-weight: bold;
-    border-radius: 8px;
+    border-radius: 0.5rem; /* 8px */
     cursor: pointer;
     transition: 0.3s ease-in-out;
     width: 100%;
-    grid-column: span 2; /* Full width */
+    text-align: center;
+    grid-column: span 2; /* Full width button */
 }
 
 .confirm-booking:hover {
@@ -99,7 +128,11 @@ p {
 }
 
 /* Responsive Adjustments */
-@media (max-width: 768px) {
+@media (max-width: 48rem) { /* 768px */
+    .booking-container {
+        max-width: 90%;
+        padding: 1.5rem; /* 24px */
+    }
     .booking-form {
         grid-template-columns: 1fr; /* Single column for mobile */
     }

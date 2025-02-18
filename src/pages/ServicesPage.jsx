@@ -7,7 +7,7 @@ import "../assets/styles/ServicesPage.css";
 
 const ServicesPage = () => {
   const navigate = useNavigate();
-
+  const [menuOpen, setMenuOpen] = useState(false); // ✅ Define menu state here
   const [selectedService, setSelectedService] = useState(null);
   const [roomBookingDates, setRoomBookingDates] = useState({ checkIn: null, checkOut: null });
   const [conferenceBookingDates, setConferenceBookingDates] = useState({ checkIn: null, checkOut: null });
@@ -42,10 +42,11 @@ const ServicesPage = () => {
 
   return (
     <div className="services-page">
-      <NavMenu />
-
-      {/* Booking Services Heading */}
-      <h1 className="booking-services-heading">Booking Services</h1>
+      {/* Move NavMenu to the very top */}
+      <div className="nav-container">
+        <NavMenu menuOpen={menuOpen} setMenuOpen={setMenuOpen} /> {/* ✅ Pass state */}
+        <h1 className="booking-services-heading">Booking Services</h1>
+      </div>
 
       <div className="services-grid">
         {/* Room Booking */}

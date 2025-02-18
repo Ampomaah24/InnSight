@@ -5,8 +5,11 @@
   }
   
   body, html {
+    margin: 0; 
+    padding: 0;
     width: 100%;
     height: 100%;
+    overflow-x: hidden; 
   }
   
   .croom-booking-container {
@@ -18,19 +21,19 @@
     height: 100vh;
     background-color: white; /* Light pink background */
     font-family: Arial, sans-serif;
-    padding-top: 80px; /* Push content down so it's not covered */
+    padding-top: 1.25rem; /* Push content down so it's not covered */
   }
   
   .title {
-    position: fixed;
-    top: 0;
+    position: relative;
     width: 100%;
     text-align: center;
-    font-size: 32px;
+    font-size: 2rem;
     font-weight: bold;
     background: white; /* Blend with background */
-    padding: 20px 0;
+    padding: 1.25rem 0;
     z-index: 100;
+    color: black;
   }
   
   .croom-content {
@@ -38,26 +41,26 @@
     align-items: center;
     justify-content: space-between;
     width: 80%;
-    max-width: 1200px;
-    gap: 30px;
+    max-width: 75rem;
+    gap: 1.875rem;
   }
   
   .croom-image img {
     width: 100%;
-    max-width: 500px;
+    max-width: 31.25rem;
     height: auto;
-    border-radius: 8px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    border-radius: 0.5rem;
+    box-shadow: 0 0.25rem 0.5rem rgba(0, 0, 0, 0.1);
   }
   
   .nav-button {
     background-color: transparent;
-    border: 2px solid transparent;
+    border: 0.125rem solid transparent; /* 2px */
     color: black;
-    border-radius: 30px;
-    width: 50px;
-    height: 50px;
-    font-size: 24px;
+    border-radius: 1.875rem; /* 30px */
+    width: 3.125rem; /* 50px */
+    height: 3.125rem; /* 50px */
+    font-size: 1.5rem; /* 24px */
     cursor: pointer;
     display: flex;
     align-items: center;
@@ -68,31 +71,61 @@
   .nav-button:hover {
     background-color: black;
     color: white;
-    border: 2px solid transparent;
   }
   
   .croom-details {
     flex: 1;
-    padding: 20px;
+    padding: 1.25rem; /* 20px */
     color: black;
   }
   
   .price {
-    font-size: 22px;
+    font-size: 1.375rem; /* 22px */
     font-weight: bold;
-    margin-bottom: 10px;
+    margin-bottom: 0.625rem; /* 10px */
     color: black;
   }
   
   ul {
     list-style-type: disc;
-    padding-left: 20px;
+    padding-left: 1.25rem; /* 20px */
   }
   
   .croom-pagination {
-    margin-top: 15px;
-    font-size: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: fit-content;
+    background-color: #e0e0e0; /* Light gray background */
+    padding: 0.5rem 1.25rem; /* Adjust padding to enclose all text */
+    border-radius:0.5rem; /* Rounded corners */
+    font-size: 1.125rem;
     font-weight: bold;
     color: black;
+    margin-top: 0.625rem;
+    margin-left: auto;
+    margin-right: auto;
+    text-align: center;
+    gap: 0.3125rem;
   }
   
+  .book-now {
+    display: block;
+    margin-top: 1.25rem; /* 20px */
+    padding: 0.75rem 1.5rem; /* 12px 24px */
+    background-color: #007bff;
+    color: white;
+    font-size: 1.125rem; /* 18px */
+    font-weight: bold;
+    border: none;
+    border-radius: 0.5rem; /* 8px */
+    cursor: pointer;
+    transition: 0.3s ease-in-out;
+    text-align: center;
+    width: 100%;
+    max-width: 12.5rem; /* 200px */
+  }
+  
+  .book-now:hover {
+    background-color: #0056b3;
+  }

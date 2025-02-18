@@ -9,15 +9,12 @@ body, html {
     display: flex;
     justify-content: center;
     align-items: center;
-    
-
 }
 
-/*background: url("src/assets/images/IMG_0123.JPG") no-repeat center center; */
 /* Centered Login Container */
 .login-container {
     width: 100%;
-    max-width: 450px;
+    max-width: 28.125rem; /* 450px */
     text-align: center;
 }
 
@@ -26,20 +23,20 @@ body, html {
     display: flex;
     flex-direction: column;
     align-items: center;
-    margin-bottom: 10px;
+    margin-bottom: 0.625rem; /* 10px */
 }
 
 /* Profile Icon (for user image) */
 .profile-icon {
     background: #ffffff;
-    width: 100px;
-    height: 100px;
+    width: 6.25rem; /* 100px */
+    height: 6.25rem; /* 100px */
     border-radius: 50%;
     display: flex;
     justify-content: center;
     align-items: center;
-    margin-bottom: 10px;
-    border: 3px solid rgba(255, 255, 255, 0.5);
+    margin-bottom: 0.625rem; /* 10px */
+    border: 0.1875rem solid rgba(255, 255, 255, 0.5); /* 3px */
     overflow: hidden;
 }
 
@@ -52,20 +49,19 @@ body, html {
 
 /* Welcome Text */
 .welcome-text {
-    font-size: 28px;
+    font-size: 1.75rem; /* 28px */
     font-weight: bold;
     color: black;
-    margin-bottom: 20px;
+    margin-bottom: 1.25rem; /* 20px */
 }
 
 /* Login Box */
 .login-box {
     background: rgba(255, 255, 255, 0.9);
-    padding: 80px;
-    border-radius: 15px;
-    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    padding: 5rem; /* 80px */
+    border-radius: 0.9375rem; /* 15px */
+    box-shadow: 0 0.3125rem 0.9375rem rgba(0, 0, 0, 0.1); /* 5px 15px */
     width: 100%;
-    
 }
 
 /* Input Fields */
@@ -73,10 +69,10 @@ body, html {
     display: flex;
     align-items: center;
     background: #fff;
-    margin-bottom: 15px;
-    padding: 14px;
-    border-radius: 8px;
-    border: 1px solid #ccc;
+    margin-bottom: 0.9375rem; /* 15px */
+    padding: 0.875rem; /* 14px */
+    border-radius: 0.5rem; /* 8px */
+    border: 0.0625rem solid #ccc; /* 1px */
     transition: 0.3s ease-in-out;
     position: relative;
 }
@@ -84,17 +80,17 @@ body, html {
 /* Input Icons */
 .input-icon {
     color: #666;
-    font-size: 16px;
-    margin-right: 10px;
+    font-size: 1rem; /* 16px */
+    margin-right: 0.625rem; /* 10px */
 }
 
 /* Toggle Password Visibility */
 .toggle-password {
     position: absolute;
-    right: 12px;
+    right: 0.75rem; /* 12px */
     cursor: pointer;
     color: #666;
-    font-size: 16px;
+    font-size: 1rem; /* 16px */
 }
 
 /* Input Fields */
@@ -102,7 +98,7 @@ body, html {
     border: none;
     outline: none;
     flex: 1;
-    font-size: 16px;
+    font-size: 1rem; /* 16px */
     background: transparent;
 }
 
@@ -110,8 +106,8 @@ body, html {
 .options {
     display: flex;
     justify-content: space-between;
-    font-size: 14px;
-    margin: 15px 0;
+    font-size: 0.875rem; /* 14px */
+    margin: 0.9375rem 0; /* 15px */
 }
 
 /* Fix Remember Me Text Visibility */
@@ -137,9 +133,9 @@ body, html {
     background: #000;
     color: #fff;
     border: none;
-    padding: 16px;
-    border-radius: 8px;
-    font-size: 20px;
+    padding: 1rem; /* 16px */
+    border-radius: 0.5rem; /* 8px */
+    font-size: 1.25rem; /* 20px */
     cursor: pointer;
     font-weight: bold;
     transition: 0.3s ease-in-out;
