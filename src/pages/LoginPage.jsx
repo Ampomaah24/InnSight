@@ -1,8 +1,9 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { FaUser, FaLock, FaEye, FaEyeSlash } from "react-icons/fa";
-import { signInWithEmailAndPassword } from "firebase/auth"; // Import Firebase auth
-import { auth } from "../config/firebase"; // Import auth instance
-import { useNavigate } from "react-router-dom"; // For navigation
+import { signInWithEmailAndPassword } from "firebase/auth";
+import { auth, db } from "../config/firebase"; // Import Firestore
+import { doc, getDoc } from "firebase/firestore"; // Import Firestore methods
+import { useNavigate } from "react-router-dom";
 import "../assets/styles/LoginPage.css";
 
 const LoginPage = () => {
@@ -15,9 +16,23 @@ const LoginPage = () => {
   const handleLogin = async (e) => {
     e.preventDefault();
     try {
-      await signInWithEmailAndPassword(auth, email, password);
-      console.log("User logged in:", email);
-      navigate("/services"); // Redirect to dashboard after successful login
+      const userCredential = await signInWithEmailAndPassword(auth, email, password);
+      const user = userCredential.user;
+
+      // ✅ Fetch user role from Firestore
+      const userDoc = await getDoc(doc(db, "users", user.uid));
+      if (userDoc.exists()) {
+        const userData = userDoc.data();
+        console.log("User role:", userData.role);
+
+        if (userData.role === "admin") {
+          navigate("/admin-dashboard"); // Redirect admin to admin page
+        } else {
+          navigate("/services"); // Redirect normal users
+        }
+      } else {
+        console.log("No user role found.");
+      }
     } catch (err) {
       setError("Invalid email or password. Please try again.");
     }

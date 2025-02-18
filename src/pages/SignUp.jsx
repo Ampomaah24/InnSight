@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { createUserWithEmailAndPassword } from "firebase/auth";
 import { setDoc, doc } from "firebase/firestore"; // Firestore functions
 import { auth, db } from "../config/firebase"; // Import Firestore
-import "../assets/styles/SignUp.css"
+import "../assets/styles/SignUp.css";
 
 export default function SignUp() {
   const [formData, setFormData] = useState({
@@ -32,16 +32,17 @@ export default function SignUp() {
       const userCredential = await createUserWithEmailAndPassword(auth, formData.email, formData.password);
       const user = userCredential.user;
 
-      // ✅ Save user data in Firestore
+      // ✅ Save user role in Firestore
       await setDoc(doc(db, "users", user.uid), {
         fullName: formData.fullName,
         email: formData.email,
         uid: user.uid,
+        role: "user",  // Default role is "user"
         createdAt: new Date(),
       });
 
       console.log("User registered and saved to Firestore:", user.email);
-      navigate("/");
+      navigate("/"); // Redirect to home page
     } catch (err) {
       setError("Error signing up. Please try again.");
     }
