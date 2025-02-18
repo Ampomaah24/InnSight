@@ -13,22 +13,40 @@ const BookingPage = () => {
     arrivalDate: "",
     arrivalTime: "",
     roomType: "Standard Room",
-    freePickup: "",
+    airportPickup: "No", // Default to No
+    paymentOption: "Full Payment", // Default to full payment
     specialRequests: "",
   });
 
   const [isSubmitted, setIsSubmitted] = useState(false);
+  const [depositWarning, setDepositWarning] = useState(false);
 
   const handleChange = (e) => {
     setFormData({
       ...formData,
       [e.target.name]: e.target.value,
     });
+
+    // Check if deposit option is selected
+    if (e.target.name === "paymentOption" && e.target.value === "Deposit for Reservation") {
+      setDepositWarning(true);
+    } else if (e.target.name === "paymentOption" && e.target.value === "Full Payment") {
+      setDepositWarning(false);
+    }
   };
 
   const handleSubmit = (e) => {
     e.preventDefault();
     setIsSubmitted(true);
+
+    // Show alert if deposit option is selected
+    if (formData.paymentOption === "Deposit for Reservation") {
+      setTimeout(() => {
+        alert(
+          "Reminder: You must complete the deposit within 24 hours, or the room will be given out."
+        );
+      }, 5000); // Simulated delay before showing alert
+    }
   };
 
   return (
@@ -95,19 +113,28 @@ const BookingPage = () => {
             </select>
           </div>
 
-          {/* Free Pickup (Radio Buttons) */}
+          {/* Airport Pickup (Radio Buttons) */}
           <div className="full-width">
-            <label>Free Pickup?</label>
+            <label>Airport Pickup</label>
             <div className="radio-group">
               <label>
-                <input type="radio" name="freePickup" value="Yes" onChange={handleChange} />
-                Yes, pick me up on arrival
+                <input type="radio" name="airportPickup" value="Yes" checked={formData.airportPickup === "Yes"} onChange={handleChange} />
+                Yes, I need an airport pickup
               </label>
               <label>
-                <input type="radio" name="freePickup" value="No" onChange={handleChange} />
-                No, I’ll make my own way
+                <input type="radio" name="airportPickup" value="No" checked={formData.airportPickup === "No"} onChange={handleChange} />
+                No, I’ll arrange my own transport
               </label>
             </div>
+          </div>
+
+          {/* Payment Option */}
+          <div className="full-width">
+            <label>Payment Option</label>
+            <select name="paymentOption" value={formData.paymentOption} onChange={handleChange}>
+              <option>Full Payment</option>
+              <option>Deposit for Reservation</option>
+            </select>
           </div>
 
           {/* Special Requests */}
@@ -121,6 +148,13 @@ const BookingPage = () => {
               placeholder="Any special requirements?"
             ></textarea>
           </div>
+
+          {/* Deposit Warning Message */}
+          {depositWarning && (
+            <p className="warning-text">
+              ⚠️ You must complete the deposit within 24 hours, or the room will be given out.
+            </p>
+          )}
 
           {/* Submit Button */}
           <button type="submit" className="confirm-booking">Complete Booking</button>
