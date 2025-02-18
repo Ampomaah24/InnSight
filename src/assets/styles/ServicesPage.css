@@ -10,11 +10,13 @@ body, html {
 
 /* Booking Services Heading */
 .booking-services-heading {
-    text-align: center;
-    font-size: 28px;
+    font-size: 1.75rem; /* 28px */
     font-weight: bold;
-    margin-bottom: 20px;
     color: #333;
+    margin: 3%; /* Remove bottom margin */
+    padding-left: 1rem; /* Add left spacing to separate from NavMenu */
+    margin-bottom: 0.5rem;
+    text-align: center;
 }
 
 /* Services Page Container */
@@ -24,6 +26,7 @@ body, html {
     margin: auto;
     padding: 40px;
     position: relative;
+
 }
 
 /* Services Grid */

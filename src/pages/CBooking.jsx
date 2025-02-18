@@ -1,6 +1,9 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom"; // Ensure you have React Router set up
 import "../assets/styles/CBooking.css";
+import NavMenu from "../components/NavMenu"; 
+
+
 
 const rooms = [
   {
@@ -41,6 +44,7 @@ const rooms = [
 
 const RoomBooking = () => {
   const [currentIndex, setCurrentIndex] = useState(0);
+  const [menuOpen, setMenuOpen] = useState(false); 
   const navigate = useNavigate(); // React Router navigation
 
   const prevRoom = () => {
@@ -59,6 +63,10 @@ const RoomBooking = () => {
 
   return (
     <div className="croom-booking-container">
+      
+      <div className="nav-container">
+        <NavMenu menuOpen={menuOpen} setMenuOpen={setMenuOpen} />
+      </div>
       {/* Back Button */}
       <button className="back-button" onClick={() => navigate("/")}>
         &#8592; Back
@@ -73,6 +81,9 @@ const RoomBooking = () => {
         </button>
         <div className="croom-image">
           <img src={currentRoom.image} alt="Room" />
+          <div className="croom-pagination">
+        {currentIndex + 1} of {rooms.length}
+      </div>
         </div>
         <button className="nav-button right" onClick={nextRoom}>
           &gt;
@@ -85,11 +96,11 @@ const RoomBooking = () => {
               <li key={index}>{item}</li>
             ))}
           </ul>
+
+          <button className="book-now" onClick={() => navigate("/book-room")}>Book Now</button>
         </div>
       </div>
-      <div className="croom-pagination">
-        {currentIndex + 1} of {rooms.length}
-      </div>
+
     </div>
   );
 };

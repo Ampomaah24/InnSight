@@ -9,8 +9,12 @@ const Homepage = () => {
 
   return (
     <div className="homepage">
-      <NavMenu menuOpen={menuOpen} setMenuOpen={setMenuOpen} /> 
-      <Link to="/login" className="login">Log In</Link>
+      {/* Navbar with Login Button inside */}
+      <div className="nav">
+  <NavMenu menuOpen={menuOpen} setMenuOpen={setMenuOpen} />
+  <Link to="/login" className="login">Log In</Link>
+</div>
+
 
       <div className="content">
         <h1>AMPOMAAH TOURIST HOTEL</h1>
