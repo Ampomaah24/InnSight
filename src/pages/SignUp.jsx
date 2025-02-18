@@ -1,6 +1,8 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom"; // Import useNavigate
-import "../assets/styles/SignUp.css"; // Import external CSS file
+import { useNavigate } from "react-router-dom";
+import { createUserWithEmailAndPassword } from "firebase/auth"; // Import Firebase auth
+import { auth } from "../config/firebase"; // Import auth instance
+import "../assets/styles/SignUp.css";
 
 export default function SignUp() {
   const [formData, setFormData] = useState({
@@ -10,40 +12,38 @@ export default function SignUp() {
     confirmPassword: "",
   });
 
-  const navigate = useNavigate(); // Initialize navigation
+  const [error, setError] = useState("");
+  const navigate = useNavigate();
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     
-    // Simulate form validation before redirecting
-    if (
-      formData.fullName &&
-      formData.email &&
-      formData.password &&
-      formData.password === formData.confirmPassword
-    ) {
-      console.log("Form submitted:", formData);
+    if (formData.password !== formData.confirmPassword) {
+      setError("Passwords do not match.");
+      return;
+    }
 
-      // Redirect to Services page
-      navigate("/services");
-    } else {
-      alert("Please fill out all fields and ensure passwords match.");
+    try {
+      await createUserWithEmailAndPassword(auth, formData.email, formData.password);
+      console.log("User signed up:", formData.email);
+      navigate("/services"); // Redirect after successful signup
+    } catch (err) {
+      setError("Error signing up. Please try again.");
     }
   };
 
   return (
     <div className="signup-container">
-      {/* Left Side with Background Image */}
       <div className="signup-image"></div>
 
-      {/* Right Side - Sign Up Form */}
       <div className="signup-form-container">
         <div className="signup-form">
           <h2 className="signup-title">Sign Up</h2>
+          {error && <p className="error-message">{error}</p>}
           <form onSubmit={handleSubmit} className="signup-form-fields">
             <div>
               <label className="signup-label">Full Name</label>

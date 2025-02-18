@@ -1,32 +1,40 @@
 import React, { useState } from "react";
-import { FaUser, FaLock, FaEye, FaEyeSlash } from "react-icons/fa"; // Added Eye Icons
-import "../assets/styles/LoginPage.css"; // Import the CSS file
+import { FaUser, FaLock, FaEye, FaEyeSlash } from "react-icons/fa";
+import { signInWithEmailAndPassword } from "firebase/auth"; // Import Firebase auth
+import { auth } from "../config/firebase"; // Import auth instance
+import { useNavigate } from "react-router-dom"; // For navigation
+import "../assets/styles/LoginPage.css";
 
 const LoginPage = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+  const [error, setError] = useState("");
+  const navigate = useNavigate();
 
-  const handleLogin = (e) => {
+  const handleLogin = async (e) => {
     e.preventDefault();
-    console.log("Logging in with:", email, password);
+    try {
+      await signInWithEmailAndPassword(auth, email, password);
+      console.log("User logged in:", email);
+      navigate("/room-booking"); // Redirect to dashboard after successful login
+    } catch (err) {
+      setError("Invalid email or password. Please try again.");
+    }
   };
 
   return (
     <div className="login-container">
-      {/* Profile Section */}
       <div className="profile-section">
         <div className="profile-icon">
-          {/* Placeholder for Profile Picture */}
           <img src="/images/profile-placeholder.png" alt="Profile" />
         </div>
         <h2 className="welcome-text">Welcome!</h2>
       </div>
 
-      {/* Login Box */}
       <div className="login-box">
         <form onSubmit={handleLogin}>
-          {/* Email Input */}
+          {error && <p className="error-message">{error}</p>}
           <div className="input-group">
             <span className="input-icon"><FaUser /></span>
             <input
@@ -38,7 +46,6 @@ const LoginPage = () => {
             />
           </div>
 
-          {/* Password Input with Toggle */}
           <div className="input-group">
             <span className="input-icon"><FaLock /></span>
             <input
@@ -48,13 +55,11 @@ const LoginPage = () => {
               onChange={(e) => setPassword(e.target.value)}
               required
             />
-            {/* Toggle Password Visibility */}
             <span className="toggle-password" onClick={() => setShowPassword(!showPassword)}>
               {showPassword ? <FaEyeSlash /> : <FaEye />}
             </span>
           </div>
 
-          {/* Remember Me & Forgot Password */}
           <div className="options">
             <label>
               <input type="checkbox" /> Remember me
@@ -62,7 +67,6 @@ const LoginPage = () => {
             <a href="#" className="forgot-password">Forgot Password?</a>
           </div>
 
-          {/* Sign-In Button */}
           <button type="submit" className="login-button">Sign In</button>
         </form>
       </div>
