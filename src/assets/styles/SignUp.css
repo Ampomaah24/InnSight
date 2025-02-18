@@ -1,111 +1,110 @@
 .signup-container {
-    display: flex;
-    height: 100vh;
-    width: 100%;
-  }
-  
-  /* Left side with full background image */
+  display: flex;
+  height: 100vh;
+  width: 100%;
+}
+
+/* Left side with full background image */
+.signup-image {
+  flex: 1;
+  background: url("src/assets/images/IMG_0123.JPG") no-repeat center center;
+  background-size: cover;
+  filter: brightness(80%);
+  height: 100vh;
+  width: 50vw; 
+}
+
+/* Force left image to occupy half */
+@media (min-width: 64rem) { /* 1024px */
   .signup-image {
-    flex: 1;
-    background: url("src/assets/images/IMG_0123.JPG") no-repeat center center;
-    background-size: cover;
-    filter: brightness(80%);
-    height: 100vh;
-    width: 50vw;
-  }
-  
-  /* Force left image to occupy half */
-  @media (min-width: 1024px) {
-    .signup-image {
       display: block;
       min-width: 50%;
-    }
   }
-  
-  /* Right side containing the form */
-  .signup-form-container {
-    flex: 1;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    padding: 2rem;
-    background-color: #fff;
-    width: 50vw;
-  }
-  
-  .signup-form {
-    width: 100%;
-    max-width: 400px;
-  }
-  
-  /* Title */
-  .signup-title {
-    font-size: 2rem;
-    font-weight: bold;
-    text-align: center;
-    color: #333;
-    margin-bottom: 1.5rem;
-  }
-  
-  /* Form structure */
-  .signup-form-fields {
-    display: flex;
-    flex-direction: column;
-    gap: 1.5rem;
-  }
-  
-  /* Labels */
-  .signup-label {
-    font-size: 1rem;
-    font-weight: 600;
-    color: #555;
-    display: block;
-    margin-bottom: 5px; /* Ensures alignment with the input */
-  }
-  
-  /* Input fields */
-  .signup-input {
-    width: 100%;
-    padding: 12px 0; /* Adjusted for perfect alignment */
-    border: none;
-    border-bottom: 2px solid #ccc;
-    font-size: 1rem;
-    outline: none;
-    background-color: transparent;
-    text-indent: 2px; /* Ensures placeholder alignment */
-    color: black;
-  }
-  
-  /* Ensure placeholders align with labels */
-  .signup-input::placeholder {
-    color: #999;
-    font-size: 1rem;
-    text-indent: 2px; /* Aligns placeholder with label */
-  }
-  
-  /* Fix input alignment */
-  .signup-input:focus {
-    border-bottom: 2px solid #007bff;
-  }
-  
-  /* Button */
-  .signup-button {
-    width: 30%; /* Reduced button width */
-    padding: 8px; /* Reduced padding */
-    background-color: #ddd;
-    color: #333;
-    font-size: 0.9rem; /* Reduced font size */
-    font-weight: bold;
-    border-radius: 20px;
-    cursor: pointer;
-    transition: background 0.3s ease-in-out;
-    margin: 15px auto 0;
-    display: block;
-    text-align: center;
-  }
-  
-  .signup-button:hover {
-    background-color: #bbb;
-    border: 1px solid transparent;
-  }
-  
+}
+
+/* Right side containing the form */
+.signup-form-container {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 2rem;
+  background-color: #fff;
+  width: 50vw;
+}
+
+.signup-form {
+  width: 100%;
+  max-width: 25rem; /* 400px */
+}
+
+/* Title */
+.signup-title {
+  font-size: 2rem;
+  font-weight: bold;
+  text-align: center;
+  color: #333;
+  margin-bottom: 1.5rem;
+}
+
+/* Form structure */
+.signup-form-fields {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+/* Labels */
+.signup-label {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #555;
+  display: block;
+  margin-bottom: 0.3125rem; /* 5px */
+}
+
+/* Input fields */
+.signup-input {
+  width: 100%;
+  padding: 0.75rem 0; /* 12px */
+  border: none;
+  border-bottom: 0.125rem solid #ccc; /* 2px */
+  font-size: 1rem;
+  outline: none;
+  background-color: transparent;
+  text-indent: 0.125rem; /* 2px */
+  color: black;
+}
+
+/* Ensure placeholders align with labels */
+.signup-input::placeholder {
+  color: #999;
+  font-size: 1rem;
+  text-indent: 0.125rem; /* 2px */
+}
+
+/* Fix input alignment */
+.signup-input:focus {
+  border-bottom: 0.125rem solid #007bff; /* 2px */
+}
+
+/* Button */
+.signup-button {
+  width: 30%; 
+  padding: 0.5rem; /* 8px */
+  background-color: #ddd;
+  color: #333;
+  font-size: 0.9rem;
+  font-weight: bold;
+  border-radius: 1.25rem; /* 20px */
+  cursor: pointer;
+  transition: background 0.3s ease-in-out;
+  margin: 0.9375rem auto 0; /* 15px */
+  display: block;
+  text-align: center;
+}
+
+.signup-button:hover {
+  background-color: #bbb;
+  border: 0.0625rem solid transparent; /* 1px */
+}
