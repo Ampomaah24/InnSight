@@ -1,93 +1,68 @@
-import React, { useState } from "react";
-import NavMenu from "../components/NavMenu"; // Import NavMenu
+import React, { useState, useEffect } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
+import { getAvailableRooms } from "../services/firebaseService";
+import NavMenu from "../components/NavMenu";
 import "../assets/styles/RoomBooking.css";
-import { useNavigate } from "react-router-dom"; // Add this at the top
-
-
-
-
-const rooms = [
-  {
-    id: 1,
-    image: "src/assets/images/IMG_0111.JPG", // Replace with actual image path
-    price: "GHS 600",
-    includes: [
-      "Access to 24hr Wifi",
-      "Access to in-room amenities",
-      "Breakfast, lunch and dinner",
-      "Free laundry services",
-    ],
-  },
-  {
-    id: 2,
-    image: "src/assets/images/pixelcut-export.jpeg",
-    price: "GHS 700",
-    includes: [
-      "Access to 24hr Wifi",
-      "Access to in-room amenities",
-      "Breakfast, lunch and dinner",
-      "Spa Access",
-    ],
-  },
-];
-
 
 const RoomBooking = () => {
-  const navigate = useNavigate(); 
-  const [menuOpen, setMenuOpen] = useState(false); 
+  const navigate = useNavigate();
+  const location = useLocation();
+  const [rooms, setRooms] = useState([]);
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [currentIndex, setCurrentIndex] = useState(0);
 
-  const prevRoom = () => {
-    setCurrentIndex((prevIndex) =>
-      prevIndex === 0 ? rooms.length - 1 : prevIndex - 1
-    );
-  };
+  // Extract URL parameters
+  const params = new URLSearchParams(location.search);
+  const checkIn = params.get("checkIn");
+  const checkOut = params.get("checkOut");
+  const roomType = params.get("roomType");
 
-  const nextRoom = () => {
-    setCurrentIndex((prevIndex) =>
-      prevIndex === rooms.length - 1 ? 0 : prevIndex + 1
-    );
-  };
+  useEffect(() => {
+    if (!checkIn || !checkOut || !roomType) {
+      console.error("Missing query parameters for fetching rooms");
+      setLoading(false);
+      return;
+    }
+
+    getAvailableRooms(checkIn, checkOut, roomType)
+      .then((data) => {
+        console.log("Filtered Available Rooms:", data);
+        setRooms(data);
+        setLoading(false);
+      })
+      .catch((error) => {
+        console.error("Error fetching available rooms", error);
+        setLoading(false);
+      });
+  }, [checkIn, checkOut, roomType]);
+
+  if (loading) return <p>Loading available rooms...</p>;
+  if (rooms.length === 0) return <p>No available rooms at the moment.</p>;
+
+  const prevRoom = () => setCurrentIndex((prevIndex) => (prevIndex === 0 ? rooms.length - 1 : prevIndex - 1));
+  const nextRoom = () => setCurrentIndex((prevIndex) => (prevIndex === rooms.length - 1 ? 0 : prevIndex + 1));
 
   const currentRoom = rooms[currentIndex];
 
   return (
     <div className="room-booking-container">
-      <div className="nav-container">
-        <NavMenu menuOpen={menuOpen} setMenuOpen={setMenuOpen} />
-      </div>
-
-      <h2 className="title">Available Rooms</h2>
+      <NavMenu menuOpen={menuOpen} setMenuOpen={setMenuOpen} />
+      <h2>Available Rooms</h2>
 
       <div className="room-content">
-        <button className="nav-button left" onClick={prevRoom}>
-          &lt;
-        </button>
-
-        <div className="room-image">
+        <button onClick={prevRoom}>&lt;</button>
+        <div>
           <img src={currentRoom.image} alt="Room" />
-          <div className="room-pagination">
-            <span>{currentIndex + 1}</span>
-            <span>of</span>
-            <span>{rooms.length}</span>
-          </div>
+          <div>{currentIndex + 1} of {rooms.length}</div>
         </div>
+        <button onClick={nextRoom}>&gt;</button>
 
-        <button className="nav-button right" onClick={nextRoom}>
-          &gt;
-        </button>
-
-        <div className="room-details">
-          <h3 className="price">Price: {currentRoom.price}</h3>
+        <div>
+          <h3>Price: GHS {currentRoom.price}</h3>
           <h4>Includes:</h4>
-          <ul>
-            {currentRoom.includes.map((item, index) => (
-              <li key={index}>{item}</li>
-            ))}
-          </ul>
-          
-          {/* Book Now Button */}
-          <button className="book-now" onClick={() => navigate("/book-room")}>Book Now</button>
+          <ul>{currentRoom.amenities.map((item, index) => <li key={index}>{item}</li>)}</ul>
+          <button onClick={() => navigate(`/book-room?roomId=${currentRoom.id}`)}>Book Now</button>
         </div>
       </div>
     </div>
