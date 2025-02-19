@@ -1,77 +1,75 @@
 /* Navbar Container */
 .navbar {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    background: white;
-    border-radius: 12px;
-    width: 1200px;
-  }
-  
-  /* Left Side - Brand Name */
-  .navbar-left .brand-name {
-    font-size: 20px;
-    font-weight: bold;
-    color: black;
-    margin-left: -300%;
- 
-  }
-  
-  /* Center - Navigation Links */
-  .navbar-center {
-    margin-right: -40%;
-  }
-  .navbar-center ul {
-    list-style: none;
-    display: flex;
-    gap: 20px;
-  }
-  
-  .navbar-center ul li {
-    font-size: 16px;
-    font-weight: 500;
-  }
-  
-  .navbar-center ul li a {
-    text-decoration: none;
-    color: black;
-    transition: color 0.3s ease;
-  }
-  
-  .navbar-center ul li a:hover {
-    color: #2563eb;
-  }
-  
-  /* Right Side - Icons */
-  .navbar-right {
-    display: flex;
-    align-items: center;
-    gap: 16px;
-  }
-  
-  .icon {
-    font-size: 18px;
-    cursor: pointer;
-    color: gray;
-    transition: color 0.3s ease;
-  }
-  
-  .icon:hover {
-    color: black;
-  }
-  
-  /* Profile Icon */
-  .profile-icon {
-    height: 28px;
-    width: 30px;
-    margin-bottom: -1%;
-    cursor: pointer;
-    color: gray;
-    transition: color 0.3s ease;
- 
-  }
-  
-  .profile-icon:hover {
-    color: black;
-  }
-  
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: white;
+  border-radius: 0.75rem; /* 12px -> 0.75rem */
+  width: 75rem; /* 1200px -> 75rem */
+}
+
+/* Left Side - Brand Name */
+.navbar-left .brand-name {
+  font-size: 1.25rem; /* 20px -> 1.25rem */
+  font-weight: bold;
+  color: black;
+  margin-left: -300%;
+}
+
+/* Center - Navigation Links */
+.navbar-center {
+  margin-right: -40%;
+}
+
+.navbar-center ul {
+  list-style: none;
+  display: flex;
+  gap: 1.25rem; /* 20px -> 1.25rem */
+}
+
+.navbar-center ul li {
+  font-size: 1rem; /* 16px -> 1rem */
+  font-weight: 500;
+}
+
+.navbar-center ul li a {
+  text-decoration: none;
+  color: black;
+  transition: color 0.3s ease;
+}
+
+.navbar-center ul li a:hover {
+  color: #2563eb;
+}
+
+/* Right Side - Icons */
+.navbar-right {
+  display: flex;
+  align-items: center;
+  gap: 1rem; /* 16px -> 1rem */
+}
+
+.icon {
+  font-size: 1.125rem; /* 18px -> 1.125rem */
+  cursor: pointer;
+  color: gray;
+  transition: color 0.3s ease;
+}
+
+.icon:hover {
+  color: black;
+}
+
+/* Profile Icon */
+.profile-icon {
+  height: 1.75rem; /* 28px -> 1.75rem */
+  width: 1.875rem; /* 30px -> 1.875rem */
+  margin-bottom: -1%;
+  cursor: pointer;
+  color: gray;
+  transition: color 0.3s ease;
+}
+
+.profile-icon:hover {
+  color: black;
+}
