@@ -150,9 +150,9 @@ const ServicesPage = () => {
             <select 
               value={conferenceBookingDetails.roomType} 
               onChange={(e) => setConferenceBookingDetails(prev => ({ ...prev, roomType: e.target.value }))}>
-              <option value="Big">Big</option>
-              <option value="Small">Small</option>
-              <option value="Long">Long</option>
+              <option value="big">Big</option>
+              <option value="small">Small</option>
+              <option value="long">Long</option>
             </select>
 
             <button className="learn-more" onClick={handleConferenceBooking}>Proceed to Conference Booking</button>

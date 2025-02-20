@@ -8,15 +8,18 @@ import "../assets/styles/CBooking.css";
 const ConferenceBooking = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const [conferenceRooms, setConferenceRooms] = useState([]);
+  const [conference_rooms, setConferenceRooms] = useState([]);
+  const [menuOpen, setMenuOpen] = useState(false);
   const [loading, setLoading] = useState(true);
   const [currentIndex, setCurrentIndex] = useState(0);
 
   // ✅ Extract URL parameters for filtering
   const params = new URLSearchParams(location.search);
-  const startDate = params.get("startDate") ? new Date(params.get("startDate")) : null;
-  const endDate = params.get("endDate") ? new Date(params.get("endDate")) : null;
-  const roomType = params.get("roomType") ? params.get("roomType").trim() : null;
+  const startDate = params.get("startDate") ? new Date(decodeURIComponent(params.get("startDate"))) : null;
+  const endDate = params.get("endDate") ? new Date(decodeURIComponent(params.get("endDate"))) : null;
+  const roomType = params.get("roomType") ? decodeURIComponent(params.get("roomType")).trim() : null;
+  
+  console.log("🔍 Extracted Query Params:", { startDate, endDate, roomType });
 
   useEffect(() => {
     if (!startDate || !endDate || !roomType) {
@@ -29,7 +32,7 @@ const ConferenceBooking = () => {
       try {
         console.log("📡 Fetching available conference rooms for:", { startDate, endDate, roomType });
 
-        const roomsCollection = collection(db, "conferenceRooms");
+        const roomsCollection = collection(db, "conference_rooms");
 
         // ✅ Query to filter rooms based on type and availability
         const q = query(
@@ -52,6 +55,7 @@ const ConferenceBooking = () => {
 
         querySnapshot.forEach((doc) => {
           let room = { id: doc.id, ...doc.data() };
+          console.log("🏨 Checking Room:", conference_rooms);
 
           // ✅ If there are no existing bookings, the room is available
           if (!room.bookings || room.bookings.length === 0) {
@@ -102,12 +106,12 @@ const ConferenceBooking = () => {
   }, [startDate, endDate, roomType]);
 
   if (loading) return <p>Loading available conference rooms...</p>;
-  if (conferenceRooms.length === 0) return <p>No available conference rooms at the moment.</p>;
+  if (conference_rooms.length === 0) return <p>No available conference rooms at the moment.</p>;
 
-  const prevRoom = () => setCurrentIndex((prevIndex) => (prevIndex === 0 ? conferenceRooms.length - 1 : prevIndex - 1));
-  const nextRoom = () => setCurrentIndex((prevIndex) => (prevIndex === conferenceRooms.length - 1 ? 0 : prevIndex + 1));
+  const prevRoom = () => setCurrentIndex((prevIndex) => (prevIndex === 0 ? conference_rooms.length - 1 : prevIndex - 1));
+  const nextRoom = () => setCurrentIndex((prevIndex) => (prevIndex === conference_rooms.length - 1 ? 0 : prevIndex + 1));
 
-  const currentRoom = conferenceRooms[currentIndex];
+  const currentRoom = conference_rooms[currentIndex];
 
   return (
     <div className="croom-booking-container">
@@ -128,7 +132,7 @@ const ConferenceBooking = () => {
         <div className="croom-image">
           <img src={currentRoom.image} alt="Room" />
           <div className="croom-pagination">
-            {currentIndex + 1} of {conferenceRooms.length}
+            {currentIndex + 1} of {conference_rooms.length}
           </div>
         </div>
         <button className="nav-button right" onClick={nextRoom}>
