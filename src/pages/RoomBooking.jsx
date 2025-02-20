@@ -132,7 +132,23 @@ const RoomBooking = () => {
           <h3>Price: GHS {currentRoom.price}</h3>
           <h4>Includes:</h4>
           <ul>{currentRoom.amenities.map((item, index) => <li key={index}>{item}</li>)}</ul>
-          <button className = "book-now" onClick={() => navigate(`/book-room?roomId=${currentRoom.id}`)}>Book Now</button>
+          <button className="book-now" onClick={() => {
+            // console.log("🏨 Selected Room Object:", currentRoom);
+            // console.log("🏷️ Room Type:", currentRoom?.roomType);
+        
+            // if (!currentRoom || !currentRoom.roomType) {
+            //   console.error("❌ Error: Room type is missing or undefined!");
+            //   return;
+            // }
+            // Ensure checkIn and checkOut are Date objects before calling .toISOString()
+            const checkInDate = checkIn ? new Date(checkIn).toISOString() : "";
+            const checkOutDate = checkOut ? new Date(checkOut).toISOString() : "";
+            const roomType = encodeURIComponent(currentRoom.t_room);
+            navigate(`/book-room?roomType=${roomType}&checkIn=${encodeURIComponent(checkInDate)}&checkOut=${encodeURIComponent(checkOutDate)}`);
+          }}>
+            Book Now
+          </button>
+
         </div>
       </div>
     </div>

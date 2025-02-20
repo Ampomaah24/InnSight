@@ -1,8 +1,8 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { getAuth } from "firebase/auth";
 import { db } from "../config/firebase";
-import { collection, addDoc } from "firebase/firestore";
+import { collection, addDoc, getDocs, query, where } from "firebase/firestore";
 import "../assets/styles/BookingPage.css";
 
 const BookingPage = () => {
@@ -10,43 +10,145 @@ const BookingPage = () => {
   const location = useLocation();
   const auth = getAuth();
 
-  // Extract booking details from URL params
+  // Extract roomType from URL params
   const params = new URLSearchParams(location.search);
-  const roomId = params.get("roomId");
-  const checkIn = params.get("checkIn");
-  const checkOut = params.get("checkOut");
+  const roomType = params.get("roomType");
+  const checkInParam = params.get("checkIn");
+  const checkOutParam = params.get("checkOut");
 
+  const checkIn = checkInParam ? new Date(decodeURIComponent(checkInParam)) : null;
+  const checkOut = checkOutParam ? new Date(decodeURIComponent(checkOutParam)) : null;
+
+  // State to store fetched booking details
+  const [roomPrice, setRoomPrice] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+
+  // State for form data (Auto-filled fields: roomType, checkIn, checkOut, price)
   const [formData, setFormData] = useState({
     firstName: "",
     lastName: "",
     email: "",
     phone: "",
     numberOfGuests: "",
-    roomType: "Standard Room",
-    airportPickup: "No",
-    paymentOption: "Full Payment",
+    roomType: roomType || "", // Auto-filled
+    checkIn: "", // Format to YYYY-MM-DD
+    checkOut: "", // Format to YYYY-MM-DD
+    airportPickup: "No", // Default
+    paymentOption: "Full Payment", // Default
     specialRequests: "",
   });
 
-  const [isSubmitted, setIsSubmitted] = useState(false);
-  const [depositWarning, setDepositWarning] = useState(false);
+  
+
+  useEffect(() => {
+    if (!roomType) {
+      console.error("❌ No room type provided in URL parameters.");
+      setLoading(false);
+      return;
+    }
+
+    const fetchBookingDetails = async () => {
+      try {
+        console.log("📡 Fetching booking details for room type:", roomType);
+
+        // Check in `roomBookings`
+        const roomBookingQuery = query(
+          collection(db, "roomBookings"),
+          where("roomType", "==", roomType)
+        );
+
+        const conferenceBookingQuery = query(
+          collection(db, "conferenceBookings"),
+          where("roomType", "==", roomType)
+        );
+
+        const roomBookingSnapshot = await getDocs(roomBookingQuery);
+        const conferenceBookingSnapshot = await getDocs(conferenceBookingQuery);
+
+        let booking = null;
+
+        if (!roomBookingSnapshot.empty) {
+          booking = roomBookingSnapshot.docs[0].data();
+        } else if (!conferenceBookingSnapshot.empty) {
+          booking = conferenceBookingSnapshot.docs[0].data();
+        }
+
+        if (!booking) {
+          console.warn("⚠️ No booking found for this room type.");
+          setLoading(false);
+          return;
+        }
+
+        console.log("✅ Booking details found:", booking);
+
+        // Auto-fill only check-in, check-out, and room type
+        setFormData((prev) => ({
+          ...prev,
+          roomType: booking.roomType,
+          checkIn: booking.checkIn,
+          checkOut: booking.checkOut,
+        }));
+
+        // Fetch room price based on room type
+        await fetchRoomPrice(booking.roomType);
+
+      } catch (error) {
+        console.error("❌ Error fetching booking details:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchBookingDetails();
+  }, [roomType]);
+
+  // Fetch room price based on room type
+  const fetchRoomPrice = async (roomType) => {
+    try {
+      console.log("📡 Fetching price for room type:", roomType);
+
+      const roomQuery = query(
+        collection(db, "rooms"),
+        where("t_room", "==", roomType)
+      );
+
+      const conferenceRoomQuery = query(
+        collection(db, "conference_rooms"),
+        where("type", "==", roomType)
+      );
+
+      const roomSnapshot = await getDocs(roomQuery);
+      const conferenceSnapshot = await getDocs(conferenceRoomQuery);
+
+      let price = null;
+
+      if (!roomSnapshot.empty) {
+        price = roomSnapshot.docs[0].data().price;
+      } else if (!conferenceSnapshot.empty) {
+        price = conferenceSnapshot.docs[0].data().price;
+      }
+
+      if (price !== null) {
+        console.log("💰 Room price found:", price);
+        setRoomPrice(price);
+      } else {
+        console.warn("⚠️ No price found for this room type.");
+      }
+    } catch (error) {
+      console.error("❌ Error fetching room price:", error);
+    }
+  };
 
   const handleChange = (e) => {
     setFormData({
       ...formData,
       [e.target.name]: e.target.value,
     });
-
-    if (e.target.name === "paymentOption" && e.target.value === "Deposit for Reservation") {
-      setDepositWarning(true);
-    } else if (e.target.name === "paymentOption") {
-      setDepositWarning(false);
-    }
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setIsSubmitted(true);
 
     if (!auth.currentUser) {
       alert("Please log in to book a room.");
@@ -55,12 +157,10 @@ const BookingPage = () => {
     }
 
     try {
-      // Store booking in Firestore
       await addDoc(collection(db, "bookings"), {
-        userId: auth.currentUser.uid, // Store user ID
-        roomId, // Store room ID
-        checkIn,
-        checkOut,
+        userId: auth.currentUser.uid,
+        checkIn: formData.checkIn,
+        checkOut: formData.checkOut,
         firstName: formData.firstName,
         lastName: formData.lastName,
         email: formData.email,
@@ -81,106 +181,73 @@ const BookingPage = () => {
     }
   };
 
+  if (loading) return <p>Loading booking details...</p>;
+
   return (
     <div className="booking-container">
       <h2>Hotel Booking</h2>
       <p>Experience something new every moment.</p>
 
-      {isSubmitted ? (
-        <div className="success-message">
-          <h3>Booking Confirmed!</h3>
-          <p>Thank you, {formData.firstName}! Your room has been booked successfully.</p>
-          <button className="confirm-booking" onClick={() => navigate("/room-booking")}>
-            Back to Rooms
-          </button>
+      <form className="booking-form" onSubmit={handleSubmit}>
+        {/* Check-In Date */}
+        <div>
+          <label>Check-In Date</label>
+          <input type="date" name="checkIn" value={formData.checkIn} readOnly />
         </div>
-      ) : (
-        <form className="booking-form" onSubmit={handleSubmit}>
-          {/* First Name & Last Name */}
-          <div>
-            <label>First Name</label>
-            <input type="text" name="firstName" required value={formData.firstName} onChange={handleChange} placeholder="Enter your first name" />
-          </div>
 
-          <div>
-            <label>Last Name</label>
-            <input type="text" name="lastName" required value={formData.lastName} onChange={handleChange} placeholder="Enter your last name" />
-          </div>
+        {/* Check-Out Date */}
+        <div>
+          <label>Check-Out Date</label>
+          <input type="date" name="checkOut" value={formData.checkOut} readOnly />
+        </div>
 
-          {/* Email & Phone */}
-          <div>
-            <label>Email</label>
-            <input type="email" name="email" required value={formData.email} onChange={handleChange} placeholder="Enter your email" />
-          </div>
+        {/* Room Type */}
+        <div>
+          <label>Room Type</label>
+          <input type="text" name="roomType" value={formData.roomType} readOnly />
+        </div>
 
-          <div>
-            <label>Phone</label>
-            <input type="tel" name="phone" required value={formData.phone} onChange={handleChange} placeholder="Enter your phone number" />
-          </div>
+        {/* Price */}
+        <div>
+          <label>Price</label>
+          <input type="text" value={roomPrice ? `GHS ${roomPrice}` : "Not available"} readOnly />
+        </div>
 
-          {/* Number of Guests */}
-          <div>
-            <label>Number of Guests</label>
-            <input type="number" name="numberOfGuests" required value={formData.numberOfGuests} onChange={handleChange} placeholder="e.g., 2" />
-          </div>
+        {/* Number of Guests */}
+        <div>
+          <label>Number of Guests</label>
+          <input type="number" name="numberOfGuests" required value={formData.numberOfGuests} onChange={handleChange} placeholder="e.g., 2" />
+        </div>
 
-          {/* Room Type */}
-          <div className="full-width">
-            <label>Room Type</label>
-            <select name="roomType" value={formData.roomType} onChange={handleChange}>
-              <option>Standard Room</option>
-              <option>Deluxe Room</option>
-              <option>Executive Suite</option>
-            </select>
-          </div>
+        {/* Airport Pickup */}
+        <div>
+          <label>Airport Pickup</label>
+          <select name="airportPickup" value={formData.airportPickup} onChange={handleChange}>
+            <option value="No">No</option>
+            <option value="Yes">Yes</option>
+          </select>
+        </div>
 
-          {/* Airport Pickup */}
-          <div className="full-width">
-            <label>Airport Pickup</label>
-            <div className="radio-group">
-              <label>
-                <input type="radio" name="airportPickup" value="Yes" checked={formData.airportPickup === "Yes"} onChange={handleChange} />
-                Yes, I need an airport pickup
-              </label>
-              <label>
-                <input type="radio" name="airportPickup" value="No" checked={formData.airportPickup === "No"} onChange={handleChange} />
-                No, I’ll arrange my own transport
-              </label>
-            </div>
-          </div>
-
-          {/* Payment Option */}
-          <div className="full-width">
-            <label>Payment Option</label>
+        {/* Payment Option */}
+        <div className="full-width">
+          <label>Payment Option</label>
             <select name="paymentOption" value={formData.paymentOption} onChange={handleChange}>
               <option>Full Payment</option>
               <option>Deposit for Reservation</option>
             </select>
-          </div>
+        </div>
 
-          {/* Special Requests */}
-          <div className="full-width">
-            <label>Special Requests</label>
-            <textarea
-              name="specialRequests"
-              className="special-requests"
-              value={formData.specialRequests}
-              onChange={handleChange}
-              placeholder="Any special requirements?"
-            ></textarea>
-          </div>
+        {/* Special Requests */}
+        <div className="full-width">
+          <label>Special Requests</label>
+          <textarea name="specialRequests" value={formData.specialRequests} onChange={handleChange} placeholder="Any special requests?"></textarea>
+        </div>
 
-          {/* Deposit Warning Message */}
-          {depositWarning && (
-            <p className="warning-text">
-              ⚠️ You must complete the deposit within 24 hours, or the room will be given out.
-            </p>
-          )}
 
-          {/* Submit Button */}
-          <button type="submit" className="confirm-booking">Complete Booking</button>
-        </form>
-      )}
+
+        {/* Submit Button */}
+        <button type="submit" className="confirm-booking">Complete Booking</button>
+      </form>
     </div>
   );
 };
