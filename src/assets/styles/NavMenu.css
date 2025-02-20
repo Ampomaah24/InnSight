@@ -8,45 +8,41 @@
   background: white;
   padding: 0; /* Remove extra padding */
   z-index: 300; /* Ensure it's above other elements */
-
-  
 }
-
 
 /* Navigation Bar (Menu Only) */
 .nav {
   display: flex;
   align-items: center;
   margin-bottom: 3.5rem;
-
 }
 
 /* Menu Icon */
 .menu-icon {
-  font-size: 28px;
+  font-size: 1.75rem; /* 28px -> 1.75rem */
   cursor: pointer;
 }
 
 /* Dropdown Menu */
 .dropdown-menu {
   position: absolute;
-  top: 50px; /* Adjusted to prevent overlap */
+  top: 3.125rem; /* 50px -> 3.125rem */
   left: 0;
   background: white;
-  box-shadow: 0px 5px 10px rgba(0, 0, 0, 0.15);
-  border-radius: 10px;
+  box-shadow: 0px 0.3125rem 0.625rem rgba(0, 0, 0, 0.15); /* 5px 10px -> 0.3125rem 0.625rem */
+  border-radius: 0.625rem; /* 10px -> 0.625rem */
   display: flex;
   flex-direction: column;
-  width: 180px;
-  padding: 10px 0;
+  width: 11.25rem; /* 180px -> 11.25rem */
+  padding: 0.625rem 0; /* 10px -> 0.625rem */
 }
 
 /* Fix dropdown links */
 .dropdown-menu a {
-  padding: 14px 20px;
+  padding: 0.875rem 1.25rem; /* 14px 20px -> 0.875rem 1.25rem */
   text-decoration: none;
   color: black;
-  font-size: 16px;
+  font-size: 1rem; /* 16px -> 1rem */
   transition: 0.3s;
 }
 
@@ -59,9 +55,9 @@
   text-decoration: none;
   color: white;
   background: #007bff;
-  padding: 10px 15px;
-  border-radius: 5px;
-  font-size: 18px;
+  padding: 0.625rem 0.9375rem; /* 10px 15px -> 0.625rem 0.9375rem */
+  border-radius: 0.3125rem; /* 5px -> 0.3125rem */
+  font-size: 1.125rem; /* 18px -> 1.125rem */
   font-weight: bold;
   transition: 0.3s ease-in-out;
 }
@@ -70,9 +66,7 @@
   background: #0056b3;
 }
 
-
-
 /* Fix content being hidden behind navbar */
 .room-booking-container {
-  padding-top: 80px; /* Ensure room content isn't hidden behind NavMenu */
+  padding-top: 5rem; /* 80px -> 5rem */
 }
