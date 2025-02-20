@@ -18,6 +18,7 @@ const ConferenceBooking = () => {
   const startDate = params.get("startDate") ? new Date(decodeURIComponent(params.get("startDate"))) : null;
   const endDate = params.get("endDate") ? new Date(decodeURIComponent(params.get("endDate"))) : null;
   const roomType = params.get("roomType") ? decodeURIComponent(params.get("roomType")).trim() : null;
+
   
   console.log("🔍 Extracted Query Params:", { startDate, endDate, roomType });
 
@@ -37,14 +38,12 @@ const ConferenceBooking = () => {
         // ✅ Query to filter rooms based on type and availability
         const q = query(
           roomsCollection,
-          where("type", "==", roomType),
+          where("type", "==", roomType.trim()),  // ✅ Ensure only rooms of the selected type are fetched
           where("availability", "==", true)
         );
 
         const querySnapshot = await getDocs(q);
         let availableRooms = [];
-
-        console.log("🔥 Firestore returned rooms:", querySnapshot.docs.map(doc => doc.data()));
 
         if (querySnapshot.empty) {
           console.warn("⚠️ No available conference rooms found!");
@@ -55,7 +54,7 @@ const ConferenceBooking = () => {
 
         querySnapshot.forEach((doc) => {
           let room = { id: doc.id, ...doc.data() };
-          console.log("🏨 Checking Room:", conference_rooms);
+          console.log("🏨 Checking Room:", room);
 
           // ✅ If there are no existing bookings, the room is available
           if (!room.bookings || room.bookings.length === 0) {
@@ -64,21 +63,24 @@ const ConferenceBooking = () => {
             return;
           }
 
-          // ✅ Check if room is booked for the selected dates
+          // ✅ Convert selected startDate and endDate to YYYY-MM-DD format
           const selectedStartDate = new Date(startDate);
           const selectedEndDate = new Date(endDate);
 
+          // ✅ Check if room is booked for any date within the selected range
           const isBooked = room.bookings.some((booking) => {
             if (!booking.startDate || !booking.endDate) {
               console.warn("⚠️ Invalid booking entry:", booking);
               return false; // Skip invalid entries
             }
 
+            // Convert booked startDate and endDate to YYYY-MM-DD
             const bookedStart = new Date(booking.startDate);
             const bookedEnd = new Date(booking.endDate);
 
             console.log("📅 Comparing with booking:", { bookedStart, bookedEnd });
 
+            // ✅ Booking conflict occurs if the selected range overlaps with any existing booking
             return (
               selectedStartDate <= bookedEnd && selectedEndDate >= bookedStart
             );
@@ -116,12 +118,8 @@ const ConferenceBooking = () => {
   return (
     <div className="croom-booking-container">
       <div className="nav-container">
-        <NavMenu />
+        <NavMenu menuOpen={menuOpen} setMenuOpen={setMenuOpen}/>
       </div>
-      {/* Back Button */}
-      <button className="back-button" onClick={() => navigate("/")}>
-        &#8592; Back
-      </button>
 
       <h2 className="title">Conference Rooms Available</h2>
 
