@@ -1,7 +1,7 @@
 /* General Styling */
 .booking-container {
     max-width: 56.25rem; /* 900px */
-    width: 90%;
+    width: 100%;
     margin: 3.125rem auto; /* 50px */
     padding: 2.5rem; /* 40px */
     background: white;
@@ -118,7 +118,7 @@ p {
     border-radius: 0.5rem; /* 8px */
     cursor: pointer;
     transition: 0.3s ease-in-out;
-    width: 100%;
+    width: 90%;
     text-align: center;
     grid-column: span 2; /* Full width button */
 }
