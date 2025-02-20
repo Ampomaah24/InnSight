@@ -1,78 +1,124 @@
-import React, { useState } from "react";
-import { useNavigate } from "react-router-dom"; // Ensure you have React Router set up
+import React, { useState, useEffect } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
+import { db } from "../config/firebase";
+import { collection, getDocs, query, where } from "firebase/firestore";
+import NavMenu from "../components/NavMenu";
 import "../assets/styles/CBooking.css";
-import NavMenu from "../components/NavMenu"; 
 
-
-
-const rooms = [
-  {
-    id: 1,
-    image: "src/assets/images/IMG_0111.JPG", // Replace with actual image path
-    price: "GHS 600",
-    includes: [
-      "Access to 24hr Wifi",
-      "Access to in-room amenities",
-      "Breakfast, lunch and dinner",
-      "Free laundry services",
-    ],
-  },
-  {
-    id: 2,
-    image: "src/assets/images/pixelcut-export.jpeg",
-    price: "GHS 700",
-    includes: [
-      "Access to 24hr Wifi",
-      "Access to in-room amenities",
-      "Breakfast, lunch and dinner",
-      "Spa Access",
-    ],
-  },
-  {
-    id: 3,
-    image: "src/assets/images/pixelcut-export.jpeg",
-    price: "GHS 800",
-    includes: [
-      "Access to 24hr Wifi",
-      "Access to in-room amenities",
-      "Breakfast, lunch and dinner",
-      "Spa Access",
-    ],
-  },
-  // Add more room objects as needed
-];
-
-const RoomBooking = () => {
+const ConferenceBooking = () => {
+  const navigate = useNavigate();
+  const location = useLocation();
+  const [conferenceRooms, setConferenceRooms] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [menuOpen, setMenuOpen] = useState(false); 
-  const navigate = useNavigate(); // React Router navigation
 
-  const prevRoom = () => {
-    setCurrentIndex((prevIndex) =>
-      prevIndex === 0 ? rooms.length - 1 : prevIndex - 1
-    );
-  };
+  // ✅ Extract URL parameters for filtering
+  const params = new URLSearchParams(location.search);
+  const startDate = params.get("startDate") ? new Date(params.get("startDate")) : null;
+  const endDate = params.get("endDate") ? new Date(params.get("endDate")) : null;
+  const roomType = params.get("roomType") ? params.get("roomType").trim() : null;
 
-  const nextRoom = () => {
-    setCurrentIndex((prevIndex) =>
-      prevIndex === rooms.length - 1 ? 0 : prevIndex + 1
-    );
-  };
+  useEffect(() => {
+    if (!startDate || !endDate || !roomType) {
+      console.error("❌ Missing query parameters for fetching conference rooms");
+      setLoading(false);
+      return;
+    }
 
-  const currentRoom = rooms[currentIndex];
+    const fetchAvailableConferenceRooms = async () => {
+      try {
+        console.log("📡 Fetching available conference rooms for:", { startDate, endDate, roomType });
+
+        const roomsCollection = collection(db, "conferenceRooms");
+
+        // ✅ Query to filter rooms based on type and availability
+        const q = query(
+          roomsCollection,
+          where("type", "==", roomType),
+          where("availability", "==", true)
+        );
+
+        const querySnapshot = await getDocs(q);
+        let availableRooms = [];
+
+        console.log("🔥 Firestore returned rooms:", querySnapshot.docs.map(doc => doc.data()));
+
+        if (querySnapshot.empty) {
+          console.warn("⚠️ No available conference rooms found!");
+          setConferenceRooms([]);
+          setLoading(false);
+          return;
+        }
+
+        querySnapshot.forEach((doc) => {
+          let room = { id: doc.id, ...doc.data() };
+
+          // ✅ If there are no existing bookings, the room is available
+          if (!room.bookings || room.bookings.length === 0) {
+            console.log("✅ Room is available:", room);
+            availableRooms.push(room);
+            return;
+          }
+
+          // ✅ Check if room is booked for the selected dates
+          const selectedStartDate = new Date(startDate);
+          const selectedEndDate = new Date(endDate);
+
+          const isBooked = room.bookings.some((booking) => {
+            if (!booking.startDate || !booking.endDate) {
+              console.warn("⚠️ Invalid booking entry:", booking);
+              return false; // Skip invalid entries
+            }
+
+            const bookedStart = new Date(booking.startDate);
+            const bookedEnd = new Date(booking.endDate);
+
+            console.log("📅 Comparing with booking:", { bookedStart, bookedEnd });
+
+            return (
+              selectedStartDate <= bookedEnd && selectedEndDate >= bookedStart
+            );
+          });
+
+          if (!isBooked) {
+            console.log("✅ Room is available:", room);
+            availableRooms.push(room);
+          } else {
+            console.log("❌ Room is booked:", room);
+          }
+        });
+
+        console.log("🏠 Final Available Conference Rooms:", availableRooms);
+        setConferenceRooms(availableRooms);
+        setLoading(false);
+      } catch (error) {
+        console.error("❌ Error fetching available conference rooms:", error);
+        setConferenceRooms([]);
+        setLoading(false);
+      }
+    };
+
+    fetchAvailableConferenceRooms();
+  }, [startDate, endDate, roomType]);
+
+  if (loading) return <p>Loading available conference rooms...</p>;
+  if (conferenceRooms.length === 0) return <p>No available conference rooms at the moment.</p>;
+
+  const prevRoom = () => setCurrentIndex((prevIndex) => (prevIndex === 0 ? conferenceRooms.length - 1 : prevIndex - 1));
+  const nextRoom = () => setCurrentIndex((prevIndex) => (prevIndex === conferenceRooms.length - 1 ? 0 : prevIndex + 1));
+
+  const currentRoom = conferenceRooms[currentIndex];
 
   return (
     <div className="croom-booking-container">
-      
       <div className="nav-container">
-        <NavMenu menuOpen={menuOpen} setMenuOpen={setMenuOpen} />
+        <NavMenu />
       </div>
       {/* Back Button */}
       <button className="back-button" onClick={() => navigate("/")}>
         &#8592; Back
       </button>
 
-      {/* Title */}
       <h2 className="title">Conference Rooms Available</h2>
 
       <div className="croom-content">
@@ -82,28 +128,27 @@ const RoomBooking = () => {
         <div className="croom-image">
           <img src={currentRoom.image} alt="Room" />
           <div className="croom-pagination">
-        {currentIndex + 1} of {rooms.length}
-      </div>
+            {currentIndex + 1} of {conferenceRooms.length}
+          </div>
         </div>
         <button className="nav-button right" onClick={nextRoom}>
           &gt;
         </button>
+
         <div className="croom-details">
           <h3 className="price">Price: {currentRoom.price}</h3>
           <h4>Includes:</h4>
           <ul>
-            {currentRoom.includes.map((item, index) => (
+            {currentRoom.amenities.map((item, index) => (
               <li key={index}>{item}</li>
             ))}
           </ul>
 
-          <button className="book-now" onClick={() => navigate("/book-room")}>Book Now</button>
+          <button className="book-now" onClick={() => navigate(`/book-conference?roomId=${currentRoom.id}`)}>Book Now</button>
         </div>
       </div>
-
     </div>
   );
 };
 
-export default RoomBooking;
-
+export default ConferenceBooking;
