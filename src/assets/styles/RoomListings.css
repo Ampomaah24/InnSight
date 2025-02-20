@@ -8,35 +8,33 @@ body, html {
     display: flex;
     justify-content: center;
     align-items: center;
-   
 }
 
 /* Room Page Container */
 .rlistings-page {
     width: 100%;
     height: 100vh;
-    max-width: 1200px;
-    padding: 40px;
+    max-width: 75rem; /* 1200px -> 75rem */
+    padding: 2.5rem; /* 40px -> 2.5rem */
     background: white;
-    border-radius: 15px;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-    
+    border-radius: 0.9375rem; /* 15px -> 0.9375rem */
+    box-shadow: 0 0.25rem 0.625rem rgba(0, 0, 0, 0.1); /* 4px 10px -> 0.25rem 0.625rem */
 }
 
 /* Page Title */
 .page-title {
     text-align: center;
-    font-size: 28px;
+    font-size: 1.75rem; /* 28px -> 1.75rem */
     font-weight: bold;
     color: #b30000;
-    margin-bottom: 30px;
+    margin-bottom: 1.875rem; /* 30px -> 1.875rem */
 }
 
 /* Room List */
 .rlistings-list {
     display: flex;
     flex-direction: column;
-    gap: 20px;
+    gap: 1.25rem; /* 20px -> 1.25rem */
 }
 
 /* Room Card */
@@ -44,9 +42,9 @@ body, html {
     display: flex;
     align-items: center;
     background: #fff;
-    padding: 20px;
-    border-radius: 12px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    padding: 1.25rem; /* 20px -> 1.25rem */
+    border-radius: 0.75rem; /* 12px -> 0.75rem */
+    box-shadow: 0 0.25rem 0.5rem rgba(0, 0, 0, 0.1); /* 4px 8px -> 0.25rem 0.5rem */
     transition: transform 0.3s ease-in-out;
 }
 
@@ -57,29 +55,29 @@ body, html {
 /* Room Info */
 .rlistings-info {
     flex: 1;
-    padding: 20px;
+    padding: 1.25rem; /* 20px -> 1.25rem */
 }
 
 .rlistings-title {
-    font-size: 20px;
+    font-size: 1.25rem; /* 20px -> 1.25rem */
     font-weight: bold;
     color: #800000;
 }
 
 .rlistings-description {
-    font-size: 16px;
+    font-size: 1rem; /* 16px -> 1rem */
     color: #b30000;
-    margin: 10px 0;
+    margin: 0.625rem 0; /* 10px -> 0.625rem */
 }
 
 /* Learn More Button */
 .learn-more {
     background: #b30000;
     color: #fff;
-    padding: 10px 15px;
+    padding: 0.625rem 0.9375rem; /* 10px 15px -> 0.625rem 0.9375rem */
     border: none;
-    border-radius: 8px;
-    font-size: 14px;
+    border-radius: 0.5rem; /* 8px -> 0.5rem */
+    font-size: 0.875rem; /* 14px -> 0.875rem */
     cursor: pointer;
     transition: 0.3s;
 }
@@ -90,8 +88,8 @@ body, html {
 
 /* Room Image */
 .rlistings-image img {
-    width: 200px;
-    height: 120px;
-    border-radius: 10px;
+    width: 12.5rem; /* 200px -> 12.5rem */
+    height: 7.5rem; /* 120px -> 7.5rem */
+    border-radius: 0.625rem; /* 10px -> 0.625rem */
     object-fit: cover;
 }
