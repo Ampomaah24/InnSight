@@ -20,15 +20,16 @@ const ServicesPage = () => {
   });
 
   const [conferenceBookingDetails, setConferenceBookingDetails] = useState({
-    eventDate: null,
-    duration: "Half Day",
-    numAttendees: "",
+    startDate: null,
+    endDate: null,
+    roomType: "Big", // Default selection
   });
 
   const toggleDropdown = (service) => {
     setSelectedService(selectedService === service ? null : service);
   };
 
+  // ✅ Handles Room Booking Submission
   const handleRoomBooking = async () => {
     const { checkIn, checkOut, roomType } = roomBookingDetails;
   
@@ -38,22 +39,15 @@ const ServicesPage = () => {
     }
   
     try {
-      console.log("Attempting to save room booking to Firestore...");
-      console.log("Booking Details:", {
-        checkIn: checkIn.toISOString(),
-        checkOut: checkOut.toISOString(),
-        roomType: roomType,
-        createdAt: new Date().toISOString(),
-      });
-  
+      console.log("Saving room booking...");
       const docRef = await addDoc(collection(db, "roomBookings"), {
         checkIn: checkIn.toISOString(),
         checkOut: checkOut.toISOString(),
-        roomType: roomType,
+        roomType,
         createdAt: new Date().toISOString(),
       });
-  
-      console.log("Room booking saved with ID:", docRef.id);
+
+      console.log("Room booking saved:", docRef.id);
       alert("Room booking saved!");
       navigate(
         `/room-booking?checkIn=${checkIn.toISOString()}&checkOut=${checkOut.toISOString()}&roomType=${roomType}`
@@ -63,28 +57,29 @@ const ServicesPage = () => {
       alert(`Failed to save room booking: ${error.message}`);
     }
   };
-  
 
+  // ✅ Handles Conference Booking Submission
   const handleConferenceBooking = async () => {
-    const { eventDate, duration, numAttendees } = conferenceBookingDetails;
+    const { startDate, endDate, roomType } = conferenceBookingDetails;
 
-    if (!eventDate || !numAttendees) {
-      alert("Please select an event date and enter the number of attendees!");
+    if (!startDate || !endDate) {
+      alert("Please select a start date and end date!");
       return;
     }
 
     try {
-      console.log("Saving conference booking details to Firestore...");
-      await addDoc(collection(db, "conferenceBookings"), {
-        eventDate: eventDate.toISOString(),
-        duration: duration,
-        numAttendees: numAttendees,
+      console.log("Saving conference booking...");
+      const docRef = await addDoc(collection(db, "conferenceBookings"), {
+        startDate: startDate.toISOString(),
+        endDate: endDate.toISOString(),
+        roomType,
         createdAt: new Date().toISOString(),
       });
 
-      console.log("Conference booking details saved!");
+      console.log("Conference booking saved:", docRef.id);
+      alert("Conference booking saved!");
       navigate(
-        `/conference-booking?eventDate=${eventDate.toISOString()}&duration=${duration}&numAttendees=${numAttendees}`
+        `/conference-booking?startDate=${startDate.toISOString()}&endDate=${endDate.toISOString()}&roomType=${roomType}`
       );
     } catch (error) {
       console.error("Error saving conference booking:", error);
@@ -100,7 +95,7 @@ const ServicesPage = () => {
       </div>
 
       <div className="services-grid">
-        {/* Room Booking */}
+        {/* ✅ Room Booking */}
         <div className="service-item" onClick={() => toggleDropdown("room")}>
           <img src="src/assets/images/IMG_0111.JPG" alt="Room Booking" className="service-image" />
           <p className="service-title">Room Booking</p>
@@ -137,29 +132,28 @@ const ServicesPage = () => {
           <img src="src/assets/images/pixelcut-export.jpeg" alt="Conference Booking" className="service-image" />
           <p className="service-title">Conference Booking</p>
           <div className={`dropdown ${selectedService === "conference" ? "active" : ""}`} onClick={(e) => e.stopPropagation()}>
-            <label>Event Date:</label>
+            <label>Start Date:</label>
             <DatePicker 
-              selected={conferenceBookingDetails.eventDate} 
-              onChange={(date) => setConferenceBookingDetails(prev => ({ ...prev, eventDate: date }))}
+              selected={conferenceBookingDetails.startDate} 
+              onChange={(date) => setConferenceBookingDetails(prev => ({ ...prev, startDate: date }))}
               minDate={today} 
             />
 
-            <label>Duration:</label>
-            <select 
-              value={conferenceBookingDetails.duration} 
-              onChange={(e) => setConferenceBookingDetails(prev => ({ ...prev, duration: e.target.value }))}>
-              <option value="Half Day">Half Day</option>
-              <option value="Full Day">Full Day</option>
-            </select>
-
-            <label>Number of Attendees:</label>
-            <input 
-              type="number" 
-              min="1"
-              placeholder="Enter number of attendees"
-              value={conferenceBookingDetails.numAttendees}
-              onChange={(e) => setConferenceBookingDetails(prev => ({ ...prev, numAttendees: e.target.value }))}
+            <label>End Date:</label>
+            <DatePicker 
+              selected={conferenceBookingDetails.endDate} 
+              onChange={(date) => setConferenceBookingDetails(prev => ({ ...prev, endDate: date }))}
+              minDate={conferenceBookingDetails.startDate || today} 
             />
+
+            <label>Conference Room Type:</label>
+            <select 
+              value={conferenceBookingDetails.roomType} 
+              onChange={(e) => setConferenceBookingDetails(prev => ({ ...prev, roomType: e.target.value }))}>
+              <option value="Big">Big</option>
+              <option value="Small">Small</option>
+              <option value="Long">Long</option>
+            </select>
 
             <button className="learn-more" onClick={handleConferenceBooking}>Proceed to Conference Booking</button>
           </div>
