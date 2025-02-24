@@ -16,8 +16,8 @@ const BookingPage = () => {
   const checkInParam = params.get("checkIn");
   const checkOutParam = params.get("checkOut");
 
-  const checkIn = checkInParam ? new Date(decodeURIComponent(checkInParam)) : null;
-  const checkOut = checkOutParam ? new Date(decodeURIComponent(checkOutParam)) : null;
+  const checkIn = checkInParam ? new Date(decodeURIComponent(checkInParam)) : "";
+  const checkOut = checkOutParam ? new Date(decodeURIComponent(checkOutParam)) : "";
 
   // State to store fetched booking details
   const [roomPrice, setRoomPrice] = useState(null);
@@ -39,7 +39,23 @@ const BookingPage = () => {
     specialRequests: "",
   });
 
+  useEffect(() => {
+    setFormData(prev => {
+      const formattedCheckIn = checkIn ? new Date(checkIn).toISOString().split("T")[0] : "";
+      const formattedCheckOut = checkOut ? new Date(checkOut).toISOString().split("T")[0] : "";
   
+      // Only update state if the values are actually changing
+      if (prev.checkIn !== formattedCheckIn || prev.checkOut !== formattedCheckOut) {
+        return {
+          ...prev,
+          checkIn: formattedCheckIn,
+          checkOut: formattedCheckOut,
+        };
+      }
+      return prev;
+    });
+  }, [checkIn, checkOut]);
+    
 
   useEffect(() => {
     if (!roomType) {
