@@ -10,6 +10,18 @@
     font-family: "Poppins", sans-serif;
 }
 
+.booking-summary {
+    background: #f8f9fa;
+    padding: 1.5rem;
+    border-radius: 10px;
+    margin-bottom: 1.5rem;
+  }
+  .total-amount {
+    font-size: 1.2rem;
+    font-weight: bold;
+    color: #d9534f;
+    margin-top: 1rem;
+  }
 /* Form Heading */
 h2 {
     font-size: 2rem;
@@ -25,6 +37,13 @@ p {
     margin-bottom: 1.25rem; /* 20px */
 }
 
+.selected-rooms-dropdown select {
+    width: 100%;
+    padding: 0.75rem;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+    font-size: 1rem;
+  }
 /* Grid Layout to Make Form Wider */
 .booking-form {
     display: grid;
@@ -33,6 +52,8 @@ p {
     align-items: center;
 }
 
+
+  
 /* Full Width Elements (Dropdowns, Textareas, etc.) */
 .full-width {
     grid-column: span 2;

@@ -17,13 +17,13 @@ const ConferenceBooking = () => {
   const params = new URLSearchParams(location.search);
   const startDate = params.get("startDate") ? new Date(decodeURIComponent(params.get("startDate"))) : null;
   const endDate = params.get("endDate") ? new Date(decodeURIComponent(params.get("endDate"))) : null;
-  const roomType = params.get("roomType") ? decodeURIComponent(params.get("roomType")).trim() : null;
+  
 
   
-  console.log("🔍 Extracted Query Params:", { startDate, endDate, roomType });
+  console.log("🔍 Extracted Query Params:", { startDate, endDate });
 
   useEffect(() => {
-    if (!startDate || !endDate || !roomType) {
+    if (!startDate || !endDate ) {
       console.error("❌ Missing query parameters for fetching conference rooms");
       setLoading(false);
       return;
@@ -31,14 +31,14 @@ const ConferenceBooking = () => {
 
     const fetchAvailableConferenceRooms = async () => {
       try {
-        console.log("📡 Fetching available conference rooms for:", { startDate, endDate, roomType });
+        console.log("📡 Fetching available conference rooms for:", { startDate, endDate });
 
         const roomsCollection = collection(db, "conference_rooms");
 
         // ✅ Query to filter rooms based on type and availability
         const q = query(
           roomsCollection,
-          where("type", "==", roomType.trim()),  // ✅ Ensure only rooms of the selected type are fetched
+
           where("availability", "==", true)
         );
 
@@ -105,7 +105,7 @@ const ConferenceBooking = () => {
     };
 
     fetchAvailableConferenceRooms();
-  }, [startDate, endDate, roomType]);
+  }, [startDate, endDate]);
 
   if (loading) return <p>Loading available conference rooms...</p>;
   if (conference_rooms.length === 0) return <p>No available conference rooms at the moment.</p>;

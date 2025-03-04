@@ -1,180 +1,244 @@
-/* Global Reset */
+/* Reset */
 * {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
 }
 
+/* ✅ Fix Body to Prevent Scrolling */
 body, html {
-  margin: 0; 
-  padding: 0;
   width: 100%;
-  height: 100%;
-  overflow-x: hidden; /* Prevents horizontal scrolling issues */
+  height: 100vh; /* ✅ Set full viewport height */
+  
+  font-size: 16px;
 }
 
-.available-rooms-heading{
-      font-size: 1.75rem; /* 28px */
-    font-weight: bold;
-    color: #333;
-    margin: 3%; /* Remove bottom margin */
-    padding-left: 1rem; /* Add left spacing to separate from NavMenu */
-    margin-bottom: 0.5rem;
-    text-align: center;
+/* ✅ Navbar - Properly Positioned */
+.navbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: white;
+  width: 100%;
+  max-width: 90rem;
+  padding: 1rem 2rem;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  position: fixed; /* ✅ Keeps navbar in place */
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 1000;
+  height: 4rem;
 }
-/* 📌 Room Booking Page */
+
+/* ✅ Available Rooms Heading */
+.available-rooms-heading {
+  font-size: 2rem;
+  font-weight: bold;
+  color: #333;
+  text-align: center;
+  margin-top:4rem; /* Reduce space */
+}
+
+
+/* ✅ Main Container - Prevent Scroll Issues */
 .room-booking-container {
   display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    width: 100vw;
-    height: 100vh;
-    background-color: white; /* Light pink background */
-    font-family: Arial, sans-serif;
-    padding-top: 1.25rem; /* Push content down so it's not covered */
-  }
-  
-
-/* 📌 Title (Header) */
-.title {
-  position: relative;
-    width: 100%;
-    text-align: center;
-    font-size: 2rem;
-    font-weight: bold;
-    background: white; /* Blend with background */
-    padding: 1.25rem 0;
-    z-index: 100;
-    color: black;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  background-color: white;
+  font-family: Arial, sans-serif;
+  padding-top: 6rem; /* ✅ Ensures content starts below navbar */
+  height: calc(100vh - 6rem); /* ✅ Ensures content fits inside viewport */
 }
 
-/* 📌 Room Content Layout */
+/* ✅ Room Type Section */
+.room-type-section {
+  width: 95%;
+  max-width: 85rem;
+  padding: 2rem 0;
+  border-bottom: 2px solid #ddd;
+  margin-bottom: 2rem;
+}
+
+/* ✅ Room Content - Properly Spaced */
 .room-content {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  width: 80%;
-  max-width: 75rem;
-  gap: 1.875rem;
+  width: 100%;
+  max-width: 85rem;
+  gap: 10rem;
+  padding: 1.5rem 0;
 }
 
-/* 📌 Room Image Wrapper */
 .room-image {
+  flex: 1;
   width: 100%;
-  max-width: 31.25rem;
-  height: auto;
+  max-width: 30rem; /* Set a uniform width */
+  height: 40rem; /* Set a fixed height */
+  object-fit: cover; /* Ensure images maintain aspect ratio and fill the space */
   border-radius: 0.5rem;
   box-shadow: 0 0.25rem 0.5rem rgba(0, 0, 0, 0.1);
 }
 
-/* 📌 Room Image Styling */
-.room-image img {
-  width: 100%; /* Ensures it fits within container */
-  max-width: 400px; /* Limits maximum width */
-  height: auto; /* Maintains aspect ratio */
-  border-radius: 8px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-  object-fit: contain; /* Prevents cropping, scales properly */
-}
 
-/* 📌 Navigation Buttons */
+
 .nav-button {
-  background-color: transparent;
-  border: 0.125rem solid transparent; /* 2px */
-  color: black;
-  border-radius: 1.875rem; /* 30px */
-  width: 3.125rem; /* 50px */
-  height: 3.125rem; /* 50px */
-  font-size: 1.5rem; /* 24px */
-  cursor: pointer;
+  font-size: 2.5rem; /* Increase button size */
+  width: 50px;
+  height: 50px;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: 0.3s ease-in-out;
 }
 
 .nav-button:hover {
   background-color: black;
   color: white;
-  border: 0.125rem solid transparent;
+  border-radius: 50%;
+  padding: 0.5rem;
 }
 
-/* 📌 Room Details */
+
+/* ✅ Room Details */
 .room-details {
   flex: 1;
-  padding: 1.25rem; /* 20px */
+  max-width: 50%;
   color: black;
+  text-align: left;
+  font-size: 1.2rem;
+  line-height: 1.6;
 }
 
-/* 📌 Price Styling */
+/* ✅ Price Styling */
 .price {
-  font-size: 1.375rem; /* 22px */
+  font-size: 1.5rem;
   font-weight: bold;
-  margin-bottom: 0.625rem; /* 10px */
+  margin-bottom: 0.625rem;
   color: black;
 }
 
-/* 📌 Amenities List */
+/* ✅ Amenities List */
 ul {
   list-style-type: disc;
-  padding-left: 1.25rem; /* 20px */
- 
+  padding-left: 1.5rem;
 }
-
-/* 📌 Room Pagination */
 .room-pagination {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: fit-content;
-  background-color: #e0e0e0; /* Light gray background */
-  padding: 0.5rem 1.25rem; /* Adjust padding to enclose all text */
-  border-radius:0.5rem; /* Rounded corners */
-  font-size: 1.125rem;
+  background-color: #e0e0e0;
+  padding: 0.5rem 1.25rem;
+  border-radius: 0.5rem;
+  font-size: 1rem; /* Reduce text size */
   font-weight: bold;
   color: black;
+  
   margin-top: 0.625rem;
-  margin-left: auto;
-  margin-right: auto;
   text-align: center;
-  gap: 0.3125rem;
+  width: fit-content; /* Ensure it fits the content */
+  min-width: 80px; /* Keep it uniform */
+  text-align: center;
 }
 
-/* 📌 Book Now Button */
+
+/* ✅ Book Now Button */
 .book-now {
   display: block;
-  margin-top: 1.25rem; /* 20px */
-  padding: 0.75rem 1.5rem; /* 12px 24px */
+  margin-top: 1rem;
+  padding: 1rem 2rem;
   background-color: #007bff;
   color: white;
-  font-size: 1.125rem; /* 18px */
+  font-size: 1.25rem;
   font-weight: bold;
   border: none;
-  border-radius: 0.5rem; /* 8px */
+  border-radius: 0.5rem;
   cursor: pointer;
   transition: 0.3s ease-in-out;
   text-align: center;
   width: 100%;
-  max-width: 12.5rem; /* 200px */
+  max-width: 15rem;
 }
 
 .book-now:hover {
   background-color: #0056b3;
 }
 
+/* ✅ Select Room Button */
+.select-room {
+  display: block;
+  margin-top: 1rem;
+  padding: 1rem 2rem;
+  background-color: #007bff;
+  color: white;
+  font-size: 1.25rem;
+  font-weight: bold;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: 0.3s ease-in-out;
+  text-align: center;
+  width: 100%;
+  max-width: 15rem;
+}
+
+.select-room:hover {
+  background-color: #0056b3;
+}
+
+/* ✅ Selected Room Styling */
+.select-room.selected {
+  background-color: #28a745; /* Green when selected */
+}
+
+/* ✅ Proceed to Booking Button (Floating) */
+.proceed-booking {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  background-color: #ff6600;
+  color: white;
+  font-size: 1.25rem;
+  font-weight: bold;
+  padding: 1rem 2rem;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: 0.3s ease-in-out;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.proceed-booking:hover {
+  background-color: #e65c00;
+}
 /* 🔹 Mobile Optimization */
 @media (max-width: 768px) {
+  .navbar {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    height: auto;
+    padding: 1rem;
+  }
+
+  .available-rooms-heading {
+    margin-top: 5rem;
+  }
+
   .room-content {
     flex-direction: column;
     text-align: center;
+    gap: 2rem;
   }
 
   .room-image {
     width: 100%;
+    max-width: 100%;
   }
 
   .room-details {
+    width: 100%;
     text-align: center;
   }
 
