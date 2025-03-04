@@ -5,7 +5,10 @@
   align-items: center;
   background: white;
   border-radius: 0.75rem; /* 12px -> 0.75rem */
-  width: 75rem; /* 1200px -> 75rem */
+  width: 100%;
+  max-width: 75rem; /* Keep max width but allow flexibility */
+  padding: 1rem 2rem;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 /* Left Side - Brand Name */
@@ -13,18 +16,21 @@
   font-size: 1.25rem; /* 20px -> 1.25rem */
   font-weight: bold;
   color: black;
-  margin-left: -300%;
+  margin-left: 0; /* ✅ Remove the extreme -300% margin */
 }
 
 /* Center - Navigation Links */
 .navbar-center {
-  margin-right: -40%;
+  flex: 1; /* ✅ This centers it properly */
+  display: flex;
+  justify-content: center;
 }
 
 .navbar-center ul {
   list-style: none;
   display: flex;
   gap: 1.25rem; /* 20px -> 1.25rem */
+  padding: 0;
 }
 
 .navbar-center ul li {
@@ -49,6 +55,7 @@
   gap: 1rem; /* 16px -> 1rem */
 }
 
+/* Icons */
 .icon {
   font-size: 1.125rem; /* 18px -> 1.125rem */
   cursor: pointer;
@@ -64,7 +71,6 @@
 .profile-icon {
   height: 1.75rem; /* 28px -> 1.75rem */
   width: 1.875rem; /* 30px -> 1.875rem */
-  margin-bottom: -1%;
   cursor: pointer;
   color: gray;
   transition: color 0.3s ease;
@@ -72,4 +78,22 @@
 
 .profile-icon:hover {
   color: black;
+}
+
+/* 🔹 Mobile Optimization */
+@media (max-width: 768px) {
+  .navbar {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+  }
+
+  .navbar-center ul {
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  .navbar-right {
+    margin-top: 0.5rem;
+  }
 }

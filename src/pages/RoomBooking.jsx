@@ -11,18 +11,15 @@ const RoomBooking = () => {
   const [rooms, setRooms] = useState([]);
   const [menuOpen, setMenuOpen] = useState(false);
   const [loading, setLoading] = useState(true);
-  const [currentIndex, setCurrentIndex] = useState(0);
+  const [roomIndexes, setRoomIndexes] = useState({});
+  const [selectedRooms, setSelectedRooms] = useState([]); // Store selected rooms
 
-  // ✅ Extract URL parameters safely and log them
   const params = new URLSearchParams(location.search);
   const checkIn = params.get("checkIn") ? decodeURIComponent(params.get("checkIn")) : null;
   const checkOut = params.get("checkOut") ? decodeURIComponent(params.get("checkOut")) : null;
-  const roomType = params.get("roomType") ? decodeURIComponent(params.get("roomType")).trim() : null;
-
-  console.log("🔍 Extracted Query Params:", { checkIn, checkOut, roomType });
 
   useEffect(() => {
-    if (!checkIn || !checkOut || !roomType) {
+    if (!checkIn || !checkOut) {
       console.error("❌ Missing query parameters for fetching rooms");
       setLoading(false);
       return;
@@ -30,36 +27,18 @@ const RoomBooking = () => {
 
     const getAvailableRooms = async () => {
       try {
-        console.log("📡 Fetching available rooms for:", { checkIn, checkOut, roomType });
+        console.log("📡 Fetching available rooms for:", { checkIn, checkOut });
 
         const roomsCollection = collection(db, "rooms");
-
-        // ✅ Ensure `roomType` matches Firestore format exactly
-        const q = query(
-          roomsCollection,
-          where("t_room", "==", roomType.trim()),
-          where("availability", "==", true)
-        );
-
+        const q = query(roomsCollection, where("availability", "==", true));
         const querySnapshot = await getDocs(q);
         let availableRooms = [];
 
-        console.log("🔥 Firestore returned rooms:", querySnapshot.docs.map(doc => doc.data()));
-
-        if (querySnapshot.empty) {
-          console.warn("⚠️ No rooms found matching query parameters!");
-          setRooms([]);
-          setLoading(false);
-          return;
-        }
-
         querySnapshot.forEach((doc) => {
           let room = { id: doc.id, ...doc.data() };
-          console.log("🏨 Checking Room:", room);
 
-          // If there are no bookings, consider the room available
+          // If no bookings exist, the room is available
           if (!room.bookings || room.bookings.length === 0) {
-            console.log("✅ Room is available (no bookings):", room);
             availableRooms.push(room);
             return;
           }
@@ -68,34 +47,25 @@ const RoomBooking = () => {
           const selectedCheckIn = new Date(checkIn);
           const selectedCheckOut = new Date(checkOut);
 
-          // Check if the room is already booked for the selected period
           const isBooked = room.bookings.some((booking) => {
-            if (!booking.checkIn || !booking.checkOut) {
-              console.warn("⚠️ Invalid booking entry:", booking);
-              return false; // Skip invalid entries
-            }
-
+            if (!booking.checkIn || !booking.checkOut) return false;
             const bookedCheckIn = new Date(booking.checkIn);
             const bookedCheckOut = new Date(booking.checkOut);
-
-            console.log("📅 Comparing with booking:", { bookedCheckIn, bookedCheckOut });
-
-            return (
-              selectedCheckIn <= bookedCheckOut && selectedCheckOut >= bookedCheckIn
-            );
+            return selectedCheckIn <= bookedCheckOut && selectedCheckOut >= bookedCheckIn;
           });
 
-          if (!isBooked) {
-            console.log("✅ Room is available:", room);
-            availableRooms.push(room);
-          } else {
-            console.log("❌ Room is booked:", room);
-          }
+          if (!isBooked) availableRooms.push(room);
         });
 
         console.log("🏠 Final Available Rooms:", availableRooms);
         setRooms(availableRooms);
         setLoading(false);
+
+        const initialIndexes = {};
+        availableRooms.forEach((room) => {
+          if (!initialIndexes[room.t_room]) initialIndexes[room.t_room] = 0;
+        });
+        setRoomIndexes(initialIndexes);
       } catch (error) {
         console.error("❌ Error fetching available rooms:", error);
         setRooms([]);
@@ -104,46 +74,93 @@ const RoomBooking = () => {
     };
 
     getAvailableRooms();
-  }, [checkIn, checkOut, roomType]);
+  }, [checkIn, checkOut]);
 
   if (loading) return <p>Loading available rooms...</p>;
   if (rooms.length === 0) return <p>No available rooms at the moment.</p>;
 
-  const prevRoom = () => setCurrentIndex((prevIndex) => (prevIndex === 0 ? rooms.length - 1 : prevIndex - 1));
-  const nextRoom = () => setCurrentIndex((prevIndex) => (prevIndex === rooms.length - 1 ? 0 : prevIndex + 1));
+  // ✅ Group rooms by type
+  const groupedRooms = rooms.reduce((acc, room) => {
+    const type = room.t_room || "Other";
+    if (!acc[type]) acc[type] = [];
+    acc[type].push(room);
+    return acc;
+  }, {});
 
-  const currentRoom = rooms[currentIndex];
+  // ✅ Function to update the index when navigating rooms
+  const changeRoomIndex = (roomType, direction) => {
+    setRoomIndexes((prevIndexes) => {
+      const totalRooms = groupedRooms[roomType].length;
+      const currentIndex = prevIndexes[roomType];
+      let newIndex = direction === "next" ? (currentIndex + 1) % totalRooms : (currentIndex - 1 + totalRooms) % totalRooms;
+      return { ...prevIndexes, [roomType]: newIndex };
+    });
+  };
+
+  // ✅ Function to select/deselect a room
+  const toggleRoomSelection = (room) => {
+    setSelectedRooms((prevSelected) => {
+      const isSelected = prevSelected.some((r) => r.id === room.id);
+      return isSelected ? prevSelected.filter((r) => r.id !== room.id) : [...prevSelected, room];
+    });
+  };
 
   return (
     <div className="room-booking-container">
       <NavMenu menuOpen={menuOpen} setMenuOpen={setMenuOpen} />
       <h2 className="available-rooms-heading">Available Rooms</h2>
 
-      <div className="room-content">
-        <button className="nav-button left" onClick={prevRoom}>&lt;</button>
-        <div>
-          <img className="room-image" src={currentRoom.image} alt="Room" />
+      {Object.keys(groupedRooms).map((roomType) => {
+        const currentIndex = roomIndexes[roomType] || 0;
+        const currentRoom = groupedRooms[roomType][currentIndex];
 
-          <div className="room-pagination">{currentIndex + 1} of {rooms.length}</div>
-        </div>
-        <button className = "nav-button right" onClick={nextRoom}>&gt;</button>
+        return (
+          <div key={roomType} className="room-type-section">
+            <h3 className="room-type-title">{roomType}</h3>
+            <div className="room-content">
+              <button className="nav-button left" onClick={() => changeRoomIndex(roomType, "prev")}>
+                &lt;
+              </button>
 
-        <div className = "room-details">
-          <h3>Price: GHS {currentRoom.price}</h3>
-          <h4>Includes:</h4>
-          <ul>{currentRoom.amenities.map((item, index) => <li key={index}>{item}</li>)}</ul>
-          <button className="book-now" onClick={() => {
-            // Ensure checkIn and checkOut are Date objects before calling .toISOString()
-            const checkInDate = checkIn ? new Date(checkIn).toISOString().split("T")[0] : "";
-            const checkOutDate = checkOut ? new Date(checkOut).toISOString().split("T")[0] : "";
-            const roomType = encodeURIComponent(currentRoom.t_room);
-            navigate(`/book-room?roomType=${roomType}&checkIn=${encodeURIComponent(checkInDate)}&checkOut=${encodeURIComponent(checkOutDate)}`);
-          }}>
-            Book Now
-          </button>
+              <div className="room-image-container">
+                <img className="room-image" src={currentRoom.image} alt={currentRoom.t_room} />
+                <div className="room-pagination">{currentIndex + 1} of {groupedRooms[roomType].length}</div>
+              </div>
 
-        </div>
-      </div>
+              <button className="nav-button right" onClick={() => changeRoomIndex(roomType, "next")}>
+                &gt;
+              </button>
+
+              <div className="room-details">
+                <h3>Price: GHS {currentRoom.price}</h3>
+                <h4>Includes:</h4>
+                <ul>
+                  {currentRoom.amenities.map((item, index) => (
+                    <li key={index}>{item}</li>
+                  ))}
+                </ul>
+                <button
+                  className={`select-room ${selectedRooms.some((r) => r.id === currentRoom.id) ? "selected" : ""}`}
+                  onClick={() => toggleRoomSelection(currentRoom)}
+                >
+                  {selectedRooms.some((r) => r.id === currentRoom.id) ? "Deselect Room" : "Select Room"}
+                </button>
+              </div>
+            </div>
+          </div>
+        );
+      })}
+
+      {selectedRooms.length > 0 && (
+        <button
+          className="proceed-booking"
+          onClick={() => {
+            navigate(`/book-room?rooms=${encodeURIComponent(JSON.stringify(selectedRooms))}`);
+          }}
+        >
+          Proceed to Booking ({selectedRooms.length})
+        </button>
+      )}
     </div>
   );
 };

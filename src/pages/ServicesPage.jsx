@@ -16,13 +16,13 @@ const ServicesPage = () => {
   const [roomBookingDetails, setRoomBookingDetails] = useState({
     checkIn: null,
     checkOut: null,
-    roomType: "Single bed", // Default selection
+  
   });
 
   const [conferenceBookingDetails, setConferenceBookingDetails] = useState({
     startDate: null,
     endDate: null,
-    roomType: "Big", // Default selection
+  
   });
 
   const toggleDropdown = (service) => {
@@ -31,7 +31,7 @@ const ServicesPage = () => {
 
   // ✅ Handles Room Booking Submission
   const handleRoomBooking = async () => {
-    const { checkIn, checkOut, roomType } = roomBookingDetails;
+    const { checkIn, checkOut } = roomBookingDetails;
   
     if (!checkIn || !checkOut) {
       alert("Please select check-in and check-out dates!");
@@ -43,14 +43,13 @@ const ServicesPage = () => {
       const docRef = await addDoc(collection(db, "roomBookings"), {
         checkIn: checkIn.toISOString(),
         checkOut: checkOut.toISOString(),
-        roomType,
         createdAt: new Date().toISOString(),
       });
 
       console.log("Room booking saved:", docRef.id);
       alert("Room booking saved!");
       navigate(
-        `/room-booking?checkIn=${checkIn.toISOString()}&checkOut=${checkOut.toISOString()}&roomType=${roomType}`
+        `/room-booking?checkIn=${checkIn.toISOString()}&checkOut=${checkOut.toISOString()}`
       );
     } catch (error) {
       console.error("Error saving room booking:", error.message);
@@ -60,7 +59,7 @@ const ServicesPage = () => {
 
   // ✅ Handles Conference Booking Submission
   const handleConferenceBooking = async () => {
-    const { startDate, endDate, roomType } = conferenceBookingDetails;
+    const { startDate, endDate } = conferenceBookingDetails;
 
     if (!startDate || !endDate) {
       alert("Please select a start date and end date!");
@@ -72,14 +71,14 @@ const ServicesPage = () => {
       const docRef = await addDoc(collection(db, "conferenceBookings"), {
         startDate: startDate.toISOString(),
         endDate: endDate.toISOString(),
-        roomType,
+  
         createdAt: new Date().toISOString(),
       });
 
       console.log("Conference booking saved:", docRef.id);
       alert("Conference booking saved!");
       navigate(
-        `/conference-booking?startDate=${startDate.toISOString()}&endDate=${endDate.toISOString()}&roomType=${roomType}`
+        `/conference-booking?startDate=${startDate.toISOString()}&endDate=${endDate.toISOString()}`
       );
     } catch (error) {
       console.error("Error saving conference booking:", error);
@@ -114,15 +113,7 @@ const ServicesPage = () => {
               minDate={roomBookingDetails.checkIn || today} 
             />
 
-            <label>Room Type:</label>
-            <select 
-              value={roomBookingDetails.roomType} 
-              onChange={(e) => setRoomBookingDetails(prev => ({ ...prev, roomType: e.target.value }))}>
-              <option value="Single bed">Single bed</option>
-              <option value="Double bed">Double bed</option>
-              <option value="Twin bed">Twin bed</option>
-            </select>
-
+         
             <button className="learn-more" onClick={handleRoomBooking}>Proceed to Room Booking</button>
           </div>
         </div>
@@ -146,14 +137,7 @@ const ServicesPage = () => {
               minDate={conferenceBookingDetails.startDate || today} 
             />
 
-            <label>Conference Room Type:</label>
-            <select 
-              value={conferenceBookingDetails.roomType} 
-              onChange={(e) => setConferenceBookingDetails(prev => ({ ...prev, roomType: e.target.value }))}>
-              <option value="Big">Big</option>
-              <option value="Small">Small</option>
-              <option value="Long">Long</option>
-            </select>
+        
 
             <button className="learn-more" onClick={handleConferenceBooking}>Proceed to Conference Booking</button>
           </div>
