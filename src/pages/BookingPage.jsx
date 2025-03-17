@@ -55,11 +55,13 @@ const BookingPage = () => {
 
   // Autofill check-in and check-out fields from URL parameters
   useEffect(() => {
-    setFormData((prev) => ({
-      ...prev,
-      checkIn: checkInParam,
-      checkOut: checkOutParam,
-    }));
+    if (checkInParam && checkOutParam) {
+      setFormData((prev) => ({
+        ...prev,
+        checkIn: checkInParam,
+        checkOut: checkOutParam,
+      }));
+    }
   }, [checkInParam, checkOutParam]);
 
   // Handle form changes
@@ -100,7 +102,7 @@ const BookingPage = () => {
 
       await Promise.all(bookingPromises);
       alert("Booking successful for all selected rooms!");
-      navigate("/my-bookings");
+      navigate("/book-room");
     } catch (error) {
       console.error("Error saving booking:", error);  
       alert("Booking failed. Please try again. " + error.message);
@@ -134,7 +136,7 @@ const BookingPage = () => {
       <div className="booking-summary">
         <h3>Booking Details</h3>
         <p>
-          <strong>Check-In:</strong> {formData.checkIn}
+          <strong>Check-In:</strong> {checkInParam}
         </p>
         <p>
           <strong>Check-Out:</strong> {checkOutParam}
@@ -219,13 +221,13 @@ const BookingPage = () => {
         </div>
 
         {/* Autofilled Check-In and Check-Out */}
-        <div>
+        {/* <div>
           <label>Check-In</label>
           <input
             type="date"
             name="checkIn"
             required
-            value={formData.checkIn}
+            value={checkInParam}
             readOnly
           />
         </div>
@@ -236,10 +238,10 @@ const BookingPage = () => {
             type="date"
             name="checkOut"
             required
-            value={formData.checkOut}
+            value={checkOutParam}
             readOnly
           />
-        </div>
+        </div> */}
 
         {/* Additional Options */}
         <div>
