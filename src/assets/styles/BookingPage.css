@@ -148,6 +148,10 @@ p {
     background: linear-gradient(135deg, #0056b3, #003e7e);
 }
 
+.hidden-button {
+    display: none;
+}  
+
 /* Responsive Adjustments */
 @media (max-width: 48rem) { /* 768px */
     .booking-container {
