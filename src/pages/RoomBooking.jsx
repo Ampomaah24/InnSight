@@ -155,7 +155,12 @@ const RoomBooking = () => {
         <button
           className="proceed-booking"
           onClick={() => {
-            navigate(`/book-room?rooms=${encodeURIComponent(JSON.stringify(selectedRooms))}`);
+            // Encode the parameters correctly
+            const encodedRooms = encodeURIComponent(JSON.stringify(selectedRooms));
+            const encodedCheckIn = encodeURIComponent(checkIn);
+            const encodedCheckOut = encodeURIComponent(checkOut);
+
+            navigate(`/book-room?rooms=${encodedRooms}&checkIn=${encodedCheckIn}&checkOut=${encodedCheckOut}`);
           }}
         >
           Proceed to Booking ({selectedRooms.length})
