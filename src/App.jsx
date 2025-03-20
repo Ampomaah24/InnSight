@@ -12,11 +12,11 @@ import Dashboard from "./pages/Dashboard"; // Import Conference Booking Page
 import Reservations from "./pages/Reservations";
 import CheckIn from "./pages/CheckIn";
 import Rooms from "./pages/Rooms";
-import Billing from "./pages/Billing";
 import Reports from "./pages/Reports";
 import BookingPage from "./pages/BookingPage";
 import UserHistory from "./pages/UserHistory"; 
-
+import AddExpense from "./pages/AddExpense";
+import FinancialReports from "./pages/FinancialReports"; 
 
 const App = () => {
   return (
@@ -34,10 +34,12 @@ const App = () => {
         <Route path="/reservations" element={<Reservations />} />
         <Route path="/check-in" element={<CheckIn />} />
         <Route path="/rooms" element={<Rooms />} />
-        <Route path="/billing" element={<Billing />} />
+        <Route path="/add-expense" element={<AddExpense />} />
         <Route path="/reports" element={<Reports />} />
         <Route path="/book-room" element={<BookingPage />} /> {/* Add this */}
         <Route path="/user-history" element={<UserHistory />} />
+        <Route path="/freports" element={<FinancialReports />} />
+
 
       </Routes>
     </Router>

@@ -2,7 +2,16 @@ import React, { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { getAuth } from "firebase/auth";
 import { db } from "../config/firebase";
-import { collection, addDoc, serverTimestamp } from "firebase/firestore";
+import { 
+  collection, 
+  addDoc, 
+  serverTimestamp, 
+  query, 
+  where, 
+  getDocs, 
+  updateDoc, 
+  doc 
+} from "firebase/firestore";
 import { PaystackButton } from "react-paystack";
 import "../assets/styles/BookingPage.css";
 
@@ -79,12 +88,37 @@ const BookingPage = () => {
       navigate("/login");
       return;
     }
+  
     try {
-      // Save a booking for each selected room
-      const bookingPromises = selectedRooms.map((room) =>
-        addDoc(collection(db, "bookings"), {
+      // Fetch available rooms that match the selected room type
+      for (const room of selectedRooms) {
+        const roomQuery = query(
+          collection(db, "rooms"),
+          where("t_room", "==", room.t_room),
+          where("availability", "==", true)
+        );
+        const roomSnapshot = await getDocs(roomQuery);
+  
+        if (roomSnapshot.empty) {
+          alert(`No available rooms of type: ${room.t_room}`);
+          continue; // Skip this room if no availability
+        }
+  
+        const assignedRoom = roomSnapshot.docs[0]; // Get the first available room
+        const roomId = assignedRoom.id;
+        const roomData = assignedRoom.data();
+  
+        // Update the room to mark it as occupied
+        const roomRef = doc(db, "rooms", roomId);
+        await updateDoc(roomRef, { availability: false });
+  
+        console.log(`Room ${roomData.name} assigned to user: ${auth.currentUser.uid}`);
+  
+        // Save booking details in Firestore
+        await addDoc(collection(db, "bookings"), {
           userId: auth.currentUser.uid,
           roomType: room.t_room,
+          roomNumber: roomData.name, // Assign room number
           price: Number(room.price || 0),
           checkIn: formData.checkIn,
           checkOut: formData.checkOut,
@@ -96,18 +130,21 @@ const BookingPage = () => {
           airportPickup: formData.airportPickup,
           paymentOption: formData.paymentOption,
           specialRequests: formData.specialRequests,
+          status: "Confirmed", // Booking status after payment
           createdAt: serverTimestamp(),
-        })
-      );
-
-      await Promise.all(bookingPromises);
+        });
+  
+        console.log(`Booking completed: Room ${roomData.name} assigned to ${auth.currentUser.uid}`);
+      }
+  
       alert("Booking successful for all selected rooms!");
       navigate("/book-room");
     } catch (error) {
-      console.error("Error saving booking:", error);  
+      console.error("Error saving booking:", error);
       alert("Booking failed. Please try again. " + error.message);
     }
   };
+  
 
   // Configuration for PaystackButton
   const config = {
@@ -118,11 +155,29 @@ const BookingPage = () => {
     currency: "GHS",
   };
 
-  const onSuccess = (reference) => {
-    console.log("Payment successful with reference:", reference);
-    completeBooking();
-  };
+  const onSuccess = async (reference) => {
+    console.log("Payment successful! Assigning room...");
+    try {
+      // Save the payment in Firestore
+      await addDoc(collection(db, "transactions"), {
+        type: "expense",
+        amount: Number(expense.amount),
+        category: expense.category,
+        description: expense.description,
+        date: serverTimestamp(), // Stores as Firestore Timestamp
+        createdAt: serverTimestamp(),
+ 
+      
+      });
 
+      console.log("Payment recorded successfully!");
+
+      // Proceed with booking
+      await completeBooking();
+    } catch (error) {
+      console.error("Error saving payment:", error);
+    }
+  };
   const onClose = () => {
     alert("Payment was cancelled.");
   };

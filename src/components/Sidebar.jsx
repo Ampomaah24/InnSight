@@ -6,8 +6,11 @@ const Sidebar = () => {
     <div className="sidebar">
       <ul className="sidebar-menu">
         <li className="sidebar-item active">
+        <a href="/admin-dashboard">
           <FaHome /> Dashboard
+          </a>
         </li>
+       
         <li className="sidebar-item">
   <a href="/reservations">
     <FaCalendarCheck /> Reservations
@@ -29,8 +32,8 @@ const Sidebar = () => {
           <FaUsers /> Guests
         </li>
         <li className="sidebar-item">
-  <a href="/billing">
-    <FaMoneyBillWave /> Billing & Payments
+  <a href="/add-expense">
+    <FaMoneyBillWave /> Expenses
   </a>
 </li>
 

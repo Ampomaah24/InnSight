@@ -1,0 +1,50 @@
+.reports-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+  }
+  
+  .export-buttons button {
+    margin-left: 10px;
+    padding: 8px 15px;
+    border: none;
+    background: #3498db;
+    color: white;
+    border-radius: 5px;
+    cursor: pointer;
+  }
+  
+  .summary-cards {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 30px;
+  }
+  
+  .card {
+    padding: 20px;
+    border-radius: 10px;
+    text-align: center;
+    color: white;
+    flex: 1;
+  }
+  
+  .card-income {
+    background: #2ecc71;
+  }
+  
+  .card-expense {
+    background: #e74c3c;
+  }
+  
+  .card-balance {
+    background: #3498db;
+  }
+  
+  .chart-container {
+    background: #fff;
+    padding: 20px;
+    border-radius: 10px;
+    margin-top: 20px;
+  }
+  

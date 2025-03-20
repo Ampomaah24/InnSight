@@ -1,16 +1,57 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { collection, getDocs } from "firebase/firestore";
+import { db } from "../config/firebase";
 import Navbar from "../components/Navbar";
 import Sidebar from "../components/Sidebar";
 import "../assets/styles/Dashboard.css";
 
 const Dashboard = () => {
   const navigate = useNavigate();
-  const [reservations] = useState([
-    { id: 1, guestName: "Emily Smith", checkIn: "Oct 21, 2022", checkOut: "Oct 28, 2022", room: "103", status: "Reserved" },
-    { id: 2, guestName: "John Davis", checkIn: "Oct 23, 2022", checkOut: "Oct 29, 2022", room: "203", status: "Reserved" },
-    { id: 3, guestName: "Lucy Brown", checkIn: "Oct 25, 2022", checkOut: "Oct 30, 2022", room: "303", status: "Checked in" },
-  ]);
+  const [reservations, setReservations] = useState([]);
+  const [stats, setStats] = useState({
+    checkInsToday: 0,
+    totalReservations: 0,
+    roomsOccupied: 0,
+  });
+
+  useEffect(() => {
+    const fetchReservations = async () => {
+      try {
+        const querySnapshot = await getDocs(collection(db, "bookings"));
+        const fetchedReservations = querySnapshot.docs.map((doc) => ({
+          id: doc.id,
+          guestName: `${doc.data().firstName} ${doc.data().lastName}`,
+          checkIn: new Date(doc.data().checkIn).toLocaleDateString(),
+          checkOut: new Date(doc.data().checkOut).toLocaleDateString(),
+          room: doc.data().roomNumber || "N/A",
+          status: doc.data().status || "Reserved",
+        }));
+
+        setReservations(fetchedReservations);
+
+        // Calculate dynamic stats
+        const today = new Date().toLocaleDateString(); // Get today's date
+        const checkInsToday = fetchedReservations.filter(
+          (res) => res.checkIn === today && res.status === "Checked in"
+        ).length;
+
+        const totalReservations = fetchedReservations.length;
+
+        const roomsOccupied = new Set(
+          fetchedReservations
+            .filter((res) => res.status === "Checked in")
+            .map((res) => res.room)
+        ).size;
+
+        setStats({ checkInsToday, totalReservations, roomsOccupied });
+      } catch (error) {
+        console.error("Error fetching reservations:", error);
+      }
+    };
+
+    fetchReservations();
+  }, []);
 
   return (
     <div className="dashboard-container">
@@ -24,19 +65,15 @@ const Dashboard = () => {
         <div className="summary-cards">
           <div className="card" onClick={() => navigate("/check-in")}>
             <p className="card-title">Today's Check-ins</p>
-            <h2 className="card-value">14</h2>
+            <h2 className="card-value">{stats.checkInsToday}</h2>
           </div>
           <div className="card" onClick={() => navigate("/reservations")}>
             <p className="card-title">Today's Reservations</p>
-            <h2 className="card-value">22</h2>
+            <h2 className="card-value">{stats.totalReservations}</h2>
           </div>
           <div className="card" onClick={() => navigate("/rooms")}>
             <p className="card-title">Rooms Occupied</p>
-            <h2 className="card-value">12</h2>
-          </div>
-          <div className="card" onClick={() => navigate("/billing")}>
-            <p className="card-title">Total Revenue</p>
-            <h2 className="card-value">$5,400</h2>
+            <h2 className="card-value">{stats.roomsOccupied}</h2>
           </div>
         </div>
 
