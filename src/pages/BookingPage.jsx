@@ -160,14 +160,13 @@ const BookingPage = () => {
     try {
       // Save the payment in Firestore
       await addDoc(collection(db, "transactions"), {
-        type: "expense",
-        amount: Number(expense.amount),
-        category: expense.category,
-        description: expense.description,
-        date: serverTimestamp(), // Stores as Firestore Timestamp
-        createdAt: serverTimestamp(),
- 
-      
+        type: "income",
+        amount: totalAmount,
+        category: "Room Booking",
+        description: `Payment for rooms: ${selectedRooms.map(r => r.t_room).join(", ")}`,
+        date: new Date(),
+        createdBy: auth.currentUser.uid,
+        reference: reference.reference, // Store payment reference
       });
 
       console.log("Payment recorded successfully!");
