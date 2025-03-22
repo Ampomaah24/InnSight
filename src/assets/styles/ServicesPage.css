@@ -134,3 +134,26 @@ body, html {
 .learn-more:hover {
     background-color: #d35400; /* Slightly darker warm orange */
 }
+
+.success-popup {
+    background-color: #4caf50;
+    color: white;
+    padding: 1rem;
+    margin: 1rem auto;
+    border-radius: 8px;
+    width: fit-content;
+    text-align: center;
+    font-weight: bold;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    animation: fadeOut 2s forwards;
+    animation-delay: 1.5s;
+  }
+  
+  /* Optional fade effect */
+  @keyframes fadeOut {
+    to {
+      opacity: 0;
+      transform: translateY(-10px);
+    }
+  }
+  

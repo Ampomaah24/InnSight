@@ -87,21 +87,24 @@ body, html {
 /* Toggle Password Visibility */
 .toggle-password {
     position: absolute;
-    right: 0.75rem; /* 12px */
+    right: 1rem;
     cursor: pointer;
     color: #666;
-    font-size: 1rem; /* 16px */
-}
+    font-size: 1rem;
+  }
+  
 
 /* Input Fields */
 .input-group input {
     border: none;
     outline: none;
     flex: 1;
-    font-size: 1rem; /* 16px */
+    font-size: 1rem;
     background: transparent;
     color: black;
-}
+    padding-right: 2rem; /* Add space for eye icon */
+  }
+  
 
 /* Remember Me & Forgot Password */
 .options {
@@ -144,4 +147,12 @@ body, html {
 
 .login-button:hover {
     background: #333;
+}
+/* Override Chrome/Safari autofill yellow background */
+input:-webkit-autofill,
+input:-webkit-autofill:focus,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:active {
+  transition: background-color 5000s ease-in-out 0s;
+  -webkit-text-fill-color: #000 !important;
 }

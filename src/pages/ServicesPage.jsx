@@ -47,7 +47,7 @@ const ServicesPage = () => {
       });
 
       console.log("Room booking saved:", docRef.id);
-      alert("Room booking saved!");
+     
       navigate(
         `/room-booking?checkIn=${checkIn.toISOString()}&checkOut=${checkOut.toISOString()}`
       );

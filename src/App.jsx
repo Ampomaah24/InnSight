@@ -17,6 +17,7 @@ import BookingPage from "./pages/BookingPage";
 import UserHistory from "./pages/UserHistory"; 
 import AddExpense from "./pages/AddExpense";
 import FinancialReports from "./pages/FinancialReports"; 
+import ResetPasswordPage from "./pages/ResetPasswordPage";
 
 const App = () => {
   return (
@@ -39,6 +40,7 @@ const App = () => {
         <Route path="/book-room" element={<BookingPage />} /> {/* Add this */}
         <Route path="/user-history" element={<UserHistory />} />
         <Route path="/freports" element={<FinancialReports />} />
+        <Route path="/reset-password" element={<ResetPasswordPage />} />
 
 
       </Routes>
