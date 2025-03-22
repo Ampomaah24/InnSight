@@ -5,6 +5,7 @@ import ServicesPage from "./pages/ServicesPage"; // Import Services Page
 import SignUp from "./pages/SignUp"; // Import Sign Up Page
 import LoginPage from "./pages/LoginPage"; // Import Login Page
 import CListings from "./pages/CListings"; // Import Conference Listings Page
+<<<<<<< HEAD
 import RoomListings from "./pages/RoomListings"; // Import Conference Listings Page
 import RoomBooking from "./pages/RoomBooking"; // Import Room Booking Page
 import CBooking from "./pages/CBooking"; // Import Conference Booking Page
@@ -18,6 +19,8 @@ import UserHistory from "./pages/UserHistory";
 import AddExpense from "./pages/AddExpense";
 import FinancialReports from "./pages/FinancialReports"; 
 import ResetPasswordPage from "./pages/ResetPasswordPage";
+=======
+>>>>>>> 5e4bcf3544a1d7fe29e319b1608574fbc338a6a2
 
 const App = () => {
   return (
@@ -28,6 +31,7 @@ const App = () => {
         <Route path="/signup" element={<SignUp />} /> {/* Sign Up Page */}
         <Route path="/login" element={<LoginPage />} /> {/* Login Page */}
         <Route path="/conference-listings" element={<CListings />} /> {/* Conference Listings Page */}
+<<<<<<< HEAD
         <Route path="/room-listings" element={<RoomListings />} /> {/* Room Listings Page */}
         <Route path="/room-booking" element={<RoomBooking />} /> {/* Room Booking Page */}
         <Route path="/conference-booking" element={<CBooking />} /> {/* Conference Booking Page */}
@@ -43,6 +47,8 @@ const App = () => {
         <Route path="/reset-password" element={<ResetPasswordPage />} />
 
 
+=======
+>>>>>>> 5e4bcf3544a1d7fe29e319b1608574fbc338a6a2
       </Routes>
     </Router>
   );
