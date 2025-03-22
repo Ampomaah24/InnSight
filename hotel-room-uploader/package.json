@@ -1,0 +1,15 @@
+{
+  "name": "hotel-room-uploader",
+  "version": "1.0.0",
+  "main": "uploadRooms.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "dependencies": {
+    "firebase-admin": "^13.2.0"
+  }
+}

@@ -1,0 +1,875 @@
+[
+    {
+        "id": "R1",
+        "image": "src/assets/images/IMG_1101.JPG",
+        "name": "R001",
+        "price": 700,
+        "t_room": "Double bed",
+        "availability": true,
+        "amenities": [
+            "WiFi",
+            "Breakfast",
+            "TV",
+            "Mini Fridge"
+        ],
+        "bookings": [
+            ""
+        ]
+    },
+    {
+        "id": "R2",
+        "image": "src/assets/images/IMG_1102.JPG",
+        "name": "R002",
+        "price": 650,
+        "t_room": "Double bed",
+        "availability": true,
+        "amenities": [
+            "WiFi",
+            "Breakfast",
+            "TV",
+            "Mini Fridge"
+        ],
+        "bookings": [
+            ""
+        ]
+    },
+    {
+        "id": "R3",
+        "image": "src/assets/images/IMG_1103.JPG",
+        "name": "R003",
+        "price": 700,
+        "t_room": "Single bed",
+        "availability": true,
+        "amenities": [
+            "WiFi",
+            "Breakfast",
+            "Workspace"
+        ],
+        "bookings": [
+            ""
+        ]
+    },
+    {
+        "id": "R4",
+        "image": "src/assets/images/IMG_1104.JPG",
+        "name": "R004",
+        "price": 600,
+        "t_room": "Single bed",
+        "availability": true,
+        "amenities": [
+            "WiFi",
+            "Breakfast",
+            "Workspace"
+        ],
+        "bookings": [
+            ""
+        ]
+    },
+    {
+        "id": "R5",
+        "image": "src/assets/images/IMG_1105.JPG",
+        "name": "R005",
+        "price": 600,
+        "t_room": "Single bed",
+        "availability": true,
+        "amenities": [
+            "WiFi",
+            "Breakfast",
+            "Workspace"
+        ],
+        "bookings": [
+            ""
+        ]
+    },
+    {
+        "id": "R6",
+        "image": "src/assets/images/IMG_1106.JPG",
+        "name": "R006",
+        "price": 500,
+        "t_room": "Single bed",
+        "availability": true,
+        "amenities": [
+            "WiFi",
+            "Breakfast",
+            "Workspace"
+        ],
+        "bookings": [
+            ""
+        ]
+    },
+    {
+        "id": "R7",
+        "image": "src/assets/images/IMG_1107.JPG",
+        "name": "R007",
+        "price": 800,
+        "t_room": "Double bed",
+        "availability": true,
+        "amenities": [
+            "WiFi",
+            "Breakfast",
+            "TV",
+            "Mini Fridge"
+        ],
+        "bookings": [
+            ""
+        ]
+    },
+    {
+        "id": "R8",
+        "image": "src/assets/images/IMG_1108.JPG",
+        "name": "R008",
+        "price": 750,
+        "t_room": "Single bed",
+        "availability": true,
+        "amenities": [
+            "WiFi",
+            "Breakfast",
+            "Workspace"
+        ],
+        "bookings": [
+            ""
+        ]
+    },
+    {
+        "id": "R9",
+        "image": "src/assets/images/IMG_1109.JPG",
+        "name": "R009",
+        "price": 750,
+        "t_room": "Single bed",
+        "availability": true,
+        "amenities": [
+            "WiFi",
+            "Breakfast",
+            "Workspace"
+        ],
+        "bookings": [
+            ""
+        ]
+    },
+    {
+        "id": "R10",
+        "image": "src/assets/images/IMG_1110.JPG",
+        "name": "R010",
+        "price": 600,
+        "t_room": "Double bed",
+        "availability": true,
+        "amenities": [
+            "WiFi",
+            "Breakfast",
+            "TV",
+            "Mini Fridge"
+        ],
+        "bookings": [
+            ""
+        ]
+    },
+    {
+        "id": "R11",
+        "image": "src/assets/images/IMG_1111.JPG",
+        "name": "R011",
+        "price": 500,
+        "t_room": "Single bed",
+        "availability": true,
+        "amenities": [
+            "WiFi",
+            "Breakfast",
+            "Workspace"
+        ],
+        "bookings": [
+            ""
+        ]
+    },
+    {
+        "id": "R12",
+        "image": "src/assets/images/IMG_1112.JPG",
+        "name": "R012",
+        "price": 500,
+        "t_room": "Single bed",
+        "availability": true,
+        "amenities": [
+            "WiFi",
+            "Breakfast",
+            "Workspace"
+        ],
+        "bookings": [
+            ""
+        ]
+    },
+    {
+        "id": "R13",
+        "image": "src/assets/images/IMG_1113.JPG",
+        "name": "R013",
+        "price": 550,
+        "t_room": "Double bed",
+        "availability": true,
+        "amenities": [
+            "WiFi",
+            "Breakfast",
+            "TV",
+            "Mini Fridge"
+        ],
+        "bookings": [
+            ""
+        ]
+    },
+    {
+        "id": "R14",
+        "image": "src/assets/images/IMG_1114.JPG",
+        "name": "R014",
+        "price": 600,
+        "t_room": "Double bed",
+        "availability": true,
+        "amenities": [
+            "WiFi",
+            "Breakfast",
+            "TV",
+            "Mini Fridge"
+        ],
+        "bookings": [
+            ""
+        ]
+    },
+    {
+        "id": "R15",
+        "image": "src/assets/images/IMG_1115.JPG",
+        "name": "R015",
+        "price": 800,
+        "t_room": "Double bed",
+        "availability": true,
+        "amenities": [
+            "WiFi",
+            "Breakfast",
+            "TV",
+            "Mini Fridge"
+        ],
+        "bookings": [
+            ""
+        ]
+    },
+    {
+        "id": "R16",
+        "image": "src/assets/images/IMG_1116.JPG",
+        "name": "R016",
+        "price": 700,
+        "t_room": "Twin bed",
+        "availability": true,
+        "amenities": [
+            "WiFi",
+            "Breakfast",
+            "TV",
+            "Workspace"
+        ],
+        "bookings": [
+            ""
+        ]
+    },
+    {
+        "id": "R17",
+        "image": "src/assets/images/IMG_1117.JPG",
+        "name": "R017",
+        "price": 700,
+        "t_room": "Single bed",
+        "availability": true,
+        "amenities": [
+            "WiFi",
+            "Breakfast",
+            "Workspace"
+        ],
+        "bookings": [
+            ""
+        ]
+    },
+    {
+        "id": "R18",
+        "image": "src/assets/images/IMG_1118.JPG",
+        "name": "R018",
+        "price": 800,
+        "t_room": "Twin bed",
+        "availability": true,
+        "amenities": [
+            "WiFi",
+            "Breakfast",
+            "TV",
+            "Workspace"
+        ],
+        "bookings": [
+            ""
+        ]
+    },
+    {
+        "id": "R19",
+        "image": "src/assets/images/IMG_1119.JPG",
+        "name": "R019",
+        "price": 600,
+        "t_room": "Twin bed",
+        "availability": true,
+        "amenities": [
+            "WiFi",
+            "Breakfast",
+            "TV",
+            "Workspace"
+        ],
+        "bookings": [
+            ""
+        ]
+    },
+    {
+        "id": "R20",
+        "image": "src/assets/images/IMG_1120.JPG",
+        "name": "R020",
+        "price": 700,
+        "t_room": "Single bed",
+        "availability": true,
+        "amenities": [
+            "WiFi",
+            "Breakfast",
+            "Workspace"
+        ],
+        "bookings": [
+            ""
+        ]
+    },
+    {
+        "id": "R21",
+        "image": "src/assets/images/IMG_1121.JPG",
+        "name": "R021",
+        "price": 600,
+        "t_room": "Twin bed",
+        "availability": true,
+        "amenities": [
+            "WiFi",
+            "Breakfast",
+            "TV",
+            "Workspace"
+        ],
+        "bookings": [
+            ""
+        ]
+    },
+    {
+        "id": "R22",
+        "image": "src/assets/images/IMG_1122.JPG",
+        "name": "R022",
+        "price": 550,
+        "t_room": "Double bed",
+        "availability": true,
+        "amenities": [
+            "WiFi",
+            "Breakfast",
+            "TV",
+            "Mini Fridge"
+        ],
+        "bookings": [
+            ""
+        ]
+    },
+    {
+        "id": "R23",
+        "image": "src/assets/images/IMG_1123.JPG",
+        "name": "R023",
+        "price": 750,
+        "t_room": "Single bed",
+        "availability": true,
+        "amenities": [
+            "WiFi",
+            "Breakfast",
+            "Workspace"
+        ],
+        "bookings": [
+            ""
+        ]
+    },
+    {
+        "id": "R24",
+        "image": "src/assets/images/IMG_1124.JPG",
+        "name": "R024",
+        "price": 650,
+        "t_room": "Single bed",
+        "availability": true,
+        "amenities": [
+            "WiFi",
+            "Breakfast",
+            "Workspace"
+        ],
+        "bookings": [
+            ""
+        ]
+    },
+    {
+        "id": "R25",
+        "image": "src/assets/images/IMG_1125.JPG",
+        "name": "R025",
+        "price": 700,
+        "t_room": "Double bed",
+        "availability": true,
+        "amenities": [
+            "WiFi",
+            "Breakfast",
+            "TV",
+            "Mini Fridge"
+        ],
+        "bookings": [
+            ""
+        ]
+    },
+    {
+        "id": "R26",
+        "image": "src/assets/images/IMG_1126.JPG",
+        "name": "R026",
+        "price": 500,
+        "t_room": "Single bed",
+        "availability": true,
+        "amenities": [
+            "WiFi",
+            "Breakfast",
+            "Workspace"
+        ],
+        "bookings": [
+            ""
+        ]
+    },
+    {
+        "id": "R27",
+        "image": "src/assets/images/IMG_1127.JPG",
+        "name": "R027",
+        "price": 650,
+        "t_room": "Single bed",
+        "availability": true,
+        "amenities": [
+            "WiFi",
+            "Breakfast",
+            "Workspace"
+        ],
+        "bookings": [
+            ""
+        ]
+    },
+    {
+        "id": "R28",
+        "image": "src/assets/images/IMG_1128.JPG",
+        "name": "R028",
+        "price": 600,
+        "t_room": "Single bed",
+        "availability": true,
+        "amenities": [
+            "WiFi",
+            "Breakfast",
+            "Workspace"
+        ],
+        "bookings": [
+            ""
+        ]
+    },
+    {
+        "id": "R29",
+        "image": "src/assets/images/IMG_1129.JPG",
+        "name": "R029",
+        "price": 550,
+        "t_room": "Double bed",
+        "availability": true,
+        "amenities": [
+            "WiFi",
+            "Breakfast",
+            "TV",
+            "Mini Fridge"
+        ],
+        "bookings": [
+            ""
+        ]
+    },
+    {
+        "id": "R30",
+        "image": "src/assets/images/IMG_1130.JPG",
+        "name": "R030",
+        "price": 550,
+        "t_room": "Single bed",
+        "availability": true,
+        "amenities": [
+            "WiFi",
+            "Breakfast",
+            "Workspace"
+        ],
+        "bookings": [
+            ""
+        ]
+    },
+    {
+        "id": "R31",
+        "image": "src/assets/images/IMG_1131.JPG",
+        "name": "R031",
+        "price": 700,
+        "t_room": "Double bed",
+        "availability": true,
+        "amenities": [
+            "WiFi",
+            "Breakfast",
+            "TV",
+            "Mini Fridge"
+        ],
+        "bookings": [
+            ""
+        ]
+    },
+    {
+        "id": "R32",
+        "image": "src/assets/images/IMG_1132.JPG",
+        "name": "R032",
+        "price": 650,
+        "t_room": "Double bed",
+        "availability": true,
+        "amenities": [
+            "WiFi",
+            "Breakfast",
+            "TV",
+            "Mini Fridge"
+        ],
+        "bookings": [
+            ""
+        ]
+    },
+    {
+        "id": "R33",
+        "image": "src/assets/images/IMG_1133.JPG",
+        "name": "R033",
+        "price": 700,
+        "t_room": "Double bed",
+        "availability": true,
+        "amenities": [
+            "WiFi",
+            "Breakfast",
+            "TV",
+            "Mini Fridge"
+        ],
+        "bookings": [
+            ""
+        ]
+    },
+    {
+        "id": "R34",
+        "image": "src/assets/images/IMG_1134.JPG",
+        "name": "R034",
+        "price": 500,
+        "t_room": "Single bed",
+        "availability": true,
+        "amenities": [
+            "WiFi",
+            "Breakfast",
+            "Workspace"
+        ],
+        "bookings": [
+            ""
+        ]
+    },
+    {
+        "id": "R35",
+        "image": "src/assets/images/IMG_1135.JPG",
+        "name": "R035",
+        "price": 550,
+        "t_room": "Twin bed",
+        "availability": true,
+        "amenities": [
+            "WiFi",
+            "Breakfast",
+            "TV",
+            "Workspace"
+        ],
+        "bookings": [
+            ""
+        ]
+    },
+    {
+        "id": "R36",
+        "image": "src/assets/images/IMG_1136.JPG",
+        "name": "R036",
+        "price": 550,
+        "t_room": "Single bed",
+        "availability": true,
+        "amenities": [
+            "WiFi",
+            "Breakfast",
+            "Workspace"
+        ],
+        "bookings": [
+            ""
+        ]
+    },
+    {
+        "id": "R37",
+        "image": "src/assets/images/IMG_1137.JPG",
+        "name": "R037",
+        "price": 650,
+        "t_room": "Single bed",
+        "availability": true,
+        "amenities": [
+            "WiFi",
+            "Breakfast",
+            "Workspace"
+        ],
+        "bookings": [
+            ""
+        ]
+    },
+    {
+        "id": "R38",
+        "image": "src/assets/images/IMG_1138.JPG",
+        "name": "R038",
+        "price": 500,
+        "t_room": "Single bed",
+        "availability": true,
+        "amenities": [
+            "WiFi",
+            "Breakfast",
+            "Workspace"
+        ],
+        "bookings": [
+            ""
+        ]
+    },
+    {
+        "id": "R39",
+        "image": "src/assets/images/IMG_1139.JPG",
+        "name": "R039",
+        "price": 550,
+        "t_room": "Twin bed",
+        "availability": true,
+        "amenities": [
+            "WiFi",
+            "Breakfast",
+            "TV",
+            "Workspace"
+        ],
+        "bookings": [
+            ""
+        ]
+    },
+    {
+        "id": "R40",
+        "image": "src/assets/images/IMG_1140.JPG",
+        "name": "R040",
+        "price": 800,
+        "t_room": "Twin bed",
+        "availability": true,
+        "amenities": [
+            "WiFi",
+            "Breakfast",
+            "TV",
+            "Workspace"
+        ],
+        "bookings": [
+            ""
+        ]
+    },
+    {
+        "id": "R41",
+        "image": "src/assets/images/IMG_1141.JPG",
+        "name": "R041",
+        "price": 700,
+        "t_room": "Single bed",
+        "availability": true,
+        "amenities": [
+            "WiFi",
+            "Breakfast",
+            "Workspace"
+        ],
+        "bookings": [
+            ""
+        ]
+    },
+    {
+        "id": "R42",
+        "image": "src/assets/images/IMG_1142.JPG",
+        "name": "R042",
+        "price": 550,
+        "t_room": "Single bed",
+        "availability": true,
+        "amenities": [
+            "WiFi",
+            "Breakfast",
+            "Workspace"
+        ],
+        "bookings": [
+            ""
+        ]
+    },
+    {
+        "id": "R43",
+        "image": "src/assets/images/IMG_1143.JPG",
+        "name": "R043",
+        "price": 650,
+        "t_room": "Single bed",
+        "availability": true,
+        "amenities": [
+            "WiFi",
+            "Breakfast",
+            "Workspace"
+        ],
+        "bookings": [
+            ""
+        ]
+    },
+    {
+        "id": "R44",
+        "image": "src/assets/images/IMG_1144.JPG",
+        "name": "R044",
+        "price": 700,
+        "t_room": "Single bed",
+        "availability": true,
+        "amenities": [
+            "WiFi",
+            "Breakfast",
+            "Workspace"
+        ],
+        "bookings": [
+            ""
+        ]
+    },
+    {
+        "id": "R45",
+        "image": "src/assets/images/IMG_1145.JPG",
+        "name": "R045",
+        "price": 800,
+        "t_room": "Single bed",
+        "availability": true,
+        "amenities": [
+            "WiFi",
+            "Breakfast",
+            "Workspace"
+        ],
+        "bookings": [
+            ""
+        ]
+    },
+    {
+        "id": "R46",
+        "image": "src/assets/images/IMG_1146.JPG",
+        "name": "R046",
+        "price": 550,
+        "t_room": "Double bed",
+        "availability": true,
+        "amenities": [
+            "WiFi",
+            "Breakfast",
+            "TV",
+            "Mini Fridge"
+        ],
+        "bookings": [
+            ""
+        ]
+    },
+    {
+        "id": "R47",
+        "image": "src/assets/images/IMG_1147.JPG",
+        "name": "R047",
+        "price": 700,
+        "t_room": "Single bed",
+        "availability": true,
+        "amenities": [
+            "WiFi",
+            "Breakfast",
+            "Workspace"
+        ],
+        "bookings": [
+            ""
+        ]
+    },
+    {
+        "id": "R48",
+        "image": "src/assets/images/IMG_1148.JPG",
+        "name": "R048",
+        "price": 700,
+        "t_room": "Double bed",
+        "availability": true,
+        "amenities": [
+            "WiFi",
+            "Breakfast",
+            "TV",
+            "Mini Fridge"
+        ],
+        "bookings": [
+            ""
+        ]
+    },
+    {
+        "id": "R49",
+        "image": "src/assets/images/IMG_1149.JPG",
+        "name": "R049",
+        "price": 650,
+        "t_room": "Twin bed",
+        "availability": true,
+        "amenities": [
+            "WiFi",
+            "Breakfast",
+            "TV",
+            "Workspace"
+        ],
+        "bookings": [
+            ""
+        ]
+    },
+    {
+        "id": "R50",
+        "image": "src/assets/images/IMG_1150.JPG",
+        "name": "R050",
+        "price": 500,
+        "t_room": "Double bed",
+        "availability": true,
+        "amenities": [
+            "WiFi",
+            "Breakfast",
+            "TV",
+            "Mini Fridge"
+        ],
+        "bookings": [
+            ""
+        ]
+    },
+    {
+        "id": "R51",
+        "image": "src/assets/images/IMG_1151.JPG",
+        "name": "R051",
+        "price": 750,
+        "t_room": "Double bed",
+        "availability": true,
+        "amenities": [
+            "WiFi",
+            "Breakfast",
+            "TV",
+            "Mini Fridge"
+        ],
+        "bookings": [
+            ""
+        ]
+    },
+    {
+        "id": "R52",
+        "image": "src/assets/images/IMG_1152.JPG",
+        "name": "R052",
+        "price": 750,
+        "t_room": "Single bed",
+        "availability": true,
+        "amenities": [
+            "WiFi",
+            "Breakfast",
+            "Workspace"
+        ],
+        "bookings": [
+            ""
+        ]
+    },
+    {
+        "id": "R53",
+        "image": "src/assets/images/IMG_1153.JPG",
+        "name": "R053",
+        "price": 600,
+        "t_room": "Single bed",
+        "availability": true,
+        "amenities": [
+            "WiFi",
+            "Breakfast",
+            "Workspace"
+        ],
+        "bookings": [
+            ""
+        ]
+    }
+]
