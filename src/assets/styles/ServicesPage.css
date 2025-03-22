@@ -8,6 +8,7 @@ body, html {
     background-color: #ffffff;
 }
 
+<<<<<<< HEAD
 /* Booking Services Heading */
 .booking-services-heading {
     font-size: 1.75rem; /* 28px */
@@ -28,21 +29,61 @@ body, html {
     position: relative;
 }
 
+=======
+/* Services Page Container */
+.services-page {
+    width: 100%;
+    max-width: 1400px;
+    margin: auto;
+    padding: 40px;
+    position: relative;
+}
+
+/* Back Button - Moves it to the top */
+.back-button {
+    font-size: 22px;
+    font-weight: bold;
+    position: absolute;
+    top: 20px;
+    left: 40px;
+    margin-bottom: 0;
+}
+
+.back-button a {
+    text-decoration: none;
+    color: #000;
+}
+
+.back-button a:hover {
+    color: #007BFF;
+}
+
+>>>>>>> 5e4bcf3544a1d7fe29e319b1608574fbc338a6a2
 /* Services Grid */
 .services-grid {
     display: flex;
     justify-content: space-between;
     align-items: center;
+<<<<<<< HEAD
     gap: 3.125rem; /* 50px -> 3.125rem */
     flex-wrap: wrap;
     margin-top: 1.875rem; /* 30px -> 1.875rem */
+=======
+    gap: 50px;
+    flex-wrap: wrap;
+    margin-top: 80px; /* Pushes content down */
+>>>>>>> 5e4bcf3544a1d7fe29e319b1608574fbc338a6a2
 }
 
 /* Service Item */
 .service-item {
     text-align: center;
     flex: 1;
+<<<<<<< HEAD
     min-width: 31.25rem; /* 500px -> 31.25rem */
+=======
+    min-width: 500px;
+>>>>>>> 5e4bcf3544a1d7fe29e319b1608574fbc338a6a2
     cursor: pointer;
     transition: transform 0.3s ease-in-out;
 }
@@ -55,15 +96,23 @@ body, html {
 /* Service Image */
 .service-image {
     width: 100%;
+<<<<<<< HEAD
     height: 25rem; /* 400px -> 25rem */
     object-fit: cover;
     border-radius: 0.625rem; /* 10px -> 0.625rem */
     box-shadow: 0 0.25rem 0.5rem rgba(0, 0, 0, 0.2); /* 4px 8px -> 0.25rem 0.5rem */
+=======
+    height: 400px;
+    object-fit: cover;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+>>>>>>> 5e4bcf3544a1d7fe29e319b1608574fbc338a6a2
     transition: transform 0.3s ease-in-out;
 }
 
 /* Service Title */
 .service-title {
+<<<<<<< HEAD
     font-size: 1.25rem; /* 20px -> 1.25rem */
     font-style: italic;
     margin-top: 0.9375rem; /* 15px -> 0.9375rem */
@@ -95,6 +144,27 @@ body, html {
 .dropdown.active {
     max-height: 18.75rem; /* 300px -> 18.75rem */
     opacity: 1;
+=======
+    font-size: 20px;
+    font-style: italic;
+    margin-top: 15px;
+    color: #333;
+}
+
+/* Dropdown Styling */
+.dropdown {
+    margin-top: 15px;
+    padding: 15px;
+    background-color: #f9f9f9;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    width: 80%;
+    margin-left: auto;
+    margin-right: auto;
+>>>>>>> 5e4bcf3544a1d7fe29e319b1608574fbc338a6a2
 }
 
 /* Styling for React-DatePicker */
@@ -104,6 +174,7 @@ body, html {
 
 .react-datepicker__input-container input {
     width: 100%;
+<<<<<<< HEAD
     padding: 0.5rem; /* 8px -> 0.5rem */
     border: 0.0625rem solid #ccc; /* 1px -> 0.0625rem */
     border-radius: 0.3125rem; /* 5px -> 0.3125rem */
@@ -134,3 +205,35 @@ body, html {
 .learn-more:hover {
     background-color: #d35400; /* Slightly darker warm orange */
 }
+
+.success-popup {
+    background-color: #4caf50;
+    color: white;
+    padding: 1rem;
+    margin: 1rem auto;
+    border-radius: 8px;
+    width: fit-content;
+    text-align: center;
+    font-weight: bold;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    animation: fadeOut 2s forwards;
+    animation-delay: 1.5s;
+  }
+  
+  /* Optional fade effect */
+  @keyframes fadeOut {
+    to {
+      opacity: 0;
+      transform: translateY(-10px);
+    }
+  }
+  
+=======
+    padding: 8px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    text-align: center;
+    font-size: 16px;
+    background-color: #fff;
+}
+>>>>>>> 5e4bcf3544a1d7fe29e319b1608574fbc338a6a2

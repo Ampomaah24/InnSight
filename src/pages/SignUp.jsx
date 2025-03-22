@@ -1,9 +1,13 @@
 import { useState } from "react";
+<<<<<<< HEAD
 import { useNavigate } from "react-router-dom";
 import { createUserWithEmailAndPassword } from "firebase/auth";
 import { setDoc, doc } from "firebase/firestore"; // Firestore functions
 import { auth, db } from "../config/firebase"; // Import Firestore
 import "../assets/styles/SignUp.css";
+=======
+import "../assets/styles/SignUp.css"; // Import external CSS file
+>>>>>>> 5e4bcf3544a1d7fe29e319b1608574fbc338a6a2
 
 export default function SignUp() {
   const [formData, setFormData] = useState({
@@ -13,13 +17,17 @@ export default function SignUp() {
     confirmPassword: "",
   });
 
+<<<<<<< HEAD
   const [error, setError] = useState("");
   const navigate = useNavigate();
 
+=======
+>>>>>>> 5e4bcf3544a1d7fe29e319b1608574fbc338a6a2
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
+<<<<<<< HEAD
   const handleSubmit = async (e) => {
     e.preventDefault();
     
@@ -46,15 +54,30 @@ export default function SignUp() {
     } catch (err) {
       setError("Error signing up. Please try again.");
     }
+=======
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    console.log("Form submitted:", formData);
+>>>>>>> 5e4bcf3544a1d7fe29e319b1608574fbc338a6a2
   };
 
   return (
     <div className="signup-container">
+<<<<<<< HEAD
       <div className="signup-image"></div>
       <div className="signup-form-container">
         <div className="signup-form">
           <h2 className="signup-title">Sign Up</h2>
           {error && <p className="error-message">{error}</p>}
+=======
+      {/* Left Side with Background Image */}
+      <div className="signup-image"></div>
+
+      {/* Right Side - Sign Up Form */}
+      <div className="signup-form-container">
+        <div className="signup-form">
+          <h2 className="signup-title">Sign Up</h2>
+>>>>>>> 5e4bcf3544a1d7fe29e319b1608574fbc338a6a2
           <form onSubmit={handleSubmit} className="signup-form-fields">
             <div>
               <label className="signup-label">Full Name</label>
@@ -65,7 +88,10 @@ export default function SignUp() {
                 onChange={handleChange}
                 placeholder="Name..."
                 className="signup-input"
+<<<<<<< HEAD
                 required
+=======
+>>>>>>> 5e4bcf3544a1d7fe29e319b1608574fbc338a6a2
               />
             </div>
             <div>
@@ -77,7 +103,10 @@ export default function SignUp() {
                 onChange={handleChange}
                 placeholder="Email address..."
                 className="signup-input"
+<<<<<<< HEAD
                 required
+=======
+>>>>>>> 5e4bcf3544a1d7fe29e319b1608574fbc338a6a2
               />
             </div>
             <div>
@@ -89,7 +118,10 @@ export default function SignUp() {
                 onChange={handleChange}
                 placeholder="Enter Password..."
                 className="signup-input"
+<<<<<<< HEAD
                 required
+=======
+>>>>>>> 5e4bcf3544a1d7fe29e319b1608574fbc338a6a2
               />
             </div>
             <div>
@@ -101,7 +133,10 @@ export default function SignUp() {
                 onChange={handleChange}
                 placeholder="Enter Password..."
                 className="signup-input"
+<<<<<<< HEAD
                 required
+=======
+>>>>>>> 5e4bcf3544a1d7fe29e319b1608574fbc338a6a2
               />
             </div>
             <button type="submit" className="signup-button">
@@ -112,4 +147,8 @@ export default function SignUp() {
       </div>
     </div>
   );
+<<<<<<< HEAD
 }
+=======
+}
+>>>>>>> 5e4bcf3544a1d7fe29e319b1608574fbc338a6a2

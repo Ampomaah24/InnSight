@@ -12,7 +12,7 @@ const RoomBooking = () => {
   const [menuOpen, setMenuOpen] = useState(false);
   const [loading, setLoading] = useState(true);
   const [roomIndexes, setRoomIndexes] = useState({});
-  const [selectedRooms, setSelectedRooms] = useState([]); // Store selected rooms
+  const [selectedRooms, setSelectedRooms] = useState([]);
 
   const params = new URLSearchParams(location.search);
   const checkIn = params.get("checkIn") ? decodeURIComponent(params.get("checkIn")) : null;
@@ -34,24 +34,28 @@ const RoomBooking = () => {
         const querySnapshot = await getDocs(q);
         let availableRooms = [];
 
+        const selectedCheckIn = new Date(checkIn);
+        const selectedCheckOut = new Date(checkOut);
+
+        // ✅ Adjust times to 12 PM
+        selectedCheckIn.setHours(12, 0, 0, 0);
+        selectedCheckOut.setHours(12, 0, 0, 0);
+
         querySnapshot.forEach((doc) => {
           let room = { id: doc.id, ...doc.data() };
 
-          // If no bookings exist, the room is available
-          if (!room.bookings || room.bookings.length === 0) {
-            availableRooms.push(room);
-            return;
-          }
+          const bookings = room.bookings || [];
 
-          // Convert check-in/check-out dates for comparison
-          const selectedCheckIn = new Date(checkIn);
-          const selectedCheckOut = new Date(checkOut);
-
-          const isBooked = room.bookings.some((booking) => {
+          const isBooked = bookings.some((booking) => {
             if (!booking.checkIn || !booking.checkOut) return false;
+
             const bookedCheckIn = new Date(booking.checkIn);
             const bookedCheckOut = new Date(booking.checkOut);
-            return selectedCheckIn <= bookedCheckOut && selectedCheckOut >= bookedCheckIn;
+
+            // ✅ Force checkout to 12 PM
+            bookedCheckOut.setHours(12, 0, 0, 0);
+
+            return selectedCheckIn < bookedCheckOut && selectedCheckOut > bookedCheckIn;
           });
 
           if (!isBooked) availableRooms.push(room);
@@ -76,10 +80,6 @@ const RoomBooking = () => {
     getAvailableRooms();
   }, [checkIn, checkOut]);
 
-  if (loading) return <p>Loading available rooms...</p>;
-  if (rooms.length === 0) return <p>No available rooms at the moment.</p>;
-
-  // ✅ Group rooms by type
   const groupedRooms = rooms.reduce((acc, room) => {
     const type = room.t_room || "Other";
     if (!acc[type]) acc[type] = [];
@@ -87,23 +87,28 @@ const RoomBooking = () => {
     return acc;
   }, {});
 
-  // ✅ Function to update the index when navigating rooms
   const changeRoomIndex = (roomType, direction) => {
     setRoomIndexes((prevIndexes) => {
       const totalRooms = groupedRooms[roomType].length;
       const currentIndex = prevIndexes[roomType];
-      let newIndex = direction === "next" ? (currentIndex + 1) % totalRooms : (currentIndex - 1 + totalRooms) % totalRooms;
+      let newIndex = direction === "next"
+        ? (currentIndex + 1) % totalRooms
+        : (currentIndex - 1 + totalRooms) % totalRooms;
       return { ...prevIndexes, [roomType]: newIndex };
     });
   };
 
-  // ✅ Function to select/deselect a room
   const toggleRoomSelection = (room) => {
     setSelectedRooms((prevSelected) => {
       const isSelected = prevSelected.some((r) => r.id === room.id);
-      return isSelected ? prevSelected.filter((r) => r.id !== room.id) : [...prevSelected, room];
+      return isSelected
+        ? prevSelected.filter((r) => r.id !== room.id)
+        : [...prevSelected, room];
     });
   };
+
+  if (loading) return <p>Loading available rooms...</p>;
+  if (rooms.length === 0) return <p>No available rooms at the moment.</p>;
 
   return (
     <div className="room-booking-container">
@@ -118,18 +123,14 @@ const RoomBooking = () => {
           <div key={roomType} className="room-type-section">
             <h3 className="room-type-title">{roomType}</h3>
             <div className="room-content">
-              <button className="nav-button left" onClick={() => changeRoomIndex(roomType, "prev")}>
-                &lt;
-              </button>
+              <button className="nav-button left" onClick={() => changeRoomIndex(roomType, "prev")}>&lt;</button>
 
               <div className="room-image-container">
                 <img className="room-image" src={currentRoom.image} alt={currentRoom.t_room} />
                 <div className="room-pagination">{currentIndex + 1} of {groupedRooms[roomType].length}</div>
               </div>
 
-              <button className="nav-button right" onClick={() => changeRoomIndex(roomType, "next")}>
-                &gt;
-              </button>
+              <button className="nav-button right" onClick={() => changeRoomIndex(roomType, "next")}>&gt;</button>
 
               <div className="room-details">
                 <h3>Price: GHS {currentRoom.price}</h3>
@@ -143,7 +144,9 @@ const RoomBooking = () => {
                   className={`select-room ${selectedRooms.some((r) => r.id === currentRoom.id) ? "selected" : ""}`}
                   onClick={() => toggleRoomSelection(currentRoom)}
                 >
-                  {selectedRooms.some((r) => r.id === currentRoom.id) ? "Deselect Room" : "Select Room"}
+                  {selectedRooms.some((r) => r.id === currentRoom.id)
+                    ? "Deselect Room"
+                    : "Select Room"}
                 </button>
               </div>
             </div>
@@ -155,7 +158,6 @@ const RoomBooking = () => {
         <button
           className="proceed-booking"
           onClick={() => {
-            // Encode the parameters correctly
             const encodedRooms = encodeURIComponent(JSON.stringify(selectedRooms));
             const encodedCheckIn = encodeURIComponent(checkIn);
             const encodedCheckOut = encodeURIComponent(checkOut);

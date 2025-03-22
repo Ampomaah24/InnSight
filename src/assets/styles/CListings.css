@@ -4,7 +4,11 @@ body, html {
     padding: 0;
     width: 100%;
     font-family: 'Arial', sans-serif;
+<<<<<<< HEAD
     background-color: white;
+=======
+    background-color: #ffe6e6;
+>>>>>>> 5e4bcf3544a1d7fe29e319b1608574fbc338a6a2
     display: flex;
     justify-content: center;
     align-items: center;
@@ -13,28 +17,47 @@ body, html {
 /* Conference Page Container */
 .clistings-page {
     width: 100%;
+<<<<<<< HEAD
     height: 100vh;
     max-width: 75rem; /* 1200px -> 75rem */
     padding: 2.5rem; /* 40px -> 2.5rem */
     background: white;
     border-radius: 0.9375rem; /* 15px -> 0.9375rem */
     box-shadow: 0 0.25rem 0.625rem rgba(0, 0, 0, 0.1); /* 4px 10px -> 0.25rem 0.625rem */
+=======
+    max-width: 1200px;
+    padding: 40px;
+    background: #ffefef;
+    border-radius: 15px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+>>>>>>> 5e4bcf3544a1d7fe29e319b1608574fbc338a6a2
 }
 
 /* Page Title */
 .page-title {
     text-align: center;
+<<<<<<< HEAD
     font-size: 1.75rem; /* 28px -> 1.75rem */
     font-weight: bold;
     color: #b30000;
     margin-bottom: 1.875rem; /* 30px -> 1.875rem */
+=======
+    font-size: 28px;
+    font-weight: bold;
+    color: #b30000;
+    margin-bottom: 30px;
+>>>>>>> 5e4bcf3544a1d7fe29e319b1608574fbc338a6a2
 }
 
 /* Conference List */
 .clistings-list {
     display: flex;
     flex-direction: column;
+<<<<<<< HEAD
     gap: 1.25rem; /* 20px -> 1.25rem */
+=======
+    gap: 20px;
+>>>>>>> 5e4bcf3544a1d7fe29e319b1608574fbc338a6a2
 }
 
 /* Conference Card */
@@ -42,9 +65,15 @@ body, html {
     display: flex;
     align-items: center;
     background: #fff;
+<<<<<<< HEAD
     padding: 1.25rem; /* 20px -> 1.25rem */
     border-radius: 0.75rem; /* 12px -> 0.75rem */
     box-shadow: 0 0.25rem 0.5rem rgba(0, 0, 0, 0.1); /* 4px 8px -> 0.25rem 0.5rem */
+=======
+    padding: 20px;
+    border-radius: 12px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+>>>>>>> 5e4bcf3544a1d7fe29e319b1608574fbc338a6a2
     transition: transform 0.3s ease-in-out;
 }
 
@@ -55,29 +84,50 @@ body, html {
 /* Conference Info */
 .clistings-info {
     flex: 1;
+<<<<<<< HEAD
     padding: 1.25rem; /* 20px -> 1.25rem */
 }
 
 .clistings-title {
     font-size: 1.25rem; /* 20px -> 1.25rem */
+=======
+    padding: 20px;
+}
+
+.clistings-title {
+    font-size: 20px;
+>>>>>>> 5e4bcf3544a1d7fe29e319b1608574fbc338a6a2
     font-weight: bold;
     color: #800000;
 }
 
 .clistings-description {
+<<<<<<< HEAD
     font-size: 1rem; /* 16px -> 1rem */
     color: #b30000;
     margin: 0.625rem 0; /* 10px -> 0.625rem */
+=======
+    font-size: 16px;
+    color: #b30000;
+    margin: 10px 0;
+>>>>>>> 5e4bcf3544a1d7fe29e319b1608574fbc338a6a2
 }
 
 /* Learn More Button */
 .learn-more {
     background: #b30000;
     color: #fff;
+<<<<<<< HEAD
     padding: 0.625rem 0.9375rem; /* 10px 15px -> 0.625rem 0.9375rem */
     border: none;
     border-radius: 0.5rem; /* 8px -> 0.5rem */
     font-size: 0.875rem; /* 14px -> 0.875rem */
+=======
+    padding: 10px 15px;
+    border: none;
+    border-radius: 8px;
+    font-size: 14px;
+>>>>>>> 5e4bcf3544a1d7fe29e319b1608574fbc338a6a2
     cursor: pointer;
     transition: 0.3s;
 }
@@ -88,8 +138,14 @@ body, html {
 
 /* Conference Image */
 .clistings-image img {
+<<<<<<< HEAD
     width: 12.5rem; /* 200px -> 12.5rem */
     height: 7.5rem; /* 120px -> 7.5rem */
     border-radius: 0.625rem; /* 10px -> 0.625rem */
+=======
+    width: 200px;
+    height: 120px;
+    border-radius: 10px;
+>>>>>>> 5e4bcf3544a1d7fe29e319b1608574fbc338a6a2
     object-fit: cover;
 }

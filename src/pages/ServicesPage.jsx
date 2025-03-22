@@ -1,146 +1,80 @@
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { db } from "../config/firebase";
 import { collection, addDoc } from "firebase/firestore";
 import NavMenu from "../components/NavMenu";
-import "../assets/styles/ServicesPage.css";
+import "../assets/styles/ServicesPage.css"; // Import updated CSS
 
 const ServicesPage = () => {
-  const navigate = useNavigate();
-  const [menuOpen, setMenuOpen] = useState(false);
+  // State for dropdown visibility
   const [selectedService, setSelectedService] = useState(null);
-  const today = new Date();
+  const [roomBookingDates, setRoomBookingDates] = useState({ checkIn: null, checkOut: null });
+  const [conferenceBookingDates, setConferenceBookingDates] = useState({ checkIn: null, checkOut: null });
 
-  const [roomBookingDetails, setRoomBookingDetails] = useState({
-    checkIn: null,
-    checkOut: null,
-  
-  });
-
-  const [conferenceBookingDetails, setConferenceBookingDetails] = useState({
-    startDate: null,
-    endDate: null,
-  
-  });
-
+  // Function to toggle dropdown when clicking on a service
   const toggleDropdown = (service) => {
     setSelectedService(selectedService === service ? null : service);
   };
 
-  // ✅ Handles Room Booking Submission
-  const handleRoomBooking = async () => {
-    const { checkIn, checkOut } = roomBookingDetails;
-  
-    if (!checkIn || !checkOut) {
-      alert("Please select check-in and check-out dates!");
-      return;
-    }
-  
-    try {
-      console.log("Saving room booking...");
-      const docRef = await addDoc(collection(db, "roomBookings"), {
-        checkIn: checkIn.toISOString(),
-        checkOut: checkOut.toISOString(),
-        createdAt: new Date().toISOString(),
-      });
-
-      console.log("Room booking saved:", docRef.id);
-      alert("Room booking saved!");
-      navigate(
-        `/room-booking?checkIn=${checkIn.toISOString()}&checkOut=${checkOut.toISOString()}`
-      );
-    } catch (error) {
-      console.error("Error saving room booking:", error.message);
-      alert(`Failed to save room booking: ${error.message}`);
-    }
-  };
-
-  // ✅ Handles Conference Booking Submission
-  const handleConferenceBooking = async () => {
-    const { startDate, endDate } = conferenceBookingDetails;
-
-    if (!startDate || !endDate) {
-      alert("Please select a start date and end date!");
-      return;
-    }
-
-    try {
-      console.log("Saving conference booking...");
-      const docRef = await addDoc(collection(db, "conferenceBookings"), {
-        startDate: startDate.toISOString(),
-        endDate: endDate.toISOString(),
-  
-        createdAt: new Date().toISOString(),
-      });
-
-      console.log("Conference booking saved:", docRef.id);
-      alert("Conference booking saved!");
-      navigate(
-        `/conference-booking?startDate=${startDate.toISOString()}&endDate=${endDate.toISOString()}`
-      );
-    } catch (error) {
-      console.error("Error saving conference booking:", error);
-      alert("Failed to save conference booking. Please try again.");
-    }
-  };
-
   return (
     <div className="services-page">
-      <div className="nav-container">
-        <NavMenu menuOpen={menuOpen} setMenuOpen={setMenuOpen} />
-        <h1 className="booking-services-heading">Booking Services</h1>
+      {/* Back Button */}
+      <div className="back-button">
+        <Link to="/">← Booking Services</Link>
       </div>
 
+      {/* Services Grid */}
       <div className="services-grid">
-        {/* ✅ Room Booking */}
+        {/* Room Booking */}
         <div className="service-item" onClick={() => toggleDropdown("room")}>
           <img src="src/assets/images/IMG_0111.JPG" alt="Room Booking" className="service-image" />
           <p className="service-title">Room Booking</p>
-          <div className={`dropdown ${selectedService === "room" ? "active" : ""}`} onClick={(e) => e.stopPropagation()}>
-            <label>Check-in Date:</label>
-            <DatePicker 
-              selected={roomBookingDetails.checkIn} 
-              onChange={(date) => setRoomBookingDetails(prev => ({ ...prev, checkIn: date }))}
-              minDate={today} 
-            />
 
-            <label>Check-out Date:</label>
-            <DatePicker 
-              selected={roomBookingDetails.checkOut} 
-              onChange={(date) => setRoomBookingDetails(prev => ({ ...prev, checkOut: date }))}
-              minDate={roomBookingDetails.checkIn || today} 
-            />
+          {/* Dropdown for Date Selection */}
+          {selectedService === "room" && (
+            <div className="dropdown" onClick={(e) => e.stopPropagation()}>
+              <label>Check-in Date:</label>
+              <DatePicker 
+                selected={roomBookingDates.checkIn} 
+                onChange={date => setRoomBookingDates(prev => ({ ...prev, checkIn: date }))}
+                placeholderText="Select check-in date"
+              />
 
-         
-            <button className="learn-more" onClick={handleRoomBooking}>Proceed to Room Booking</button>
-          </div>
+              <label>Check-out Date:</label>
+              <DatePicker 
+                selected={roomBookingDates.checkOut} 
+                onChange={date => setRoomBookingDates(prev => ({ ...prev, checkOut: date }))}
+                placeholderText="Select check-out date"
+              />
+            </div>
+          )}
         </div>
 
-        {/* Conference Booking */}
+        {/* Conference Room Booking */}
         <div className="service-item" onClick={() => toggleDropdown("conference")}>
-          <img src="src/assets/images/pixelcut-export.jpeg" alt="Conference Booking" className="service-image" />
-          <p className="service-title">Conference Booking</p>
-          <div className={`dropdown ${selectedService === "conference" ? "active" : ""}`} onClick={(e) => e.stopPropagation()}>
-            <label>Start Date:</label>
-            <DatePicker 
-              selected={conferenceBookingDetails.startDate} 
-              onChange={(date) => setConferenceBookingDetails(prev => ({ ...prev, startDate: date }))}
-              minDate={today} 
-            />
+          <img src="/src/assets/images/pixelcut-export.jpeg" alt="Conference Room Booking" className="service-image" />
+          <p className="service-title">Conference Room Booking</p>
 
-            <label>End Date:</label>
-            <DatePicker 
-              selected={conferenceBookingDetails.endDate} 
-              onChange={(date) => setConferenceBookingDetails(prev => ({ ...prev, endDate: date }))}
-              minDate={conferenceBookingDetails.startDate || today} 
-            />
+          {/* Dropdown for Date Selection */}
+          {selectedService === "conference" && (
+            <div className="dropdown" onClick={(e) => e.stopPropagation()}>
+              <label>Check-in Date:</label>
+              <DatePicker 
+                selected={conferenceBookingDates.checkIn} 
+                onChange={date => setConferenceBookingDates(prev => ({ ...prev, checkIn: date }))}
+                placeholderText="Select check-in date"
+              />
 
-        
-
-            <button className="learn-more" onClick={handleConferenceBooking}>Proceed to Conference Booking</button>
-          </div>
+              <label>Check-out Date:</label>
+              <DatePicker 
+                selected={conferenceBookingDates.checkOut} 
+                onChange={date => setConferenceBookingDates(prev => ({ ...prev, checkOut: date }))}
+                placeholderText="Select check-out date"
+              />
+            </div>
+          )}
         </div>
       </div>
     </div>

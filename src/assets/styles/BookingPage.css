@@ -162,3 +162,26 @@ p {
         grid-template-columns: 1fr; /* Single column for mobile */
     }
 }
+.popup.success-popup {
+    position: fixed;
+    top: 2rem;
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: #4caf50;
+    color: white;
+    padding: 1rem 2rem;
+    border-radius: 10px;
+    font-weight: bold;
+    box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    z-index: 9999;
+    animation: fadeOut 2s ease-in-out forwards;
+    animation-delay: 1.5s;
+  }
+  
+  @keyframes fadeOut {
+    to {
+      opacity: 0;
+      transform: translate(-50%, -20px);
+    }
+  }
+  

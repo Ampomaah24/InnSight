@@ -5,7 +5,11 @@ body, html {
     width: 100%;
     height: 100%;
     font-family: 'Arial', sans-serif;
+<<<<<<< HEAD
     background-color: white;
+=======
+    background: linear-gradient(to right, #f8d7da, #fde2e4); /* Soft blended pink */
+>>>>>>> 5e4bcf3544a1d7fe29e319b1608574fbc338a6a2
     display: flex;
     justify-content: center;
     align-items: center;
@@ -14,7 +18,11 @@ body, html {
 /* Centered Login Container */
 .login-container {
     width: 100%;
+<<<<<<< HEAD
     max-width: 28.125rem; /* 450px */
+=======
+    max-width: 450px;
+>>>>>>> 5e4bcf3544a1d7fe29e319b1608574fbc338a6a2
     text-align: center;
 }
 
@@ -23,20 +31,34 @@ body, html {
     display: flex;
     flex-direction: column;
     align-items: center;
+<<<<<<< HEAD
     margin-bottom: 0.625rem; /* 10px */
+=======
+    margin-bottom: 10px;
+>>>>>>> 5e4bcf3544a1d7fe29e319b1608574fbc338a6a2
 }
 
 /* Profile Icon (for user image) */
 .profile-icon {
     background: #ffffff;
+<<<<<<< HEAD
     width: 6.25rem; /* 100px */
     height: 6.25rem; /* 100px */
+=======
+    width: 100px;
+    height: 100px;
+>>>>>>> 5e4bcf3544a1d7fe29e319b1608574fbc338a6a2
     border-radius: 50%;
     display: flex;
     justify-content: center;
     align-items: center;
+<<<<<<< HEAD
     margin-bottom: 0.625rem; /* 10px */
     border: 0.1875rem solid rgba(255, 255, 255, 0.5); /* 3px */
+=======
+    margin-bottom: 10px;
+    border: 3px solid rgba(255, 255, 255, 0.5);
+>>>>>>> 5e4bcf3544a1d7fe29e319b1608574fbc338a6a2
     overflow: hidden;
 }
 
@@ -49,19 +71,34 @@ body, html {
 
 /* Welcome Text */
 .welcome-text {
+<<<<<<< HEAD
     font-size: 1.75rem; /* 28px */
     font-weight: bold;
     color: black;
     margin-bottom: 1.25rem; /* 20px */
+=======
+    font-size: 24px;
+    font-weight: bold;
+    color: #333;
+    margin-bottom: 20px;
+>>>>>>> 5e4bcf3544a1d7fe29e319b1608574fbc338a6a2
 }
 
 /* Login Box */
 .login-box {
     background: rgba(255, 255, 255, 0.9);
+<<<<<<< HEAD
     padding: 5rem; /* 80px */
     border-radius: 0.9375rem; /* 15px */
     box-shadow: 0 0.3125rem 0.9375rem rgba(0, 0, 0, 0.1); /* 5px 15px */
     width: 100%;
+=======
+    padding: 80px;
+    border-radius: 15px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    width: 100%;
+    
+>>>>>>> 5e4bcf3544a1d7fe29e319b1608574fbc338a6a2
 }
 
 /* Input Fields */
@@ -69,10 +106,17 @@ body, html {
     display: flex;
     align-items: center;
     background: #fff;
+<<<<<<< HEAD
     margin-bottom: 0.9375rem; /* 15px */
     padding: 0.875rem; /* 14px */
     border-radius: 0.5rem; /* 8px */
     border: 0.0625rem solid #ccc; /* 1px */
+=======
+    margin-bottom: 15px;
+    padding: 14px;
+    border-radius: 8px;
+    border: 1px solid #ccc;
+>>>>>>> 5e4bcf3544a1d7fe29e319b1608574fbc338a6a2
     transition: 0.3s ease-in-out;
     position: relative;
 }
@@ -80,35 +124,62 @@ body, html {
 /* Input Icons */
 .input-icon {
     color: #666;
+<<<<<<< HEAD
     font-size: 1rem; /* 16px */
     margin-right: 0.625rem; /* 10px */
+=======
+    font-size: 16px;
+    margin-right: 10px;
+>>>>>>> 5e4bcf3544a1d7fe29e319b1608574fbc338a6a2
 }
 
 /* Toggle Password Visibility */
 .toggle-password {
     position: absolute;
-    right: 0.75rem; /* 12px */
+<<<<<<< HEAD
+    right: 1rem;
     cursor: pointer;
     color: #666;
-    font-size: 1rem; /* 16px */
+    font-size: 1rem;
+  }
+  
+=======
+    right: 12px;
+    cursor: pointer;
+    color: #666;
+    font-size: 16px;
 }
+>>>>>>> 5e4bcf3544a1d7fe29e319b1608574fbc338a6a2
 
 /* Input Fields */
 .input-group input {
     border: none;
     outline: none;
     flex: 1;
-    font-size: 1rem; /* 16px */
+<<<<<<< HEAD
+    font-size: 1rem;
     background: transparent;
     color: black;
+    padding-right: 2rem; /* Add space for eye icon */
+  }
+  
+=======
+    font-size: 16px;
+    background: transparent;
 }
+>>>>>>> 5e4bcf3544a1d7fe29e319b1608574fbc338a6a2
 
 /* Remember Me & Forgot Password */
 .options {
     display: flex;
     justify-content: space-between;
+<<<<<<< HEAD
     font-size: 0.875rem; /* 14px */
     margin: 0.9375rem 0; /* 15px */
+=======
+    font-size: 14px;
+    margin: 15px 0;
+>>>>>>> 5e4bcf3544a1d7fe29e319b1608574fbc338a6a2
 }
 
 /* Fix Remember Me Text Visibility */
@@ -134,9 +205,15 @@ body, html {
     background: #000;
     color: #fff;
     border: none;
+<<<<<<< HEAD
     padding: 1rem; /* 16px */
     border-radius: 0.5rem; /* 8px */
     font-size: 1.25rem; /* 20px */
+=======
+    padding: 16px;
+    border-radius: 8px;
+    font-size: 20px;
+>>>>>>> 5e4bcf3544a1d7fe29e319b1608574fbc338a6a2
     cursor: pointer;
     font-weight: bold;
     transition: 0.3s ease-in-out;
@@ -145,3 +222,14 @@ body, html {
 .login-button:hover {
     background: #333;
 }
+<<<<<<< HEAD
+/* Override Chrome/Safari autofill yellow background */
+input:-webkit-autofill,
+input:-webkit-autofill:focus,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:active {
+  transition: background-color 5000s ease-in-out 0s;
+  -webkit-text-fill-color: #000 !important;
+}
+=======
+>>>>>>> 5e4bcf3544a1d7fe29e319b1608574fbc338a6a2
