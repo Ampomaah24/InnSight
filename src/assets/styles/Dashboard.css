@@ -1,4 +1,4 @@
-/* ======= General Layout Fixes ======= */
+
 .dashboard-container {
   display: flex;
   height: 100vh;
@@ -7,7 +7,7 @@
   color: black;
 }
 
-/* ======= Sidebar Fixes ======= */
+
 .sidebar {
   width: 15.625rem; /* 250px -> 15.625rem */
   height: 100vh;
@@ -55,7 +55,7 @@
   margin: auto;
 }
 
-/* ======= Navbar Fixes ======= */
+
 .navbar {
   display: flex;
   justify-content: space-between;

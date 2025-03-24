@@ -1,26 +1,57 @@
-import React, { useState } from "react";
-import Navbar from "../components/Navbar";
+import React, { useState, useEffect } from "react";
+import { collection, getDocs } from "firebase/firestore";
+import { db } from "../config/firebase";
 import Sidebar from "../components/Sidebar";
+import Navbar from "../components/Navbar";
 import "../assets/styles/Reservations.css";
 
 const Reservations = () => {
-  const [reservations, setReservations] = useState([
-    { id: 1, guestName: "Emily Smith", checkIn: "Oct 21, 2022", checkOut: "Oct 28, 2022", room: "103", status: "Reserved" },
-    { id: 2, guestName: "John Davis", checkIn: "Oct 23, 2022", checkOut: "Oct 29, 2022", room: "203", status: "Checked in" },
-    { id: 3, guestName: "Lucy Brown", checkIn: "Oct 25, 2022", checkOut: "Oct 30, 2022", room: "303", status: "Canceled" },
-    { id: 4, guestName: "Emily Smith", checkIn: "Oct 21, 2022", checkOut: "Oct 28, 2022", room: "103", status: "Reserved" },
-    { id: 5, guestName: "John Davis", checkIn: "Oct 23, 2022", checkOut: "Oct 29, 2022", room: "203", status: "Checked in" },
-    { id: 6, guestName: "Lucy Brown", checkIn: "Oct 25, 2022", checkOut: "Oct 30, 2022", room: "303", status: "Canceled" }
-  ]);
-
+  const [roomReservations, setRoomReservations] = useState([]);
+  const [conferenceReservations, setConferenceReservations] = useState([]);
   const [search, setSearch] = useState("");
   const [filterStatus, setFilterStatus] = useState("");
 
-  // Filter Reservations
-  const filteredReservations = reservations.filter((res) =>
-    res.guestName.toLowerCase().includes(search.toLowerCase()) &&
-    (filterStatus ? res.status === filterStatus : true)
-  );
+  useEffect(() => {
+    const fetchReservations = async () => {
+      try {
+        // Regular room bookings
+        const roomSnapshot = await getDocs(collection(db, "bookings"));
+        const rooms = roomSnapshot.docs.map((doc) => ({
+          id: doc.id,
+          guestName: `${doc.data().firstName} ${doc.data().lastName}`,
+          checkIn: new Date(doc.data().checkIn).toLocaleDateString(),
+          checkOut: new Date(doc.data().checkOut).toLocaleDateString(),
+          room: doc.data().roomName || "N/A",
+          status: doc.data().status || "Reserved",
+        }));
+
+        // Conference room bookings
+        const confSnapshot = await getDocs(collection(db, "conferenceBookings"));
+        const conferences = confSnapshot.docs.map((doc) => ({
+          id: doc.id,
+          guestName: `${doc.data().firstName} ${doc.data().lastName}`,
+          checkIn: new Date(doc.data().checkIn).toLocaleDateString(),
+          checkOut: new Date(doc.data().checkOut).toLocaleDateString(),
+          room: doc.data().roomName || "N/A",
+          status: doc.data().status || "Reserved",
+        }));
+
+        setRoomReservations(rooms);
+        setConferenceReservations(conferences);
+      } catch (error) {
+        console.error("Error fetching reservations:", error.message);
+      }
+    };
+
+    fetchReservations();
+  }, []);
+
+  // Filter both sets
+  const filterData = (data) =>
+    data.filter((res) =>
+      res.guestName.toLowerCase().includes(search.toLowerCase()) &&
+      (filterStatus ? res.status === filterStatus : true)
+    );
 
   return (
     <div className="dashboard-container">
@@ -46,6 +77,8 @@ const Reservations = () => {
           </div>
         </div>
 
+        {/* Room Bookings Table */}
+        <h2 style={{ marginTop: "2rem" }}>Room Bookings</h2>
         <div className="table-container">
           <table className="reservations-table">
             <thead>
@@ -55,11 +88,10 @@ const Reservations = () => {
                 <th>Check-out</th>
                 <th>Room</th>
                 <th>Status</th>
-                <th>Actions</th>
               </tr>
             </thead>
             <tbody>
-              {filteredReservations.map((res) => (
+              {filterData(roomReservations).map((res) => (
                 <tr key={res.id}>
                   <td>{res.guestName}</td>
                   <td>{res.checkIn}</td>
@@ -70,15 +102,57 @@ const Reservations = () => {
                       {res.status}
                     </span>
                   </td>
-                  <td>
-                    <button className="edit-btn">Edit</button>
-                    <button className="delete-btn">Cancel</button>
-                  </td>
                 </tr>
               ))}
+              {filterData(roomReservations).length === 0 && (
+                <tr>
+                  <td colSpan="5" style={{ textAlign: "center", padding: "1rem", color: "#888" }}>
+                    No room reservations found.
+                  </td>
+                </tr>
+              )}
             </tbody>
           </table>
         </div>
+
+        {/* Conference Bookings Table */}
+        <h2 style={{ marginTop: "3rem" }}>Conference Bookings</h2>
+        <div className="table-container">
+          <table className="reservations-table">
+            <thead>
+              <tr>
+                <th>Guest Name</th>
+                <th>Check-in</th>
+                <th>Check-out</th>
+                <th>Room</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              {filterData(conferenceReservations).map((res) => (
+                <tr key={res.id}>
+                  <td>{res.guestName}</td>
+                  <td>{res.checkIn}</td>
+                  <td>{res.checkOut}</td>
+                  <td>{res.room}</td>
+                  <td>
+                    <span className={`status ${res.status.toLowerCase().replace(" ", "-")}`}>
+                      {res.status}
+                    </span>
+                  </td>
+                </tr>
+              ))}
+              {filterData(conferenceReservations).length === 0 && (
+                <tr>
+                  <td colSpan="5" style={{ textAlign: "center", padding: "1rem", color: "#888" }}>
+                    No conference reservations found.
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+
       </div>
     </div>
   );

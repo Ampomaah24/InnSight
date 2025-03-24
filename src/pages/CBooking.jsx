@@ -13,17 +13,12 @@ const ConferenceBooking = () => {
   const [loading, setLoading] = useState(true);
   const [currentIndex, setCurrentIndex] = useState(0);
 
-  // ✅ Extract URL parameters for filtering
   const params = new URLSearchParams(location.search);
   const startDate = params.get("startDate") ? new Date(decodeURIComponent(params.get("startDate"))) : null;
   const endDate = params.get("endDate") ? new Date(decodeURIComponent(params.get("endDate"))) : null;
-  
-
-  
-  console.log("🔍 Extracted Query Params:", { startDate, endDate });
 
   useEffect(() => {
-    if (!startDate || !endDate ) {
+    if (!startDate || !endDate) {
       console.error("❌ Missing query parameters for fetching conference rooms");
       setLoading(false);
       return;
@@ -31,74 +26,38 @@ const ConferenceBooking = () => {
 
     const fetchAvailableConferenceRooms = async () => {
       try {
-        console.log("📡 Fetching available conference rooms for:", { startDate, endDate });
-
         const roomsCollection = collection(db, "conference_rooms");
-
-        // ✅ Query to filter rooms based on type and availability
-        const q = query(
-          roomsCollection,
-
-          where("availability", "==", true)
-        );
-
+        const q = query(roomsCollection, where("availability", "==", true));
         const querySnapshot = await getDocs(q);
         let availableRooms = [];
 
-        if (querySnapshot.empty) {
-          console.warn("⚠️ No available conference rooms found!");
-          setConferenceRooms([]);
-          setLoading(false);
-          return;
-        }
-
         querySnapshot.forEach((doc) => {
           let room = { id: doc.id, ...doc.data() };
-          console.log("🏨 Checking Room:", room);
 
-          // ✅ If there are no existing bookings, the room is available
           if (!room.bookings || room.bookings.length === 0) {
-            console.log("✅ Room is available:", room);
             availableRooms.push(room);
             return;
           }
 
-          // ✅ Convert selected startDate and endDate to YYYY-MM-DD format
           const selectedStartDate = new Date(startDate);
           const selectedEndDate = new Date(endDate);
 
-          // ✅ Check if room is booked for any date within the selected range
           const isBooked = room.bookings.some((booking) => {
-            if (!booking.startDate || !booking.endDate) {
-              console.warn("⚠️ Invalid booking entry:", booking);
-              return false; // Skip invalid entries
-            }
-
-            // Convert booked startDate and endDate to YYYY-MM-DD
+            if (!booking.startDate || !booking.endDate) return false;
             const bookedStart = new Date(booking.startDate);
             const bookedEnd = new Date(booking.endDate);
-
-            console.log("📅 Comparing with booking:", { bookedStart, bookedEnd });
-
-            // ✅ Booking conflict occurs if the selected range overlaps with any existing booking
-            return (
-              selectedStartDate <= bookedEnd && selectedEndDate >= bookedStart
-            );
+            return selectedStartDate <= bookedEnd && selectedEndDate >= bookedStart;
           });
 
           if (!isBooked) {
-            console.log("✅ Room is available:", room);
             availableRooms.push(room);
-          } else {
-            console.log("❌ Room is booked:", room);
           }
         });
 
-        console.log("🏠 Final Available Conference Rooms:", availableRooms);
         setConferenceRooms(availableRooms);
         setLoading(false);
       } catch (error) {
-        console.error("❌ Error fetching available conference rooms:", error);
+        console.error("❌ Error fetching conference rooms:", error);
         setConferenceRooms([]);
         setLoading(false);
       }
@@ -118,27 +77,21 @@ const ConferenceBooking = () => {
   return (
     <div className="croom-booking-container">
       <div className="nav-container">
-        <NavMenu menuOpen={menuOpen} setMenuOpen={setMenuOpen}/>
+        <NavMenu menuOpen={menuOpen} setMenuOpen={setMenuOpen} />
       </div>
 
       <h2 className="title">Conference Rooms Available</h2>
 
       <div className="croom-content">
-        <button className="nav-button left" onClick={prevRoom}>
-          &lt;
-        </button>
+        <button className="nav-button left" onClick={prevRoom}>&lt;</button>
         <div className="croom-image">
           <img src={currentRoom.image} alt="Room" />
-          <div className="croom-pagination">
-            {currentIndex + 1} of {conference_rooms.length}
-          </div>
+          <div className="croom-pagination">{currentIndex + 1} of {conference_rooms.length}</div>
         </div>
-        <button className="nav-button right" onClick={nextRoom}>
-          &gt;
-        </button>
+        <button className="nav-button right" onClick={nextRoom}>&gt;</button>
 
         <div className="croom-details">
-          <h3 className="price">Price: {currentRoom.price}</h3>
+          <h3 className="price">Price: GHS {currentRoom.price}</h3>
           <h4>Includes:</h4>
           <ul>
             {currentRoom.amenities.map((item, index) => (
@@ -146,7 +99,30 @@ const ConferenceBooking = () => {
             ))}
           </ul>
 
-          <button className="book-now" onClick={() => navigate(`/book-conference?roomId=${currentRoom.id}`)}>Book Now</button>
+          <button
+            className="book-now"
+            onClick={() => {
+              // 🔧 Ensure all necessary fields are passed along
+              const selectedRooms = [{
+                id: currentRoom.id,
+                name: currentRoom.name,
+                type: currentRoom.type,
+                price: currentRoom.price,
+                image: currentRoom.image,
+              }];
+
+              const checkIn = startDate?.toISOString().split("T")[0];
+              const checkOut = endDate?.toISOString().split("T")[0];
+
+              const encodedRooms = encodeURIComponent(JSON.stringify(selectedRooms));
+              const encodedCheckIn = encodeURIComponent(checkIn);
+              const encodedCheckOut = encodeURIComponent(checkOut);
+
+              navigate(`/book-room?rooms=${encodedRooms}&checkIn=${encodedCheckIn}&checkOut=${encodedCheckOut}&roomCategory=conference`);
+            }}
+          >
+            Book Now
+          </button>
         </div>
       </div>
     </div>

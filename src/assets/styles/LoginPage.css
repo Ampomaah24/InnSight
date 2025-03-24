@@ -63,19 +63,19 @@ body, html {
     box-shadow: 0 0.3125rem 0.9375rem rgba(0, 0, 0, 0.1); /* 5px 15px */
     width: 100%;
 }
-
-/* Input Fields */
 .input-group {
     display: flex;
     align-items: center;
     background: #fff;
-    margin-bottom: 0.9375rem; /* 15px */
-    padding: 0.875rem; /* 14px */
-    border-radius: 0.5rem; /* 8px */
-    border: 0.0625rem solid #ccc; /* 1px */
-    transition: 0.3s ease-in-out;
+    margin-bottom: 0.9375rem;
+    padding: 0.875rem;
+    border-radius: 0.5rem;
+    border: 0.0625rem solid #ccc;
     position: relative;
-}
+    width: 100%;
+    max-width: 100%;
+  }
+  
 
 /* Input Icons */
 .input-icon {
@@ -83,26 +83,42 @@ body, html {
     font-size: 1rem; /* 16px */
     margin-right: 0.625rem; /* 10px */
 }
-
+input {
+    -webkit-appearance: none;
+    appearance: none;
+  }
+  
 /* Toggle Password Visibility */
 .toggle-password {
     position: absolute;
-    right: 1rem;
+    right: 0.75rem;
+    top: 50%;
+    transform: translateY(-50%);
     cursor: pointer;
     color: #666;
     font-size: 1rem;
   }
   
+  
 
-/* Input Fields */
-.input-group input {
+  .input-group input {
     border: none;
     outline: none;
     flex: 1;
+    width: 100%;           /* ✅ Ensure full use of container width */
+    min-width: 0;           /* ✅ Prevent content overflow cutoff */
     font-size: 1rem;
     background: transparent;
     color: black;
-    padding-right: 2rem; /* Add space for eye icon */
+    padding-right: 2rem;
+    overflow: hidden;       /* ✅ Prevent excess text from overflowing */
+    text-overflow: ellipsis;
+  }
+  
+  
+  .input-group input::placeholder {
+    color: #aaa;
+    font-size: 1rem;
   }
   
 
