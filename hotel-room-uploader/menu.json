@@ -1,0 +1,24 @@
+[
+    { "id": "F1", "name": "Jollof Rice with Chicken", "category": "food", "price": 125, "imageUrl": "" },
+    { "id": "F2", "name": "Waakye with Egg and Gari", "category": "food", "price": 130, "imageUrl": "" },
+    { "id": "F3", "name": "Banku with Grilled Tilapia", "category": "food", "price": 150, "imageUrl": "" },
+    { "id": "F4", "name": "Fufu with Goat Light Soup", "category": "food", "price": 140, "imageUrl": "" },
+    { "id": "F5", "name": "Yam with Palava Sauce", "category": "food", "price": 120, "imageUrl": "" },
+    { "id": "F6", "name": "Fried Rice with Beef", "category": "food", "price": 135, "imageUrl": "" },
+    { "id": "F7", "name": "Kenkey with Fried Fish", "category": "food", "price": 125, "imageUrl": "" },
+    { "id": "F8", "name": "Ampesi with Garden Egg Stew", "category": "food", "price": 128, "imageUrl": "" },
+    { "id": "F9", "name": "Tuo Zaafi with Ayoyo", "category": "food", "price": 130, "imageUrl": "" },
+    { "id": "F10", "name": "Plain Rice with Chicken Stew", "category": "food", "price": 122, "imageUrl": "" },
+  
+    { "id": "D1", "name": "Malt", "category": "drink", "price": 35, "imageUrl": "" },
+    { "id": "D2", "name": "Alvaro", "category": "drink", "price": 30, "imageUrl": "" },
+    { "id": "D3", "name": "Fanta", "category": "drink", "price": 30, "imageUrl": "" },
+    { "id": "D4", "name": "Coke", "category": "drink", "price": 30, "imageUrl": "" },
+    { "id": "D5", "name": "Sprite", "category": "drink", "price": 30, "imageUrl": "" },
+    { "id": "D6", "name": "Pineapple Juice", "category": "drink", "price": 45, "imageUrl": "" },
+    { "id": "D7", "name": "Orange Juice", "category": "drink", "price": 45, "imageUrl": "" },
+    { "id": "D8", "name": "Smirnoff Ice", "category": "drink", "price": 60, "imageUrl": "" },
+    { "id": "D9", "name": "Heineken", "category": "drink", "price": 65, "imageUrl": "" },
+    { "id": "D10", "name": "Baileys", "category": "drink", "price": 70, "imageUrl": "" }
+  ]
+  

@@ -1,0 +1,156 @@
+.menu-page {
+    background: #f9fafb;
+    font-family: 'Segoe UI', sans-serif;
+    overflow-x: hidden;
+    padding-bottom: 5rem;
+    min-height: 100vh;;
+    position: relative;
+    width: 100rem;
+    margin-top: 20rem;
+  }
+  
+  .menu-banner {
+    width: 100%;
+    min-height: 15.625rem; 
+    background: linear-gradient(to right, #ff6b00, #f97316);
+    color: white;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 2rem 5%;
+    border-radius: 0 0 2rem 2rem;
+    text-align: center;
+    box-sizing: border-box;
+  }
+  
+  .menu-banner-text h1 {
+    font-size: 2.2rem;
+    font-weight: bold;
+    margin: 0;
+    text-align: center;
+    width: 100%;
+    line-height: 1.4;
+  }
+  
+  .menu-tabs {
+    display: flex;
+    justify-content: center;
+    gap: 2rem;
+    padding: 1rem;
+    background: white;
+    box-shadow: 0 0.125rem 0.25rem rgba(0,0,0,0.05);
+    margin-bottom: 2rem;
+  }
+  
+  .menu-tabs span {
+    font-weight: 500;
+    color: #6b7280;
+    cursor: pointer;
+  }
+  
+  .menu-tabs .active {
+    color: #f97316;
+    border-bottom: 0.125rem solid #f97316;
+    padding-bottom: 0.25rem;
+  }
+  
+  .menu-section {
+    padding: 0 2rem;
+    margin-bottom: 3rem;
+    width: 300 px;
+  }
+  
+  .menu-section h2 {
+    font-size: 1.75rem;
+    font-weight: bold;
+    color: #1f2937;
+    margin-bottom: 1.5rem;
+    text-align: center;
+  }
+  
+  .menu-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(13.75rem, 1fr)); 
+    gap: 1.5rem;
+  }
+  
+  .menu-card {
+    background: white;
+    border-radius: 1rem;
+    overflow: hidden;
+    box-shadow: 0 0.25rem 0.5rem rgba(0,0,0,0.08);
+    transition: all 0.3s ease;
+   
+  }
+  
+  .menu-card img {
+    width: 100%;
+    height: 9.375rem; /* 150px */
+    object-fit: cover;
+  }
+  
+  .menu-card-content {
+    padding: 1rem;
+  }
+  
+  .menu-card-content h3 {
+    font-size: 1.125rem;
+    color: #111827;
+    margin: 0;
+    font-weight: 600;
+  }
+  
+  .menu-card-content p {
+    color: #16a34a;
+    font-weight: bold;
+    margin: 0.25rem 0;
+  }
+  
+  .menu-card-content button {
+    margin-top: 0.75rem;
+    width: 90%;
+    padding: 0.5rem;
+    background: #f97316;
+    color: white;
+    border: none;
+    border-radius: 0.5rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background 0.3s ease;
+    text-align: center;
+  }
+  
+  .menu-card-content button:hover {
+    background: #ea580c;
+  }
+
+
+  .floating-cart {
+    position: fixed;
+    top: 1rem;
+    right: 1rem;
+    font-size: 2rem;
+    background-color: white;
+    border-radius: 50%;
+    padding: 0.75rem;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    cursor: pointer;
+    z-index: 1000;
+    transition: transform 0.2s ease;
+  }
+  
+  .floating-cart:hover {
+    transform: scale(1.1);
+  }
+  
+  .cart-badge {
+    background-color: red;
+    color: white;
+    font-size: 0.75rem;
+    border-radius: 50%;
+    padding: 0.2rem 0.5rem;
+    position: absolute;
+    top: -8px;
+    right: -8px;
+  }
+  

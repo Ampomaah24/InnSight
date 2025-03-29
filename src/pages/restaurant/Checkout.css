@@ -1,0 +1,127 @@
+.checkout-page {
+    padding: 2rem;
+    background: #f9fafb;
+    min-height: 100vh;
+    font-family: 'Segoe UI', sans-serif;
+  }
+  
+  .checkout-wrapper {
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+  
+  .checkout-title {
+    font-size: 2.5rem;
+    font-weight: bold;
+    margin-bottom: 2rem;
+    color: #1f2937;
+  }
+  
+  .checkout-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 2rem;
+    justify-content: space-between;
+  }
+  
+  .checkout-left, .checkout-right {
+    flex: 1;
+    min-width: 320px;
+    background: white;
+    padding: 2rem;
+    border-radius: 1.25rem;
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.06);
+    height: fit-content;
+  }
+  
+  .section-heading {
+    font-size: 1.5rem;
+    margin-bottom: 1rem;
+    color: #111827;
+  }
+  
+  .checkout-summary {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+  
+  .checkout-item {
+    display: flex;
+    justify-content: space-between;
+    color: #374151;
+  }
+  
+  .checkout-line {
+    display: flex;
+    justify-content: space-between;
+    color: #6b7280;
+  }
+  
+  .checkout-total {
+    display: flex;
+    justify-content: space-between;
+    font-weight: 700;
+    font-size: 1.2rem;
+    color: #1f2937;
+  }
+  
+  .checkout-form {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+  
+  .checkout-form label {
+    display: flex;
+    flex-direction: column;
+    font-size: 1rem;
+    color: #374151;
+  }
+  
+  .checkout-form input,
+  .checkout-form textarea {
+    padding: 0.75rem;
+    border: 1px solid #d1d5db;
+    border-radius: 0.75rem;
+    font-size: 1rem;
+    margin-top: 0.5rem;
+    background: #f9fafb;
+    transition: border 0.3s ease;
+  }
+  
+  .checkout-form input:focus,
+  .checkout-form textarea:focus {
+    border-color: #f97316;
+    outline: none;
+  }
+  
+  .confirm-btn {
+    background-color: #f97316;
+    color: white;
+    padding: 0.9rem;
+    font-size: 1rem;
+    border: none;
+    border-radius: 0.75rem;
+    font-weight: 600;
+    cursor: pointer;
+    margin-top: 1rem;
+    transition: background 0.3s ease;
+    width: 90%;
+    text-align: center;
+  }
+  
+  .confirm-btn:hover {
+    background-color: #ea580c;
+  }
+  
+  @media screen and (max-width: 768px) {
+    .checkout-container {
+      flex-direction: column;
+    }
+  
+    .checkout-title {
+      text-align: center;
+    }
+  }
+  
