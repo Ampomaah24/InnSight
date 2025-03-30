@@ -3,6 +3,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { db } from "../../config/firebase";
 import { addDoc, collection, serverTimestamp } from "firebase/firestore";
 import { getAuth } from "firebase/auth";
+import { PaystackButton } from "react-paystack";
 import "./Checkout.css";
 
 let persistentUserId;
@@ -44,34 +45,73 @@ const Checkout = () => {
     paymentMethod: "",
   });
 
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
+  const saveOrder = async (status = "Pending", paymentReference = "") => {
+    await addDoc(collection(db, "orders"), {
+      userId: getOrCreateUserId(),
+      ...formData,
+      cartItems,
+      subtotal,
+      vat,
+      nhil,
+      total,
+      status,
+      isGuest: true,
+      paymentReference,
+      timestamp: serverTimestamp(),
+    });
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    try {
-      await addDoc(collection(db, "orders"), {
-        userId: getOrCreateUserId(),
-        ...formData,
-        cartItems,
-        subtotal,
-        vat,
-        nhil,
-        total,
-        status: "Pending",
-        isGuest: true,
-        timestamp: serverTimestamp(),
-      });
+    if (formData.paymentMethod === "MoMo") {
+      // Payment handled by PaystackButton
+      return;
+    }
 
+    try {
+      setIsSubmitting(true);
+      await saveOrder("Pending");
       alert("Order confirmed! We’ll prepare your pickup.");
-      navigate("/my-orders");
+      navigate("/restaurant/orders");
     } catch (error) {
       console.error("Error saving order:", error);
       alert("Something went wrong. Please try again.");
+    } finally {
+      setIsSubmitting(false);
     }
+  };
+
+  const handlePaymentSuccess = async (reference) => {
+    try {
+      await saveOrder("Paid", reference.reference);
+      alert("Payment successful! Your order has been placed.");
+      navigate("/my-orders");
+    } catch (error) {
+      console.error("Error saving paid order:", error);
+      alert("Something went wrong after payment. Please contact support.");
+    }
+  };
+
+  const paystackConfig = {
+    reference: new Date().getTime().toString(),
+    email: formData.phone
+      ? `${formData.phone}@pickup.com`
+      : "guest@pickup.com",
+    amount: Number(total) * 100, // Paystack uses kobo
+    currency: "GHS", // ✅ 
+    publicKey: "pk_test_8b02dfc94aa31f78f2f3214086e81616365346c5", // ✅ no leading space
+    metadata: {
+      name: formData.name,
+      phone: formData.phone,
+    },
   };
 
   return (
@@ -162,10 +202,30 @@ const Checkout = () => {
                   <option value="Cash">Cash on Pickup</option>
                 </select>
               </label>
+              {formData.paymentMethod === "MoMo" &&
+ formData.phone &&
+ formData.name &&
+ total > 0 ? (
+  <>
+    {console.log("Paystack config:", paystackConfig)}
+    <PaystackButton
+      className="confirm-btn"
+      {...paystackConfig}
+      text="Pay with MoMo"
+      onSuccess={handlePaymentSuccess}
+      onClose={() => alert("Payment window closed")}
+    />
+  </>
+ ) : (
+   <button
+     type="submit"
+     className="confirm-btn"
+     disabled={isSubmitting}
+   >
+     {isSubmitting ? "Submitting..." : "Confirm Pickup Order"}
+   </button>
+ )}
 
-              <button type="submit" className="confirm-btn">
-                Confirm Pickup Order
-              </button>
             </form>
           </div>
         </div>
