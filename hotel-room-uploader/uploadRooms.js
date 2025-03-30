@@ -12,6 +12,8 @@ admin.initializeApp({
 const db = admin.firestore();
 const rooms = JSON.parse(fs.readFileSync("rooms.json", "utf8"));
 
+
+
 async function uploadRooms() {
   const batch = db.batch();
   rooms.forEach((room) => {

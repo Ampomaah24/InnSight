@@ -1,8 +1,8 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { createUserWithEmailAndPassword } from "firebase/auth";
-import { setDoc, doc } from "firebase/firestore"; // Firestore functions
-import { auth, db } from "../config/firebase"; // Import Firestore
+import { setDoc, doc } from "firebase/firestore";
+import { auth, db } from "../config/firebase";
 import "../assets/styles/SignUp.css";
 
 export default function SignUp() {
@@ -22,29 +22,46 @@ export default function SignUp() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
+
+    // Reset error message
+    setError("");
+
+    // Check if passwords match
     if (formData.password !== formData.confirmPassword) {
       setError("Passwords do not match.");
       return;
     }
 
+    // Password strength validation
+    const strongPasswordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+    if (!strongPasswordRegex.test(formData.password)) {
+      setError(
+        "Password must be at least 8 characters and include uppercase, lowercase, number, and special character."
+      );
+      return;
+    }
+
     try {
-      const userCredential = await createUserWithEmailAndPassword(auth, formData.email, formData.password);
+      const userCredential = await createUserWithEmailAndPassword(
+        auth,
+        formData.email,
+        formData.password
+      );
       const user = userCredential.user;
 
-      // ✅ Save user role in Firestore
       await setDoc(doc(db, "users", user.uid), {
         fullName: formData.fullName,
         email: formData.email,
         uid: user.uid,
-        role: "user",  // Default role is "user"
+        role: "user",
         createdAt: new Date(),
       });
 
       console.log("User registered and saved to Firestore:", user.email);
-      navigate("/"); // Redirect to home page
+      navigate("/");
     } catch (err) {
-      setError("Error signing up. Please try again.");
+      console.error("Firebase error:", err.code, err.message);
+      setError(err.message);
     }
   };
 

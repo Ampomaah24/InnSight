@@ -1,187 +1,194 @@
-/* General Styling */
-.booking-container {
-    max-width: 56.25rem; /* 900px */
-    width: 100%;
-    margin: 3.125rem auto; /* 50px */
-    padding: 2.5rem; /* 40px */
-    background: white;
-    border-radius: 0.75rem; /* 12px */
-    box-shadow: 0rem 0.3125rem 0.9375rem rgba(0, 0, 0, 0.15); /* 5px 15px */
+.booking-page-wrapper {
+    display: flex;
+    max-width: 80rem; /* 1200px */
+    height: auto;
+    margin: 2rem auto;
+    border-radius: 1rem;
+    overflow: hidden;
+    box-shadow: 0 0 1.875rem rgba(0, 0, 0, 0.08); /* 30px */
+    background-color: white;
     font-family: "Poppins", sans-serif;
-}
-
-.booking-summary {
-    background: #f8f9fa;
-    padding: 1.5rem;
-    border-radius: 10px;
-    margin-bottom: 1.5rem;
   }
-  .total-amount {
-    font-size: 1.2rem;
-    font-weight: bold;
-    color: #d9534f;
-    margin-top: 1rem;
+  
+  /* Visual section */
+  .booking-illustration {
+    flex: 1;
+    background-color: #dbeafe;
+    display: flex;
+    align-items: stretch;
+    justify-content: stretch;
   }
-/* Form Heading */
-h2 {
-    font-size: 2rem;
-    font-weight: bold;
-    color: #333;
-    text-align: center;
-}
-
-p {
-    font-size: 1rem;
-    color: #666;
-    text-align: center;
-    margin-bottom: 1.25rem; /* 20px */
-}
-
-.selected-rooms-dropdown select {
+  .pickup-row {
+    display: flex;
+    gap: 1rem;
+  }
+  
+  .pickup-row .half-width {
+    flex: 1;
+  }
+  
+  .booking-illustration img {
     width: 100%;
-    padding: 0.75rem;
-    border-radius: 5px;
-    border: 1px solid #ccc;
-    font-size: 1rem;
+    height: 100%;
+    object-fit: cover;
   }
-/* Grid Layout to Make Form Wider */
-.booking-form {
+  
+  /* Form section */
+  .booking-container {
+    flex: 1.5;
+    padding: 2rem 2.5rem;
+    background: #ffffff;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    border-top-right-radius: 1rem;
+    border-bottom-right-radius: 1rem;
+  }
+  
+  .booking-container h2 {
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: #2c3e50;
+    margin-bottom: 0.2rem;
+  }
+  
+  .booking-container p {
+    font-size: 0.9rem;
+    color: #666;
+    margin-bottom: 1.2rem;
+  }
+  
+  .booking-form {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
-    gap: 1.25rem; /* 20px */
-    align-items: center;
-}
-
-
+    gap: 0.75rem 1rem;
+  }
   
-/* Full Width Elements (Dropdowns, Textareas, etc.) */
-.full-width {
+  /* Compact label + input */
+  .booking-form label {
+    font-weight: 600;
+    font-size: 0.85rem;
+    margin-bottom: 0.2rem;
+    display: block;
+  }
+  
+  .booking-form input,
+  .booking-form select,
+  .booking-form textarea {
+    width: 100%;
+    padding: 0.5rem 0.6rem;
+    font-size: 0.9rem;
+    border: 1px solid #ccc;
+    border-radius: 0.35rem;
+    transition: border-color 0.3s;
+    background: #fff;
+  }
+  
+  .booking-form input:focus,
+  .booking-form select:focus,
+  .booking-form textarea:focus {
+    border-color: #007bff;
+    outline: none;
+  }
+  
+  /* Guest input row now inline and cleaner */
+  .guest-input-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+  }
+  
+  .guest-input-row input {
+    max-width: 3.5rem;
+    padding: 0.4rem 0.5rem;
+    font-size: 0.85rem;
+    border-radius: 0.3rem;
+    border: 1px solid #ccc;
+  }
+  
+  /* Two-column items should span both if needed */
+  .full-width {
     grid-column: span 2;
-}
-
-/* Labels */
-.booking-form label {
+  }
+  
+  /* Booking summary info */
+  .booking-info p {
+    font-size: 0.9rem;
+    margin: 0.2rem 0;
+    color: #444;
+  }
+  
+  /* Submit button */
+  .confirm-booking {
+    grid-column: span 2;
+    background: #007bff;
+    color: white;
+    padding: 0.8rem;
     font-size: 1rem;
     font-weight: 600;
-    color: #444;
-    display: block;
-    margin-bottom: 0.3125rem; /* 5px */
-}
-
-/* Input Fields & Select Dropdown */
-.booking-form input,
-.booking-form select,
-.booking-form textarea {
-    width: 100%;
-    padding: 0.75rem; /* 12px */
-    font-size: 1rem;
-    border: 0.0625rem solid #ddd; /* 1px */
-    border-radius: 0.5rem; /* 8px */
-    transition: 0.3s ease-in-out;
-    background-color: white !important;
-    color: black !important;
-}
-
-/* Override dark mode autofill */
-.booking-form input:-webkit-autofill,
-.booking-form select:-webkit-autofill,
-.booking-form textarea:-webkit-autofill {
-    background-color: white !important;
-    color: black !important;
-    -webkit-box-shadow: 0 0 0rem 1000rem white inset !important;
-}
-
-/* Focus State */
-.booking-form input:focus,
-.booking-form select:focus,
-.booking-form textarea:focus {
-    border-color: #007bff;
-    box-shadow: 0rem 0rem 0.3125rem rgba(0, 123, 255, 0.3); /* 5px */
-}
-
-/* Radio Buttons */
-.radio-group {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-
-.radio-group label {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem; /* 8px */
-}
-
-/* Radio Button Styling */
-.radio-group input[type="radio"] {
-    accent-color: #007bff;
-    width: 1.125rem; /* 18px */
-    height: 1.125rem; /* 18px */
-}
-
-/* Payment Option & Alert */
-.warning-text {
-    font-size: 1rem;
-    color: red;
-    text-align: center;
-    font-weight: bold;
-    margin-bottom: 1rem;
-}
-
-/* Button Styling */
-.confirm-booking {
-    background: linear-gradient(135deg, #007bff, #0056b3);
-    color: white;
     border: none;
-    padding: 1rem; /* 16px */
-    font-size: 1.1rem;
-    font-weight: bold;
-    border-radius: 0.5rem; /* 8px */
+    border-radius: 0.45rem;
     cursor: pointer;
-    transition: 0.3s ease-in-out;
-    width: 90%;
-    text-align: center;
-    grid-column: span 2; /* Full width button */
-}
+    transition: background 0.3s;
+    margin-top: 0.3rem;
+  }
+  
+  .confirm-booking:hover {
+    background: #0056b3;
+  }
 
-.confirm-booking:hover {
-    background: linear-gradient(135deg, #0056b3, #003e7e);
-}
-
-.hidden-button {
-    display: none;
-}  
-
-/* Responsive Adjustments */
-@media (max-width: 48rem) { /* 768px */
+  .react-phone-number-input {
+    margin-bottom: 1rem;
+    width: 100%;
+  }
+  
+  .react-phone-number-input input {
+    width: 100%;
+    padding: 0.5rem;
+    font-size: 1rem;
+    border-radius: 4px;
+    border: 1px solid #ccc;
+  }
+  
+  
+  /* Responsive tweaks */
+  @media (max-width: 56.25rem) {
+    .booking-page-wrapper {
+      flex-direction: column;
+      height: auto;
+      max-width: 95%;
+    }
+  
+    .booking-illustration {
+      display: none;
+    }
+  
     .booking-container {
-        max-width: 90%;
-        padding: 1.5rem; /* 24px */
+      border-radius: 0;
+      padding: 1.5rem;
     }
+    .pickup-details-row {
+        display: flex;
+        gap: 1rem;
+        width: 100%;
+      }
+      
+      .third-width {
+        flex: 1;
+      }
+      
     .booking-form {
-        grid-template-columns: 1fr; /* Single column for mobile */
+      grid-template-columns: 1fr;
     }
+  
+    .confirm-booking {
+      grid-column: span 1;
+    }
+  }
+  
+  /* Force all text to be black for consistency */
+.booking-page-wrapper,
+.booking-page-wrapper * {
+  color: #000 !important;
 }
-.popup.success-popup {
-    position: fixed;
-    top: 2rem;
-    left: 50%;
-    transform: translateX(-50%);
-    background-color: #4caf50;
-    color: white;
-    padding: 1rem 2rem;
-    border-radius: 10px;
-    font-weight: bold;
-    box-shadow: 0 0 10px rgba(0,0,0,0.1);
-    z-index: 9999;
-    animation: fadeOut 2s ease-in-out forwards;
-    animation-delay: 1.5s;
-  }
-  
-  @keyframes fadeOut {
-    to {
-      opacity: 0;
-      transform: translate(-50%, -20px);
-    }
-  }
-  

@@ -12,6 +12,12 @@ body, html {
   
   font-size: 16px;
 }
+.discount-label {
+  color: green;
+  font-weight: 600;
+  font-size: 0.9rem;
+  margin-left: 0.5rem;
+}
 
 /* ✅ Navbar - Properly Positioned */
 .navbar {

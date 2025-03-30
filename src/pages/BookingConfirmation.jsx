@@ -46,7 +46,7 @@ const BookingConfirmation = () => {
         Thank you for your booking. A confirmation has been sent to{" "}
         <strong>{booking?.email}</strong>.
       </p>
-      <button onClick={() => navigate("/")}>Back to Home</button>
+      <button onClick={() => navigate("/services")}>Back</button>
     </div>
   );
 };
