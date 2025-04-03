@@ -15,6 +15,8 @@ const NavMenu = ({ menuOpen, setMenuOpen }) => {
             <Link to="/conference-listings" onClick={() => setMenuOpen(false)}>Conference Room Listings</Link>
             <Link to="/profile" onClick={() => setMenuOpen(false)}>Profile</Link>
             <Link to="/contact" onClick={() => setMenuOpen(false)}>Contact Us</Link>
+            <Link to="/" onClick={() => setMenuOpen(false)}>Logout</Link>
+
           </div>
         )}
       </div>

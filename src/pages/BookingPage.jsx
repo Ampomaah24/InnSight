@@ -8,6 +8,7 @@ import {
 import { PaystackConsumer } from "react-paystack";
 import PhoneInput, { isValidPhoneNumber } from "react-phone-number-input";
 import "react-phone-number-input/style.css";
+import NavMenu from "../components/NavMenu"; // Import NavMenu component
 import "../assets/styles/BookingPage.css";
 
 const getRoomCapacity = (type) => {
@@ -23,6 +24,7 @@ const BookingPage = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const auth = getAuth();
+  const [menuOpen, setMenuOpen] = useState(false); // State for NavMenu
 
   const params = new URLSearchParams(location.search);
   const selectedRooms = params.get("rooms") ? JSON.parse(decodeURIComponent(params.get("rooms"))) : [];
@@ -46,6 +48,11 @@ const BookingPage = () => {
     selectedRooms.forEach((room, idx) => { initial[room.id || idx] = 1; });
     return initial;
   });
+
+  // Fix scroll to top on page load
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
 
   const checkInDate = new Date(formData.checkIn);
   const checkOutDate = new Date(formData.checkOut);
@@ -210,149 +217,156 @@ const BookingPage = () => {
   };
 
   return (
-    <div className="booking-page-wrapper">
-      <div className="booking-illustration">
-        <img src="src/assets/images/IMG_0123.JPG" alt="Booking" />
+    <>
+      {/* NavMenu in top left */}
+      <div className="nav-container">
+        <NavMenu menuOpen={menuOpen} setMenuOpen={setMenuOpen} />
       </div>
-      <div className="booking-container">
-        <h2>Book Your Room</h2>
-        <p>Please complete the form to confirm your stay.</p>
 
-        <form className="booking-form" onSubmit={(e) => e.preventDefault()}>
-          {/* Basic Info */}
-          <div><label>First Name</label><input type="text" name="firstName" value={formData.firstName} onChange={handleChange} required /></div>
-          <div><label>Last Name</label><input type="text" name="lastName" value={formData.lastName} onChange={handleChange} required /></div>
-          <div><label>Email</label><input type="email" name="email" value={formData.email} onChange={handleChange} required /></div>
-          <div>
-            <label>Phone</label>
-            <PhoneInput
-              international
-              defaultCountry="GH"
-              value={formData.phone}
-              onChange={handlePhoneChange}
-              className={phoneError ? "error" : ""}
-            />
-            {phoneError && <small style={{ color: "red" }}>Please enter a valid international phone number</small>}
-          </div>
+      <div className="booking-page-wrapper">
+        <div className="booking-illustration">
+          <img src="src/assets/images/IMG_0123.JPG" alt="Booking" />
+        </div>
+        <div className="booking-container">
+          <h2>Book Your Room</h2>
+          <p>Please complete the form to confirm your stay.</p>
 
-          {/* Guest Count */}
-          {selectedRooms.map((room, idx) => {
-            const roomId = room.id || idx;
-            const isConference = roomCategory === "conference";
-            const max = getRoomCapacity(room.t_room || "");
-            return (
-              <div className="guest-input-row full-width" key={roomId}>
-                <label>
-                  {isConference
-                    ? `Number of Attendees for ${room.name || room.type}`
-                    : `Guests for ${room.t_room || room.name} (Max ${max})`}
-                </label>
-                <input
-                  type="number"
-                  min="1"
-                  {...(!isConference && { max })}
-                  value={guestCounts[roomId]}
-                  onChange={(e) => handleGuestChange(roomId, e.target.value)}
-                />
-              </div>
-            );
-          })}
-
-          {/* Conference Stay Option */}
-          {roomCategory === "conference" && (
+          <form className="booking-form" onSubmit={(e) => e.preventDefault()}>
+            {/* Basic Info */}
+            <div><label>First Name</label><input type="text" name="firstName" value={formData.firstName} onChange={handleChange} required /></div>
+            <div><label>Last Name</label><input type="text" name="lastName" value={formData.lastName} onChange={handleChange} required /></div>
+            <div><label>Email</label><input type="email" name="email" value={formData.email} onChange={handleChange} required /></div>
             <div>
-              <label>Also booking rooms to stay?</label>
-              <select
-                name="alsoBookingStay"
-                value={formData.alsoBookingStay}
-                onChange={handleChange}
-              >
-                <option value="No">No</option>
-                <option value="Yes">Yes</option>
-              </select>
+              <label>Phone</label>
+              <PhoneInput
+                international
+                defaultCountry="GH"
+                value={formData.phone}
+                onChange={handlePhoneChange}
+                className={phoneError ? "error" : ""}
+              />
+              {phoneError && <small style={{ color: "red" }}>Please enter a valid international phone number</small>}
             </div>
-          )}
 
-          {/* Airport Pickup */}
-          {formData.alsoBookingStay === "No" && (
-            <>
-              <div><label>Airport Pickup</label>
-                <select name="airportPickup" value={formData.airportPickup} onChange={handleChange}>
+            {/* Guest Count */}
+            {selectedRooms.map((room, idx) => {
+              const roomId = room.id || idx;
+              const isConference = roomCategory === "conference";
+              const max = getRoomCapacity(room.t_room || "");
+              return (
+                <div className="guest-input-row full-width" key={roomId}>
+                  <label>
+                    {isConference
+                      ? `Number of Attendees for ${room.name || room.type}`
+                      : `Guests for ${room.t_room || room.name} (Max ${max})`}
+                  </label>
+                  <input
+                    type="number"
+                    min="1"
+                    {...(!isConference && { max })}
+                    value={guestCounts[roomId]}
+                    onChange={(e) => handleGuestChange(roomId, e.target.value)}
+                  />
+                </div>
+              );
+            })}
+
+            {/* Conference Stay Option */}
+            {roomCategory === "conference" && (
+              <div>
+                <label>Also booking rooms to stay?</label>
+                <select
+                  name="alsoBookingStay"
+                  value={formData.alsoBookingStay}
+                  onChange={handleChange}
+                >
                   <option value="No">No</option>
                   <option value="Yes">Yes</option>
                 </select>
               </div>
-
-              {formData.airportPickup === "Yes" && (
-                <>
-                  <div className="pickup-row full-width">
-                    <div className="half-width">
-                      <label>Pickup Date</label>
-                      <input type="date" name="pickupDate" value={formData.pickupDate} onChange={handleChange} required />
-                    </div>
-                    <div className="half-width">
-                      <label>Pickup Time</label>
-                      <input type="time" name="pickupTime" value={formData.pickupTime} onChange={handleChange} required />
-                    </div>
-                  </div>
-                  <div className="full-width">
-                    <label>Flight Number</label>
-                    <input type="text" name="flightNumber" value={formData.flightNumber} onChange={handleChange} placeholder="e.g., KQ 507" required />
-                  </div>
-                </>
-              )}
-            </>
-          )}
-
-          {/* Payment and Requests */}
-          <div className="full-width">
-            <label>Payment Option</label>
-            <select name="paymentOption" value={formData.paymentOption} onChange={handleChange}>
-              <option>Full Payment</option>
-              <option>Deposit for Reservation</option>
-            </select>
-          </div>
-
-          <div className="full-width">
-            <label>Special Requests</label>
-            <textarea name="specialRequests" value={formData.specialRequests} onChange={handleChange} />
-          </div>
-
-          {/* Summary */}
-          <div className="full-width booking-info">
-            <p><strong>Check-In:</strong> {new Date(formData.checkIn).toLocaleDateString()}</p>
-            <p><strong>Check-Out:</strong> {new Date(formData.checkOut).toLocaleDateString()}</p>
-            <p><strong>Total:</strong> GHS {totalAmount.toFixed(2)}</p>
-            <p><strong>Paying:</strong> GHS {paymentAmount.toFixed(2)}</p>
-            {formData.paymentOption === "Deposit for Reservation" && (
-              <small style={{ color: "orange" }}>20% deposit applied. Remaining due at check-in.</small>
             )}
-            {discount > 0 && (
-              <small style={{ color: "green" }}>
-                {discount}% discount applied for booking for conference attendees
-              </small>
-            )}
-          </div>
 
-          {/* Pay Button */}
-          <div className="full-width">
-            <PaystackConsumer {...config} onSuccess={onSuccess} onClose={() => alert("Payment cancelled")}>
-              {({ initializePayment }) => (
-                <button type="button" className="confirm-booking" onClick={() => {
-                  if (!isFormValid) {
-                    alert("Please complete all fields correctly. Ensure phone number and pickup info (if applicable) are valid.");
-                  } else {
-                    initializePayment();
-                  }
-                }}>
-                  Complete Booking
-                </button>
+            {/* Airport Pickup */}
+            {formData.alsoBookingStay === "No" && (
+              <>
+                <div><label>Airport Pickup</label>
+                  <select name="airportPickup" value={formData.airportPickup} onChange={handleChange}>
+                    <option value="No">No</option>
+                    <option value="Yes">Yes</option>
+                  </select>
+                </div>
+
+                {formData.airportPickup === "Yes" && (
+                  <>
+                    <div className="pickup-row full-width">
+                      <div className="half-width">
+                        <label>Pickup Date</label>
+                        <input type="date" name="pickupDate" value={formData.pickupDate} onChange={handleChange} required />
+                      </div>
+                      <div className="half-width">
+                        <label>Pickup Time</label>
+                        <input type="time" name="pickupTime" value={formData.pickupTime} onChange={handleChange} required />
+                      </div>
+                    </div>
+                    <div className="full-width">
+                      <label>Flight Number</label>
+                      <input type="text" name="flightNumber" value={formData.flightNumber} onChange={handleChange} placeholder="e.g., KQ 507" required />
+                    </div>
+                  </>
+                )}
+              </>
+            )}
+
+            {/* Payment and Requests */}
+            <div className="full-width">
+              <label>Payment Option</label>
+              <select name="paymentOption" value={formData.paymentOption} onChange={handleChange}>
+                <option>Full Payment</option>
+                <option>Deposit for Reservation</option>
+              </select>
+            </div>
+
+            <div className="full-width">
+              <label>Special Requests</label>
+              <textarea name="specialRequests" value={formData.specialRequests} onChange={handleChange} />
+            </div>
+
+            {/* Summary */}
+            <div className="full-width booking-info">
+              <p><strong>Check-In:</strong> {new Date(formData.checkIn).toLocaleDateString()}</p>
+              <p><strong>Check-Out:</strong> {new Date(formData.checkOut).toLocaleDateString()}</p>
+              <p><strong>Total:</strong> GHS {totalAmount.toFixed(2)}</p>
+              <p><strong>Paying:</strong> GHS {paymentAmount.toFixed(2)}</p>
+              {formData.paymentOption === "Deposit for Reservation" && (
+                <small style={{ color: "orange" }}>20% deposit applied. Remaining due at check-in.</small>
               )}
-            </PaystackConsumer>
-          </div>
-        </form>
+              {discount > 0 && (
+                <small style={{ color: "green" }}>
+                  {discount}% discount applied for booking for conference attendees
+                </small>
+              )}
+            </div>
+
+            {/* Pay Button */}
+            <div className="full-width">
+              <PaystackConsumer {...config} onSuccess={onSuccess} onClose={() => alert("Payment cancelled")}>
+                {({ initializePayment }) => (
+                  <button type="button" className="confirm-booking" onClick={() => {
+                    if (!isFormValid) {
+                      alert("Please complete all fields correctly. Ensure phone number and pickup info (if applicable) are valid.");
+                    } else {
+                      initializePayment();
+                    }
+                  }}>
+                    Complete Booking
+                  </button>
+                )}
+              </PaystackConsumer>
+            </div>
+          </form>
+        </div>
       </div>
-    </div>
+    </>
   );
 };
 

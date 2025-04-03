@@ -23,6 +23,7 @@ import Menu from './pages/restaurant/Menu';
 import Cart from './pages/restaurant/Cart';
 import Checkout from './pages/restaurant/Checkout';
 import Orders from './pages/restaurant/Orders';
+import Profile from './pages/ProfilePage';
 
 
 
@@ -54,6 +55,9 @@ const App = () => {
         <Route path="/restaurant/cart" element={<Cart />} />
         <Route path="/restaurant/checkout" element={<Checkout />} />
         <Route path="/restaurant/orders" element={<Orders />} />
+        <Route path="/profile" element={<Profile />} />
+
+
 
 
       </Routes>

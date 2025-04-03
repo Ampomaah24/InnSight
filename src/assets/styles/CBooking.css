@@ -1,140 +1,436 @@
+/* Reset */
 * {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html, body {
+  width: 100%;
+  height: 100%;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  font-size: 16px;
+  overflow-x: hidden;
+  color: #333;
+  background-color: #f8f9fa;
+}
+
+/* NavMenu positioning fixes */
+.nav-container {
+  display: flex;
+  justify-content: flex-start;
+  padding: 1rem 2rem;
+  width: 100%;
+  position: relative;
+  z-index: 100;
+}
+
+/* Main Container */
+.croom-booking-container {
+  width: 100%;
+  min-height: 100vh;
+  padding: 0 0 80px 0;
+  background-color: #f8f9fa;
+  position: relative;
+}
+
+/* Heading */
+.title {
+  font-size: 2.2rem;
+  font-weight: 600;
+  color: #333;
+  text-align: center;
+  margin: 2.5rem 0 2rem;
+  position: relative;
+}
+
+.title:after {
+  content: "";
+  display: block;
+  width: 80px;
+  height: 3px;
+  background-color: #e67e22;
+  position: absolute;
+  bottom: -10px;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+/* Conference Room Content */
+.croom-content {
+  display: flex;
+  flex-direction: column;
+  max-width: 1200px;
+  width: 90%;
+  margin: 2.5rem auto;
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.08);
+  overflow: hidden;
+  padding-bottom: 1.5rem;
+}
+
+/* Conference Room Image Section */
+.croom-image-section {
+  position: relative;
+  width: 100%;
+  padding: 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.croom-image {
+  position: relative;
+  width: 100%;
+  border-radius: 6px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.croom-image img {
+  width: 100%;
+  height: auto;
+  display: block;
+  aspect-ratio: 16/9;
+  object-fit: cover;
+}
+
+/* Navigation Buttons */
+.nav-button {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 45px;
+  height: 45px;
+  background-color: rgba(255, 255, 255, 0.8);
+  border: none;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 2;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.15);
+  font-size: 1.2rem;
+  transition: all 0.2s ease;
+  color: #333;
+}
+
+.nav-button:hover {
+  background-color: #fff;
+  color: #e67e22;
+}
+
+.nav-button.left {
+  left: 1rem;
+}
+
+.nav-button.right {
+  right: 1rem;
+}
+
+/* Conference Room Pagination */
+.croom-pagination {
+  position: absolute;
+  bottom: 15px;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: rgba(0, 0, 0, 0.6);
+  color: white;
+  padding: 0.25rem 0.75rem;
+  border-radius: 20px;
+  font-size: 0.85rem;
+  font-weight: 500;
+}
+
+/* Conference Room Details */
+.croom-details {
+  padding: 0 1.5rem 1rem;
+  width: 100%;
+}
+
+/* Room Name */
+.room-name {
+  font-size: 1.6rem;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 1rem;
+}
+
+/* Price */
+.price {
+  font-size: 1.5rem;
+  margin-bottom: 1rem;
+  color: #333;
+  font-weight: 600;
+}
+
+.price span {
+  font-size: 1rem;
+  font-weight: normal;
+  color: #666;
+}
+
+/* Conference Facilities */
+.includes {
+  margin-bottom: 1.5rem;
+}
+
+.includes h4 {
+  margin-bottom: 1rem;
+  font-weight: 600;
+  font-size: 1.15rem;
+  color: #444;
+}
+
+.includes ul {
+  list-style: none;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 0.7rem;
+  padding: 0;
+}
+
+.includes li {
+  display: flex;
+  align-items: center;
+}
+
+.includes li:before {
+  content: "✓";
+  color: #e67e22;
+  margin-right: 0.5rem;
+  font-weight: bold;
+}
+
+/* Conference Details Section */
+.conference-details {
+  background-color: #f9f9f9;
+  padding: 1.2rem;
+  border-radius: 6px;
+  margin-bottom: 1.5rem;
+}
+
+.conference-details h4 {
+  margin-bottom: 0.8rem;
+  font-weight: 600;
+  color: #444;
+}
+
+.conference-details p {
+  color: #666;
+  line-height: 1.5;
+}
+
+/* Book Now Button */
+.book-now {
+  background-color: #e67e22;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  padding: 0.9rem 1.5rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-size: 1rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  display: block;
+  margin: 1.5rem auto 0;
+  width: 100%;
+  max-width: 200px;
+  text-align: center;
+}
+
+.book-now:hover {
+  background-color: #d35400;
+}
+
+/* Date Information */
+.date-info {
+  background-color: white;
+  padding: 1.2rem 1.5rem;
+  border-radius: 8px;
+  margin: 0 auto 1.5rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  max-width: 1200px;
+  width: 90%;
+}
+
+.date-info p {
+  margin: 0.5rem 1rem 0.5rem 0;
+  font-size: 1rem;
+  color: #555;
+}
+
+.date-label {
+  font-weight: 600;
+  color: #333;
+  margin-right: 0.5rem;
+}
+
+/* Capacity and Size Info */
+.room-specs {
+  display: flex;
+  gap: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.spec-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.spec-icon {
+  color: #e67e22;
+  font-size: 1.1rem;
+}
+
+.spec-text {
+  color: #555;
+}
+
+/* Special Offers */
+.special-offer {
+  background-color: rgba(39, 174, 96, 0.1);
+  border-radius: 4px;
+  padding: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.special-offer h4 {
+  color: #27ae60;
+  margin-bottom: 0.5rem;
+  font-weight: 600;
+}
+
+.special-offer p {
+  color: #444;
+  font-size: 0.95rem;
+}
+
+/* Loading State */
+.loading-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+  width: 100%;
+  gap: 1.5rem;
+  background-color: #f8f9fa;
+}
+
+.spinner {
+  width: 3.5rem;
+  height: 3.5rem;
+  border: 4px solid rgba(0, 0, 0, 0.1);
+  border-left-color: #e67e22;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
   }
-  
-  body, html {
-    margin: 0; 
-    padding: 0;
-    width: 100%;
-    height: 100%;
-    overflow-x: hidden; 
-    color:black;
-  }
-  
-  .croom-booking-container {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    width: 100vw;
-    height: 100vh;
-    background-color: white; /* Light pink background */
-    font-family: Arial, sans-serif;
-    padding-top: 1.25rem; /* Push content down so it's not covered */
-    
-  }
-  
-  .title {
-    position: relative;
-    width: 100%;
-    text-align: center;
-    font-size: 2rem;
-    font-weight: bold;
-    background: white; /* Blend with background */
-    padding: 1.25rem 0;
-    z-index: 100;
-    color: black;
-  }
-  
+}
+
+.loading-text {
+  font-size: 1.2rem;
+  color: #555;
+}
+
+/* No Rooms Available */
+.no-rooms-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 70vh;
+  width: 100%;
+}
+
+.no-rooms-content {
+  text-align: center;
+  background-color: white;
+  padding: 2.5rem;
+  border-radius: 8px;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+  max-width: 550px;
+  width: 90%;
+}
+
+.no-rooms-content h2 {
+  margin-bottom: 1rem;
+  color: #333;
+  font-size: 1.8rem;
+}
+
+.no-rooms-content p {
+  margin-bottom: 1.5rem;
+  color: #666;
+  font-size: 1.1rem;
+}
+
+.back-button {
+  background-color: #e67e22;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  padding: 0.9rem 1.8rem;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  margin-top: 1rem;
+  transition: background-color 0.2s;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.back-button:hover {
+  background-color: #d35400;
+}
+
+/* Responsive Design */
+@media (min-width: 768px) {
   .croom-content {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    width: 80%;
-    max-width: 75rem;
-    gap: 1.875rem;
-    
+    flex-direction: row;
+    flex-wrap: wrap;
+    padding: 0;
   }
   
-  .croom-image img {
-    width: 100%;
-    max-width: 31.25rem;
-    height: auto;
-    border-radius: 0.5rem;
-    box-shadow: 0 0.25rem 0.5rem rgba(0, 0, 0, 0.1);
-    
-  }
-  
-  .nav-button {
-    background-color: transparent;
-    border: 0.125rem solid transparent; /* 2px */
-    color: black;
-    border-radius: 1.875rem; /* 30px */
-    width: 3.125rem; /* 50px */
-    height: 3.125rem; /* 50px */
-    font-size: 1.5rem; /* 24px */
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: 0.3s ease-in-out;
-  }
-  
-  .nav-button:hover {
-    background-color: black;
-    color: white;
+  .croom-image-section {
+    width: 60%;
+    padding: 1.5rem;
   }
   
   .croom-details {
-    flex: 1;
-    padding: 1.25rem; /* 20px */
-    color: black;
+    width: 40%;
+    padding: 1.5rem;
   }
-  
-  .price {
-    font-size: 1.375rem; /* 22px */
-    font-weight: bold;
-    margin-bottom: 0.625rem; /* 10px */
-    color: black;
-  }
-  
-  ul {
-    list-style-type: disc;
-    padding-left: 1.25rem; /* 20px */
-    
-  }
-  
-  .croom-pagination {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: fit-content;
-    background-color: #e0e0e0; /* Light gray background */
-    padding: 0.5rem 1.25rem; /* Adjust padding to enclose all text */
-    border-radius:0.5rem; /* Rounded corners */
-    font-size: 1.125rem;
-    font-weight: bold;
-    color: black;
-    margin-top: 0.625rem;
-    margin-left: auto;
-    margin-right: auto;
-    text-align: center;
-    gap: 0.3125rem;
-    
-  }
-  
-  .book-now {
-    display: block;
-    margin-top: 1.25rem; /* 20px */
-    padding: 0.75rem 1.5rem; /* 12px 24px */
-    background-color: #007bff;
-    color: white;
-    font-size: 1.125rem; /* 18px */
-    font-weight: bold;
-    border: none;
-    border-radius: 0.5rem; /* 8px */
-    cursor: pointer;
-    transition: 0.3s ease-in-out;
-    text-align: center;
-    width: 100%;
-    max-width: 12.5rem; /* 200px */
-   
-  }
-  
-  .book-now:hover {
-    background-color: #0056b3;
-  }
+}
 
- 
+@media (max-width: 767px) {
+  .room-specs {
+    flex-direction: column;
+    gap: 0.7rem;
+  }
+  
+  .title {
+    font-size: 1.8rem;
+  }
+  
+  .date-info {
+    flex-direction: column;
+  }
+  
+  .date-info p {
+    margin: 0.3rem 0;
+  }
+}

@@ -1,159 +1,342 @@
 /* General Styling */
 body, html {
-    margin: 0;
-    padding: 0;
-    width: 100%;
-    height: 100%;
-    font-family: 'Arial', sans-serif;
-    background-color: #ffffff;
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  height: 100%;
+  font-family: 'Poppins', 'Arial', sans-serif;
+  background-color: #ffffff;
 }
 
-/* Booking Services Heading */
-.booking-services-heading {
-    font-size: 1.75rem; /* 28px */
-    font-weight: bold;
-    color: #333;
-    margin: 3%; /* Remove bottom margin */
-    padding-left: 1rem; /* Add left spacing to separate from NavMenu */
-    margin-bottom: 0.5rem;
-    text-align: center;
+:root {
+  --primary-color: #e05206;
+  --primary-dark: #c04400;
+  --primary-light: #ff7a3c;
+  --secondary-color: #2a3b4c;
+  --accent-gold: #c8a97e;
+  --text-dark: #333;
+  --text-light: #666;
+  --bg-light: #fff;
+  --border-radius: 0.5rem;
 }
 
 /* Services Page Container */
 .services-page {
-    width: 100%;
-    max-width: 87.5rem; /* 1400px -> 87.5rem */
-    margin: auto;
-    padding: 2.5rem; /* 40px -> 2.5rem */
-    position: relative;
+  width: 100%;
+  max-width: 87.5rem; /* 1400px */
+  margin: 0 auto;
+  padding: 5rem 1.5rem 1.5rem; /* Increased top padding to account for fixed nav */
+  position: relative;
+  background-color: var(--bg-light);
+}
+
+/* Nav Container for Fixed Header - moved to top */
+.nav-container {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.75rem 1.5rem;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 1000;
+  
+}
+
+
+/* Booking Services Heading - centered */
+.booking-services-heading {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--primary-color);
+  margin: 0;
+  text-align: center;
+  flex-grow: 1;
+  position: relative;
+}
+
+.booking-services-heading::after {
+  content: '';
+  position: absolute;
+  width: 3rem;
+  height: 0.125rem;
+  background-color: var(--primary-color);
+  bottom: -0.5rem;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+/* Profile Bar (Top-right clickable user info) */
+.profile-bar {
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  background-color: #ff7a3c;
+  padding: 0.5rem 1.25rem;
+  border-radius: 2rem;
+  transition: all 0.3s ease;
+  margin-left: 1rem;
+}
+
+.profile-bar:hover {
+  transform: translateY(-0.125rem);
+  background-color: #f88a57;
+}
+
+.profile-info {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.profile-pic {
+  width: 2.5rem;
+  height: 2.5rem;
+  object-fit: cover;
+  border-radius: 50%;
+  border: 0.125rem solid #ffffff;
+}
+
+.profile-name {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #ffffff;
 }
 
 /* Services Grid */
 .services-grid {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: 3.125rem; /* 50px -> 3.125rem */
-    flex-wrap: wrap;
-    margin-top: 1.875rem; /* 30px -> 1.875rem */
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  gap: 3rem;
+  flex-wrap: wrap;
+
 }
 
 /* Service Item */
 .service-item {
-    text-align: center;
-    flex: 1;
-    min-width: 31.25rem; /* 500px -> 31.25rem */
-    cursor: pointer;
-    transition: transform 0.3s ease-in-out;
+  text-align: center;
+  flex: 0 1 45%;
+  max-width: 37.5rem; /* 600px */
+  min-width: 18.75rem; /* 300px */
+  cursor: pointer;
+  transition: all 0.3s ease-in-out;
+  margin-bottom: 2rem;
+  position: relative;
+  border-radius: var(--border-radius);
+  overflow: hidden;
 }
 
-/* Hover effect for service item */
 .service-item:hover {
-    transform: scale(1.05);
+  transform: translateY(-0.3125rem); /* -5px */
+  box-shadow: 0 0.5rem 0.9375rem rgba(224, 82, 6, 0.15); /* 8px 15px */
 }
 
 /* Service Image */
 .service-image {
-    width: 100%;
-    height: 25rem; /* 400px -> 25rem */
-    object-fit: cover;
-    border-radius: 0.625rem; /* 10px -> 0.625rem */
-    box-shadow: 0 0.25rem 0.5rem rgba(0, 0, 0, 0.2); /* 4px 8px -> 0.25rem 0.5rem */
-    transition: transform 0.3s ease-in-out;
+  width: 100%;
+  height: 20rem;
+  object-fit: cover;
+  border-radius: var(--border-radius);
+  transition: transform 0.3s ease-in-out;
+}
+
+.service-item:hover .service-image {
+  transform: scale(1.03);
 }
 
 /* Service Title */
 .service-title {
-    font-size: 1.25rem; /* 20px -> 1.25rem */
-    font-style: italic;
-    margin-top: 0.9375rem; /* 15px -> 0.9375rem */
-    color: #333;
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin-top: 1rem;
+  color: var(--primary-color);
+  position: relative;
+  padding-bottom: 0.5rem;
+}
+
+.service-title::after {
+  content: '';
+  position: absolute;
+  width: 2rem;
+  height: 0.125rem; /* 2px */
+  background-color: var(--primary-color);
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  transition: width 0.3s ease;
+}
+
+.service-item:hover .service-title::after {
+  width: 3rem;
 }
 
 /* Dropdown Styling with Smooth Transitions */
 .dropdown {
-    margin-top: 0.9375rem; /* 15px -> 0.9375rem */
-    padding: 0.9375rem; /* 15px -> 0.9375rem */
-    background-color: #f9f9f9;
-    border-radius: 0.5rem; /* 8px -> 0.5rem */
-    box-shadow: 0 0.25rem 0.5rem rgba(0, 0, 0, 0.1); /* 4px 8px -> 0.25rem 0.5rem */
-    display: flex;
-    flex-direction: column;
-    gap: 0.625rem; /* 10px -> 0.625rem */
-    width: 80%;
-    margin-left: auto;
-    margin-right: auto;
-
-    /* Smooth Transition */
-    max-height: 0;
-    opacity: 0;
-    overflow: hidden;
-    transition: max-height 0.5s ease-out, opacity 0.5s ease-out;
+  margin-top: 1rem;
+  padding: 0;
+  background-color: #f9f9f9;
+  border-radius: var(--border-radius);
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  width: 85%;
+  margin-left: auto;
+  margin-right: auto;
+  max-height: 0;
+  opacity: 0;
+  overflow: hidden;
+  transition: max-height 0.5s ease-out, opacity 0.5s ease-out, padding 0.5s ease;
+  position: absolute;
+  left: 7.5%;
+  z-index: 10;
+  border: 0.0625rem solid rgba(224, 82, 6, 0.1); /* 1px */
 }
 
-/* When dropdown is active */
 .dropdown.active {
-    max-height: 18.75rem; /* 300px -> 18.75rem */
-    opacity: 1;
+  max-height: 24rem;
+  opacity: 1;
+  padding: 1.5rem;
+  position: relative;
+  left: auto;
+}
+
+/* Label Styling */
+.dropdown label {
+  font-weight: 600;
+  margin-bottom: 0.25rem;
+  color: var(--text-dark);
+  text-align: left;
+  font-size: 1rem;
 }
 
 /* Styling for React-DatePicker */
 .react-datepicker-wrapper {
-    width: 100%;
+  width: 100%;
+  margin-bottom: 1rem;
 }
 
 .react-datepicker__input-container input {
-    width: 100%;
-    padding: 0.5rem; /* 8px -> 0.5rem */
-    border: 0.0625rem solid #ccc; /* 1px -> 0.0625rem */
-    border-radius: 0.3125rem; /* 5px -> 0.3125rem */
-    text-align: center;
-    font-size: 1rem; /* 16px -> 1rem */
-    background-color: #fff;
-    color: black;
+  width: 100%;
+  padding: 0.75rem;
+  border: 0.0625rem solid #ddd; /* 1px */
+  border-radius: 0.375rem;
+  text-align: center;
+  font-size: 1rem;
+  background-color: #fff;
+  color: var(--text-dark);
+  box-shadow: inset 0 0.0625rem 0.1875rem rgba(0,0,0,0.1); /* 1px 3px */
+  transition: all 0.3s ease;
+}
+
+.react-datepicker__input-container input:focus {
+  outline: none;
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 0.125rem rgba(224, 82, 6, 0.2); /* 2px */
 }
 
 /* Button Styling */
 .learn-more {
-    width: 60%; /* Reduce button width */
-    max-width: 15.625rem; /* 250px -> 15.625rem */
-    padding: 0.625rem 0.9375rem; /* 10px 15px -> 0.625rem 0.9375rem */
-    font-size: 1rem; /* 16px -> 1rem */
-    font-weight: bold;
-    background-color: #e67e22; /* Warm orange color */
-    color: white;
-    border: none;
-    border-radius: 0.3125rem; /* 5px -> 0.3125rem */
-    cursor: pointer;
-    transition: background 0.3s ease-in-out;
-    margin: 0.625rem auto; /* 10px -> 0.625rem */
-    display: block; /* Center button */
-  
+  width: 80%;
+  max-width: 16rem;
+  padding: 0.75rem 1.25rem;
+  font-size: 1rem;
+  font-weight: 600;
+  background-color: var(--primary-color);
+  color: white;
+  border: none;
+  border-radius: 0.375rem;
+  cursor: pointer;
+  transition: all 0.3s ease-in-out;
+  margin: 1rem auto 0.5rem;
+  display: block;
+  text-transform: uppercase;
+  letter-spacing: 0.03125rem; /* 0.5px */
+  position: relative;
+  overflow: hidden;
+}
+
+.learn-more:before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  transition: 0.5s;
+  z-index: 1;
+}
+
+.learn-more:hover:before {
+  left: 100%;
 }
 
 .learn-more:hover {
-    background-color: #d35400; /* Slightly darker warm orange */
+  background-color: var(--primary-dark);
+  transform: translateY(-0.125rem); /* -2px */
 }
 
-.success-popup {
-    background-color: #4caf50;
-    color: white;
+.learn-more:active {
+  transform: translateY(0);
+}
+
+/* Media Queries for Responsiveness */
+@media (max-width: 64rem) { /* 1024px */
+  .services-grid {
+    gap: 2rem;
+  }
+}
+
+@media (max-width: 48rem) { /* 768px */
+  .nav-container {
+    flex-direction: column;
     padding: 1rem;
-    margin: 1rem auto;
-    border-radius: 8px;
-    width: fit-content;
-    text-align: center;
-    font-weight: bold;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-    animation: fadeOut 2s forwards;
-    animation-delay: 1.5s;
+    min-height: 6rem;
   }
   
-  /* Optional fade effect */
-  @keyframes fadeOut {
-    to {
-      opacity: 0;
-      transform: translateY(-10px);
-    }
+  .booking-services-heading {
+    margin-bottom: 1rem;
+    margin-top: 0.5rem;
+    font-size: 1.3rem;
   }
   
+  .profile-bar {
+    margin-top: 0.5rem;
+    margin-left: 0;
+  }
+  
+  .service-item {
+    flex: 0 1 90%;
+    max-width: 90%;
+  }
+  
+  .service-image {
+    height: 16rem;
+  }
+  
+  .services-page {
+    padding-top: 8rem;
+  }
+}
+
+@media (max-width: 30rem) { /* 480px */
+  .profile-bar {
+    padding: 0.4rem 1rem;
+  }
+  
+  .profile-pic {
+    width: 2rem;
+    height: 2rem;
+  }
+  
+  .profile-name {
+    font-size: 0.875rem;
+  }
+
+  .services-page {
+    padding-top: 8.5rem;
+  }
+}
