@@ -219,7 +219,7 @@ const BookingPage = () => {
   return (
     <>
       {/* NavMenu in top left */}
-      <div className="nav-container">
+      <div className="nav-container"  style={{ backgroundColor: "transparent", boxShadow: "none" }}>
         <NavMenu menuOpen={menuOpen} setMenuOpen={setMenuOpen} />
       </div>
 

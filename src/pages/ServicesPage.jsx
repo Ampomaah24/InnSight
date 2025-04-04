@@ -39,17 +39,17 @@ const ServicesPage = () => {
           setLoading(false);
           return;
         }
-        
+
         // If not in sessionStorage, get from Firestore
         const currentUser = auth.currentUser;
-        
+
         if (currentUser) {
           const userDocRef = doc(db, "users", currentUser.uid);
           const userDoc = await getDoc(userDocRef);
-          
+
           if (userDoc.exists()) {
             const userData = userDoc.data();
-            
+
             // Create user object
             const userObj = {
               id: currentUser.uid,
@@ -58,10 +58,10 @@ const ServicesPage = () => {
               photoURL: userData.photoURL || currentUser.photoURL || "/images/profile-placeholder.png",
               email: userData.email || currentUser.email
             };
-            
+
             // Save to state
             setUser(userObj);
-            
+
             // Cache in sessionStorage
             sessionStorage.setItem('currentUser', JSON.stringify(userObj));
           } else {
@@ -98,7 +98,7 @@ const ServicesPage = () => {
     };
 
     fetchUserProfile();
-    
+
     // Add listener for storage events to catch updates from other tabs/pages
     const handleStorageChange = (e) => {
       if (e.key === 'currentUser') {
@@ -112,9 +112,9 @@ const ServicesPage = () => {
         }
       }
     };
-    
+
     window.addEventListener('storage', handleStorageChange);
-    
+
     return () => {
       window.removeEventListener('storage', handleStorageChange);
     };
@@ -130,14 +130,14 @@ const ServicesPage = () => {
     const handleClickOutside = (event) => {
       const dropdowns = document.querySelectorAll('.dropdown');
       let clickedOutside = true;
-      
+
       dropdowns.forEach(dropdown => {
-        if (dropdown.contains(event.target) || 
-            event.target.closest('.service-item') === dropdown.closest('.service-item')) {
+        if (dropdown.contains(event.target) ||
+          event.target.closest('.service-item') === dropdown.closest('.service-item')) {
           clickedOutside = false;
         }
       });
-      
+
       if (clickedOutside && selectedService) {
         setSelectedService(null);
       }
@@ -209,15 +209,15 @@ const ServicesPage = () => {
         const parsedUser = JSON.parse(sessionUser);
         // Only update if there's a difference (prevents unnecessary re-renders)
         if (parsedUser.photoURL !== user?.photoURL ||
-            parsedUser.fname !== user?.fname ||
-            parsedUser.lname !== user?.lname) {
+          parsedUser.fname !== user?.fname ||
+          parsedUser.lname !== user?.lname) {
           setUser(parsedUser);
         }
       }
     };
-    
+
     const intervalId = setInterval(checkProfileUpdates, 5000);
-    
+
     return () => clearInterval(intervalId);
   }, [user]);
 
@@ -229,8 +229,8 @@ const ServicesPage = () => {
   return (
     <>
       {/* Top Navigation Bar - Moved outside and detached from services-page */}
-      <div className="nav-container">
-        <NavMenu menuOpen={menuOpen} setMenuOpen={setMenuOpen} />
+      <div className="nav-container" style={{ backgroundColor: "transparent", boxShadow: "none" }}>
+      <NavMenu menuOpen={menuOpen} setMenuOpen={setMenuOpen} />
         <h1 className="booking-services-heading">Booking Services</h1>
 
         {/* Top-right profile section */}
@@ -305,9 +305,8 @@ const ServicesPage = () => {
             />
             <p className="service-title">Conference Booking</p>
             <div
-              className={`dropdown ${
-                selectedService === "conference" ? "active" : ""
-              }`}
+              className={`dropdown ${selectedService === "conference" ? "active" : ""
+                }`}
               onClick={(e) => e.stopPropagation()}
             >
               <label>Start Date:</label>

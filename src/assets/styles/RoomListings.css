@@ -11,10 +11,10 @@ body, html {
 }
 
 /* Nav Container - Fixed at top */
-.nav-container {
+/* .nav-container {
   width: 100%;
   display: flex;
-  justify-content: flex-start;
+  
   padding: 0.75rem 1.5rem;
   position: fixed;
   top: 0;
@@ -23,12 +23,12 @@ body, html {
   z-index: 1000;
   background-color: white;
   height: 60px; /* Set a fixed height */
-  box-sizing: border-box;
+ /*  box-sizing: border-box;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Add shadow for better visibility */
-}
+} */ */
 
 /* Fix for NavMenu component - Make sure it's visible */
-.nav-container .nav-menu {
+/* .nav-container .nav-menu {
   background: transparent !important;
   box-shadow: none !important;
   border: none !important;
@@ -36,7 +36,7 @@ body, html {
   visibility: visible !important;
   opacity: 1 !important;
 }
-
+ */
 /* Ensure menu button is visible */
 .menu-button {
   display: block !important;
@@ -46,25 +46,23 @@ body, html {
 }
 
 /* Remove orange line under nav menu */
-.nav-container .nav-menu::after,
+/* .nav-container .nav-menu::after,
 .nav-container::after,
 .nav-menu h2::after,
 .nav-menu .title::after {
   display: none !important;
 }
-
+ */
 /* Room Page Container */
 .rlistings-page {
+
   width: 100%;
-  height: auto;
-  min-height: 100vh;
-  max-width: 75rem; /* 1200px */
-  margin: 0 auto;
-  padding: 6rem 2.5rem 3rem; /* Increased top padding for nav clearance */
+  height: 100vh;
+  max-width: 75rem; /* 1200px -> 75rem */
+  padding: 2.5rem; /* 40px -> 2.5rem */
   background: white;
-  box-sizing: border-box;
-  overflow-y: visible;
-  margin-top: 40rem; /* Ensure content can scroll */
+  border-radius: 0.9375rem; /* 15px -> 0.9375rem */
+  box-shadow: 0 0.25rem 0.625rem rgba(0, 0, 0, 0.1); 
 }
 
 /* Page Title */
@@ -91,6 +89,16 @@ body, html {
   transform: translateX(-50%);
 }
 
+.page-title {
+  text-align: center;
+  font-size: 1.75rem;
+  font-weight: bold;
+  color: #b30000;
+  margin-top: 0; /* Reset top margin */
+  margin-bottom: 2.5rem; /* Increased bottom margin */
+  position: relative;
+  padding-top: 0.5rem; /* Add some top padding */
+}
 /* Room List */
 .rlistings-list {
   display: flex;

@@ -67,7 +67,7 @@ export default function SignUp() {
 
       // Log success and navigate to the homepage after registration
       console.log("User registered and saved to Firestore:", user.email);
-      navigate("/"); // Redirect to homepage or desired page after registration
+      navigate("/login"); // Redirect to homepage or desired page after registration
     } catch (err) {
       // Catch any errors from Firebase and display the error message
       console.error("Firebase error:", err.code, err.message);

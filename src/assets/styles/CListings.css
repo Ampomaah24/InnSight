@@ -3,149 +3,314 @@ body, html {
     margin: 0;
     padding: 0;
     width: 100%;
+    height: 100%;
     font-family: 'Arial', sans-serif;
-<<<<<<< HEAD
     background-color: white;
-=======
-    background-color: #ffe6e6;
->>>>>>> 5e4bcf3544a1d7fe29e319b1608574fbc338a6a2
-    display: flex;
-    justify-content: center;
-    align-items: center;
-}
-
-/* Conference Page Container */
-.clistings-page {
+    overflow-x: hidden;
+  }
+  
+  /* Remove the flex layout from body which is causing centering issues */
+  body {
+    display: block;
+  }
+  
+  /* Nav Container - Fixed at top */
+  .nav-container {
     width: 100%;
-<<<<<<< HEAD
-    height: 100vh;
-    max-width: 75rem; /* 1200px -> 75rem */
-    padding: 2.5rem; /* 40px -> 2.5rem */
+    display: flex;
+    justify-content: flex-start;
+    padding: 0.75rem 1.5rem;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 1000;
+    background-color: white;
+    height: 3.75rem;
+    box-sizing: border-box;
+    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.1);
+  }
+  
+  /* Main Container */
+  .main-container {
+    position: relative;
+    min-height: 100vh;
+    width: 100%;
+    overflow-y: visible;
+    padding-bottom: 2rem;
+  }
+  
+  /* Conference Page Container */
+  .clistings-page {
+    width: 100%;
+    height: auto;
+    min-height: 100vh;
+    max-width: 75rem;
+    margin: 0 auto;
+    padding: 6rem 2.5rem 3rem;
     background: white;
-    border-radius: 0.9375rem; /* 15px -> 0.9375rem */
-    box-shadow: 0 0.25rem 0.625rem rgba(0, 0, 0, 0.1); /* 4px 10px -> 0.25rem 0.625rem */
-=======
-    max-width: 1200px;
-    padding: 40px;
-    background: #ffefef;
-    border-radius: 15px;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
->>>>>>> 5e4bcf3544a1d7fe29e319b1608574fbc338a6a2
-}
-
-/* Page Title */
-.page-title {
+    box-sizing: border-box;
+    overflow-y: visible;
+  }
+  
+  /* Page Title */
+  .page-title {
     text-align: center;
-<<<<<<< HEAD
-    font-size: 1.75rem; /* 28px -> 1.75rem */
+    font-size: 1.75rem;
     font-weight: bold;
     color: #b30000;
-    margin-bottom: 1.875rem; /* 30px -> 1.875rem */
-=======
-    font-size: 28px;
-    font-weight: bold;
-    color: #b30000;
-    margin-bottom: 30px;
->>>>>>> 5e4bcf3544a1d7fe29e319b1608574fbc338a6a2
-}
-
-/* Conference List */
-.clistings-list {
+    margin-top: 0;
+    margin-bottom: 2.5rem;
+    position: relative;
+    padding-top: 0.5rem;
+  }
+  
+  .page-title:after {
+    content: "";
+    display: block;
+    width: 3.75rem;
+    height: 0.1875rem;
+    background-color: #b30000;
+    position: absolute;
+    bottom: -0.625rem;
+    left: 50%;
+    transform: translateX(-50%);
+  }
+  
+  /* Conference List */
+  .clistings-list {
     display: flex;
     flex-direction: column;
-<<<<<<< HEAD
-    gap: 1.25rem; /* 20px -> 1.25rem */
-=======
-    gap: 20px;
->>>>>>> 5e4bcf3544a1d7fe29e319b1608574fbc338a6a2
-}
-
-/* Conference Card */
-.clistings-card {
+    gap: 2.5rem;
+    width: 100%;
+    margin-bottom: 2rem;
+  }
+  
+  /* Conference Card */
+  .clistings-card {
     display: flex;
-    align-items: center;
+    align-items: flex-start;
     background: #fff;
-<<<<<<< HEAD
-    padding: 1.25rem; /* 20px -> 1.25rem */
-    border-radius: 0.75rem; /* 12px -> 0.75rem */
-    box-shadow: 0 0.25rem 0.5rem rgba(0, 0, 0, 0.1); /* 4px 8px -> 0.25rem 0.5rem */
-=======
-    padding: 20px;
-    border-radius: 12px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
->>>>>>> 5e4bcf3544a1d7fe29e319b1608574fbc338a6a2
+    padding: 1.5rem;
+    border-radius: 0.75rem;
+    box-shadow: 0 0.25rem 0.5rem rgba(0, 0, 0, 0.1);
     transition: transform 0.3s ease-in-out;
-}
-
-.clistings-card:hover {
-    transform: scale(1.02);
-}
-
-/* Conference Info */
-.clistings-info {
+    width: 100%;
+    box-sizing: border-box;
+    margin-bottom: 0.5rem;
+  }
+  
+  .clistings-card:hover {
+    transform: translateY(-0.3125rem);
+    box-shadow: 0 0.5rem 1rem rgba(179, 0, 0, 0.15);
+  }
+  
+  /* Conference Info */
+  .clistings-info {
     flex: 1;
-<<<<<<< HEAD
-    padding: 1.25rem; /* 20px -> 1.25rem */
-}
-
-.clistings-title {
-    font-size: 1.25rem; /* 20px -> 1.25rem */
-=======
-    padding: 20px;
-}
-
-.clistings-title {
-    font-size: 20px;
->>>>>>> 5e4bcf3544a1d7fe29e319b1608574fbc338a6a2
+    padding: 0 1.25rem 0 0;
+  }
+  
+  .clistings-title {
+    font-size: 1.5rem;
     font-weight: bold;
     color: #800000;
-}
-
-.clistings-description {
-<<<<<<< HEAD
-    font-size: 1rem; /* 16px -> 1rem */
+    margin-bottom: 1rem;
+    margin-top: 0;
+  }
+  
+  .clistings-description {
+    font-size: 1rem;
+    color: #333;
+    margin: 1rem 0;
+    line-height: 1.5;
+  }
+  
+  /* Room Features */
+  .room-features {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+  }
+  
+  .feature-item {
+    display: flex;
+    align-items: center;
+    color: #555;
+    font-size: 0.9rem;
+    margin-right: 1rem;
+    margin-bottom: 0.5rem;
+  }
+  
+  .feature-item svg {
     color: #b30000;
-    margin: 0.625rem 0; /* 10px -> 0.625rem */
-=======
-    font-size: 16px;
-    color: #b30000;
-    margin: 10px 0;
->>>>>>> 5e4bcf3544a1d7fe29e319b1608574fbc338a6a2
-}
-
-/* Learn More Button */
-.learn-more {
-    background: #b30000;
+    margin-right: 0.375rem;
+    flex-shrink: 0;
+  }
+  
+  /* Price Information */
+  .price-info {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: #800000;
+    margin: 1rem 0;
+  }
+  
+  .per-day {
+    font-size: 0.875rem;
+    font-weight: normal;
+    color: #777;
+  }
+  
+  /* Book Now Button */
+  .book-now {
+    background: #e67e22;
     color: #fff;
-<<<<<<< HEAD
-    padding: 0.625rem 0.9375rem; /* 10px 15px -> 0.625rem 0.9375rem */
+    padding: 0.75rem 1.25rem;
     border: none;
-    border-radius: 0.5rem; /* 8px -> 0.5rem */
-    font-size: 0.875rem; /* 14px -> 0.875rem */
-=======
-    padding: 10px 15px;
-    border: none;
-    border-radius: 8px;
-    font-size: 14px;
->>>>>>> 5e4bcf3544a1d7fe29e319b1608574fbc338a6a2
+    border-radius: 0.5rem;
+    font-size: 1rem;
+    font-weight: 600;
     cursor: pointer;
-    transition: 0.3s;
-}
-
-.learn-more:hover {
-    background: #800000;
-}
-
-/* Conference Image */
-.clistings-image img {
-<<<<<<< HEAD
-    width: 12.5rem; /* 200px -> 12.5rem */
-    height: 7.5rem; /* 120px -> 7.5rem */
-    border-radius: 0.625rem; /* 10px -> 0.625rem */
-=======
-    width: 200px;
-    height: 120px;
-    border-radius: 10px;
->>>>>>> 5e4bcf3544a1d7fe29e319b1608574fbc338a6a2
+    transition: all 0.3s ease;
+    display: inline-flex;
+    align-items: center;
+    margin-top: 0.5rem;
+    text-transform: uppercase;
+    letter-spacing: 0.03125rem;
+  }
+  
+  .book-now:hover {
+    background: #d35400;
+    transform: translateY(-0.125rem);
+  }
+  
+  /* Conference Image */
+  .clistings-image {
+    min-width: 18.75rem;
+    max-width: 25rem;
+    height: 15.625rem;
+    position: relative;
+    border-radius: 0.625rem;
+    overflow: hidden;
+    margin-left: 1.5rem;
+  }
+  
+  .clistings-image img {
+    width: 100%;
+    height: 100%;
     object-fit: cover;
-}
+    border-radius: 0.625rem;
+    transition: transform 0.5s ease;
+  }
+  
+  .clistings-card:hover .clistings-image img {
+    transform: scale(1.05);
+  }
+  
+  /* Room Type Badge */
+  .room-type-badge {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    background: rgba(179, 0, 0, 0.8);
+    color: white;
+    padding: 0.25rem 0.75rem;
+    border-radius: 1rem;
+    font-size: 0.8rem;
+    font-weight: 600;
+  }
+  
+  /* Navigation menu */
+  .nav-menu {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 15.625rem;
+    height: 100vh;
+    background-color: white;
+    z-index: 1000;
+    transition: transform 0.3s ease;
+    box-shadow: 0.125rem 0 0.3125rem rgba(0, 0, 0, 0.1);
+    overflow-y: auto;
+  }
+  
+  .nav-menu.closed {
+    transform: translateX(-100%);
+  }
+  
+  .nav-menu.open {
+    transform: translateX(0);
+  }
+  
+  /* Menu Button */
+  .menu-button {
+    display: flex !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    z-index: 1001 !important;
+    justify-content: center;
+    align-items: center;
+    width: 2.5rem;
+    height: 2.5rem;
+    cursor: pointer;
+    background-color: white;
+    border-radius: 0.25rem;
+    transition: all 0.3s ease;
+    position: fixed;
+    top: 0.625rem;
+    left: 0.625rem;
+  }
+  
+  .menu-button:hover {
+    background-color: #f5f5f5;
+  }
+  
+  /* Media Queries for Responsiveness */
+  @media (max-width: 64rem) {
+    .clistings-card {
+      flex-direction: column;
+      align-items: stretch;
+    }
+    
+    .clistings-image {
+      margin-left: 0;
+      margin-top: 1.5rem;
+      width: 100%;
+      max-width: 100%;
+    }
+  }
+  
+  @media (max-width: 48rem) {
+    .clistings-page {
+      padding: 7rem 1.5rem 2.5rem;
+    }
+    
+    .clistings-info {
+      padding: 1rem 0;
+    }
+    
+    .nav-container {
+      padding: 0.75rem 1rem;
+    }
+  }
+  
+  @media (max-width: 30rem) {
+    .room-features {
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+    
+    .clistings-title {
+      font-size: 1.3rem;
+    }
+    
+    .clistings-image {
+      height: 12.5rem;
+    }
+    
+    .clistings-page {
+      padding: 7rem 1rem 2rem;
+    }
+  }

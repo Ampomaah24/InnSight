@@ -11,8 +11,10 @@ import {
   increment,
 } from "firebase/firestore";
 import { getAuth } from "firebase/auth";
+import NavMenu from "../../components/NavMenu"; // Import NavMenu component
 import "./Menu.css";
 import NoImage from "../../assets/images/pixelcut-export.jpeg";
+import { FaShoppingCart, FaUtensils, FaWineGlassAlt } from 'react-icons/fa'; // Import icons
 
 // Helper to get a unique guest ID and persist in localStorage
 let persistentUserId;
@@ -41,6 +43,8 @@ const Menu = () => {
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState("food");
   const [cartCount, setCartCount] = useState(0);
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [addedToCart, setAddedToCart] = useState(null);
   const navigate = useNavigate();
 
   const userId = getOrCreateUserId();
@@ -71,6 +75,7 @@ const Menu = () => {
       }
     };
 
+    window.scrollTo(0, 0);
     fetchMeals();
     fetchCartCount();
   }, [userId]);
@@ -96,7 +101,11 @@ const Menu = () => {
       }
 
       setCartCount((prev) => prev + 1);
-      console.log(`${meal.name} added to cart`);
+      
+      // Show added to cart notification
+      setAddedToCart(meal.name);
+      setTimeout(() => setAddedToCart(null), 2000);
+      
     } catch (err) {
       console.error("Error adding to cart", err);
     }
@@ -109,54 +118,73 @@ const Menu = () => {
   const activeItems = meals.filter((meal) => meal.category === activeTab);
 
   return (
-    <div className="menu-page">
-      {/* Floating cart icon */}
-      <div className="floating-cart" onClick={goToCart} title="Go to Cart">
-        🛒
-        {cartCount > 0 && <span className="cart-badge">{cartCount}</span>}
+    <div className="main-container">
+      {/* NavMenu in top left */}
+      <div className="nav-container" style={{ backgroundColor: "transparent", boxShadow: "none" }}>
+        <NavMenu menuOpen={menuOpen} setMenuOpen={setMenuOpen} />
       </div>
 
-      <div className="menu-banner">
-        <div className="menu-banner-text">
-          <h1>Order your favorite meals from us now</h1>
+      <div className="menu-page">
+        {/* Floating cart icon */}
+        <div className="floating-cart" onClick={goToCart} title="Go to Cart">
+          <FaShoppingCart />
+          {cartCount > 0 && <span className="cart-badge">{cartCount}</span>}
         </div>
-      </div>
 
-      <div className="menu-tabs">
-        <span
-          className={activeTab === "food" ? "active" : ""}
-          onClick={() => setActiveTab("food")}
-        >
-          Food
-        </span>
-        <span
-          className={activeTab === "drink" ? "active" : ""}
-          onClick={() => setActiveTab("drink")}
-        >
-          Drinks
-        </span>
-      </div>
-
-      <div className="menu-section">
-        <h2>{activeTab === "food" ? "🍽️ Food" : "🥤 Drinks"}</h2>
-        {loading ? (
-          <p className="loading-text">Loading meals...</p>
-        ) : activeItems.length > 0 ? (
-          <div className="menu-grid">
-            {activeItems.map((meal) => (
-              <div className="menu-card" key={meal.id}>
-                <img src={meal.imageUrl || NoImage} alt={meal.name} />
-                <div className="menu-card-content">
-                  <h3>{meal.name}</h3>
-                  <p>GHS {meal.price}</p>
-                  <button onClick={() => addToCart(meal)}>Add to Cart</button>
-                </div>
-              </div>
-            ))}
+        {/* Added to cart notification */}
+        {addedToCart && (
+          <div className="add-to-cart-notification">
+            <FaShoppingCart /> {addedToCart} added to cart!
           </div>
-        ) : (
-          <p className="loading-text">No meals found.</p>
         )}
+
+        <div className="menu-banner">
+          <div className="menu-banner-text">
+            <h1>Order your favorite meals from us now</h1>
+          </div>
+        </div>
+
+        <div className="menu-tabs">
+          <span
+            className={activeTab === "food" ? "active" : ""}
+            onClick={() => setActiveTab("food")}
+          >
+            <FaUtensils style={{ marginRight: '0.5rem' }} /> Food
+          </span>
+          <span
+            className={activeTab === "drink" ? "active" : ""}
+            onClick={() => setActiveTab("drink")}
+          >
+            <FaWineGlassAlt style={{ marginRight: '0.5rem' }} /> Drinks
+          </span>
+        </div>
+
+        <div className="menu-section">
+          <h2>{activeTab === "food" ? "🍽️ Food Menu" : "🥤 Drinks Menu"}</h2>
+          {loading ? (
+            <div className="loading-container">
+              <div className="spinner"></div>
+              <p className="loading-text">Loading meals...</p>
+            </div>
+          ) : activeItems.length > 0 ? (
+            <div className="menu-grid">
+              {activeItems.map((meal) => (
+                <div className="menu-card" key={meal.id}>
+                  <img src={meal.imageUrl || NoImage} alt={meal.name} />
+                  <div className="menu-card-content">
+                    <h3>{meal.name}</h3>
+                    <p>GHS {meal.price.toFixed(2)}</p>
+                    <button onClick={() => addToCart(meal)}>
+                      Add to Cart
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <p className="loading-text">No {activeTab === "food" ? "food" : "drinks"} items found. Please check back later!</p>
+          )}
+        </div>
       </div>
     </div>
   );

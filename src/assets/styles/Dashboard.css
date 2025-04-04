@@ -1,181 +1,557 @@
-
+/* ======= Main Layout ======= */
 .dashboard-container {
   display: flex;
-  height: 100vh;
-  background: #F9FAFB; /* Corrected Light Gray */
+  min-height: 100vh;
+  background: #f8f9fa;
   font-family: 'Poppins', sans-serif;
-  color: black;
+  color: #333;
 }
 
-
+/* ======= Sidebar Styling ======= */
 .sidebar {
-  width: 15.625rem; /* 250px -> 15.625rem */
+  width: 250px;
   height: 100vh;
   background: white;
-  padding: 1.5rem; /* 24px -> 1.5rem */
+  padding: 1.5rem 1rem;
   display: flex;
   flex-direction: column;
-  box-shadow: 0.125rem 0 0.625rem rgba(0, 0, 0, 0.05); /* 2px 10px -> 0.125rem 0.625rem */
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.05);
   position: fixed;
   left: 0;
   top: 0;
   overflow-y: auto;
+  z-index: 100;
+}
+
+.sidebar-logo {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #DB6C24; /* Ampomaah orange color */
+  margin-bottom: 2rem;
+  text-align: center;
 }
 
 .sidebar-menu {
   list-style: none;
   padding: 0;
-  margin-top: 2.5rem; /* 40px -> 2.5rem */
+  margin: 0;
 }
 
 .sidebar-item {
   display: flex;
   align-items: center;
-  gap: 0.75rem; /* 12px -> 0.75rem */
-  padding: 0.75rem 1.25rem; /* 12px 20px -> 0.75rem 1.25rem */
-  font-size: 1rem; /* 16px -> 1rem */
-  color: #4B5563;
+  gap: 0.75rem;
+  padding: 0.8rem 1rem;
+  font-size: 0.95rem;
+  color: #555;
   font-weight: 500;
-  border-radius: 0.5rem; /* 8px -> 0.5rem */
+  border-radius: 0.5rem;
   cursor: pointer;
-  transition: 0.3s;
+  transition: all 0.2s ease;
+  margin-bottom: 0.5rem;
 }
 
-.sidebar-item:hover,
+.sidebar-item:hover {
+  background: #f8f0ec; /* Light orange background on hover */
+  color: #DB6C24; /* Orange text on hover */
+}
+
 .sidebar-item.active {
-  background: #E5E7EB;
+  background: #f8f0ec;
+  color: #DB6C24;
+  font-weight: 600;
 }
 
+.sidebar-icon {
+  color: #777;
+  font-size: 1.2rem;
+}
+
+.sidebar-item:hover .sidebar-icon,
+.sidebar-item.active .sidebar-icon {
+  color: #DB6C24;
+}
+
+/* ======= Main Content Area ======= */
 .main-content {
   flex: 1;
-  margin-left: 15.625rem; /* 250px -> 15.625rem */
-  padding: 1.5rem; /* 24px -> 1.5rem */
-  width: calc(100% - 15.625rem); /* 250px -> 15.625rem */
-  max-width: 87.5rem; /* 1400px -> 87.5rem */
-  margin: auto;
+  margin-left: 250px;
+  padding: 1.5rem;
+  max-width: 1400px;
 }
 
-
+/* ======= Navbar Styling ======= */
 .navbar {
   display: flex;
   justify-content: space-between;
   align-items: center;
   background: white;
-  padding: 1rem 1.5rem; /* 16px 24px -> 1rem 1.5rem */
-  width: calc(100% - 15.625rem); /* 250px -> 15.625rem */
+  padding: 0.75rem 1.5rem;
+  width: calc(100% - 250px);
   position: fixed;
   top: 0;
-  left: 15.625rem; /* 250px -> 15.625rem */
-  box-shadow: 0px 0.125rem 0.5rem rgba(0, 0, 0, 0.05); /* 2px 8px -> 0.125rem 0.5rem */
-  z-index: 1000;
+  right: 0;
+  height: 60px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.04);
+  z-index: 50;
 }
 
 .navbar-left {
-  font-size: 1.25rem; /* 20px -> 1.25rem */
-  font-weight: bold;
-  color: #111827;
-}
-
-/* Remove extra links */
-.navbar-center {
-  display: none;
+  font-weight: 600;
+  color: #333;
 }
 
 .navbar-right {
   display: flex;
-  gap: 1rem; /* 16px -> 1rem */
+  gap: 1rem;
   align-items: center;
 }
 
-/* ======= Summary Cards Fixes ======= */
-.summary-cards {
+.user-profile {
   display: flex;
-  gap: 1.875rem; /* 30px -> 1.875rem */
-  margin-top: 6.25rem; /* 100px -> 6.25rem */
-  justify-content: space-between;
-  width: 100%;
   align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
+}
+
+.profile-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: #DB6C24;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-weight: 600;
+  font-size: 0.85rem;
+}
+
+/* ======= Dashboard Header ======= */
+.dashboard-header {
+  margin-top: 70px;
+  margin-bottom: 1.5rem;
+}
+
+.dashboard-title {
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: #333;
+  margin-bottom: 0.5rem;
+}
+
+.dashboard-subtitle {
+  font-size: 1rem;
+  color: #666;
+  margin-bottom: 1.5rem;
+}
+
+/* ======= Summary Cards ======= */
+.summary-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 2rem;
 }
 
 .card {
   background: white;
-  padding: 1.25rem; /* 20px -> 1.25rem */
-  border-radius: 0.75rem; /* 12px -> 0.75rem */
-  box-shadow: 0px 0.125rem 0.375rem rgba(0, 0, 0, 0.1); /* 2px 6px -> 0.125rem 0.375rem */
+  padding: 1.5rem;
+  border-radius: 0.75rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
   text-align: center;
-  width: 90%;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  cursor: pointer;
+  border-top: 4px solid #DB6C24; /* Orange accent border */
+}
+
+.card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
 }
 
 .card-title {
-  font-size: 0.875rem; /* 14px -> 0.875rem */
-  color: #6B7280;
+  font-size: 0.9rem;
+  color: #666;
+  margin-bottom: 0.75rem;
 }
 
 .card-value {
-  font-size: 1.5rem; /* 24px -> 1.5rem */
-  font-weight: bold;
-  color: #111827;
+  font-size: 2rem;
+  font-weight: 700;
+  color: #333;
+  margin: 0;
 }
 
-/* ======= Table Fixes ======= */
+/* ======= Table Styling ======= */
 .table-container {
   background: white;
-  padding: 1.5rem; /* 24px -> 1.5rem */
-  border-radius: 0.75rem; /* 12px -> 0.75rem */
-  box-shadow: 0 0.125rem 0.375rem rgba(0, 0, 0, 0.1); /* 2px 6px -> 0.125rem 0.375rem */
-  margin-top: 2.5rem; /* 40px -> 2.5rem */
+  padding: 1.5rem;
+  border-radius: 0.75rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  overflow: hidden;
+}
+
+.table-title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 1.5rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid #eee;
+}
+
+.table-responsive {
   overflow-x: auto;
-  width: 100%;
+  margin: 0 -1px;
 }
 
 .reservations-table {
   width: 100%;
-  border-collapse: collapse;
-}
-
-.reservations-table th,
-.reservations-table td {
-  padding: 1rem; /* 16px -> 1rem */
-  border-bottom: 0.0625rem solid #E5E7EB; /* 1px -> 0.0625rem */
-  text-align: left;
+  border-collapse: separate;
+  border-spacing: 0;
 }
 
 .reservations-table th {
-  background: #F3F4F6;
-  font-weight: bold;
+  background: #f5f7fa;
+  font-weight: 600;
+  color: #555;
+  text-align: left;
+  padding: 1rem;
+  border-bottom: 1px solid #eee;
+  font-size: 0.9rem;
+}
+
+.reservations-table td {
+  padding: 1rem;
+  border-bottom: 1px solid #eee;
+  color: #444;
+  font-size: 0.95rem;
+}
+
+.reservations-table tr {
+  transition: background-color 0.15s ease;
+  cursor: pointer;
+}
+
+.reservations-table tr:hover {
+  background-color: #f9f9f9;
+}
+
+.reservations-table tr:last-child td {
+  border-bottom: none;
 }
 
 /* Status Badges */
 .status {
   display: inline-block;
-  padding: 0.375rem 0.75rem; /* 6px 12px -> 0.375rem 0.75rem */
-  border-radius: 1rem; /* 16px -> 1rem */
-  font-size: 0.875rem; /* 14px -> 0.875rem */
+  padding: 0.4rem 0.8rem;
+  border-radius: 2rem;
+  font-size: 0.8rem;
   font-weight: 600;
   text-align: center;
 }
 
+.confirmed {
+  background-color: #fdf2e9;
+  color: #DB6C24;
+}
+
 .checked-in {
-  background-color: #10B981;
-  color: white;
+  background-color: #e6f4ea;
+  color: #34a853;
+}
+
+.checked-out {
+  background-color: #e8eaed;
+  color: #5f6368;
+}
+
+.cancelled {
+  background-color: #fce8e6;
+  color: #ea4335;
 }
 
 .reserved {
-  background-color: #E5E7EB;
-  color: #4B5563;
+  background-color: #e8f0fe;
+  color: #1a73e8;
 }
 
-/* ======= Dashboard Titles ======= */
-.dashboard-title {
-  color: black;
-  font-family: 'Poppins', sans-serif;
-  font-size: 1.875rem; /* 30px -> 1.875rem */
-  margin-bottom: 6.25rem; /* 100px -> 6.25rem */
+/* View More Button */
+.view-more {
+  text-align: center;
+  margin-top: 1.5rem;
 }
 
-.classp {
-  color: black;
-  font-family: 'Poppins', sans-serif;
-  font-size: 0.9375rem; /* 15px -> 0.9375rem */
-  margin-top: -3.125rem; /* -50px -> -3.125rem */
+.view-more-btn {
+  background-color: white;
+  color: #DB6C24;
+  border: 1px solid #DB6C24;
+  padding: 0.6rem 1.2rem;
+  border-radius: 0.5rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.view-more-btn:hover {
+  background-color: #DB6C24;
+  color: white;
+}
+
+/* Loading State */
+.loading-indicator {
+  text-align: center;
+  padding: 2rem;
+  color: #666;
+}
+
+.no-data {
+  text-align: center;
+  padding: 2rem;
+  color: #666;
+  font-style: italic;
+}
+/* Add these styles to your Dashboard.css file */
+
+/* Sidebar Container */
+.sidebar {
+  width: 250px;
+  height: 100vh;
+  background: white;
+  padding: 1.5rem 0;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 0 15px rgba(0, 0, 0, 0.05);
+  position: fixed;
+  left: 0;
+  top: 0;
+  overflow-y: auto;
+  z-index: 100;
+  transition: all 0.3s ease;
+}
+
+/* Sidebar Logo */
+.sidebar-logo {
+  padding: 0 1.5rem 1.5rem;
+  margin-bottom: 1rem;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.sidebar-logo h2 {
+  color: #DB6C24;
+  font-size: 1.75rem;
+  font-weight: 700;
+  margin: 0;
+  letter-spacing: 0.5px;
+}
+
+/* Sidebar Menu */
+.sidebar-menu {
+  list-style: none;
+  padding: 0 1rem;
+  margin: 0;
+  flex: 1;
+}
+
+.sidebar-item {
+  margin-bottom: 0.5rem;
+  border-radius: 0.5rem;
+  transition: all 0.2s ease;
+}
+
+.sidebar-item a {
+  display: flex;
+  align-items: center;
+  padding: 0.85rem 1rem;
+  color: #555;
+  text-decoration: none;
+  font-weight: 500;
+  border-radius: 0.5rem;
+  transition: all 0.2s ease;
+}
+
+.sidebar-item:hover a {
+  background: #f8f0ec;
+  color: #DB6C24;
+}
+
+.sidebar-item.active a {
+  background: #f8f0ec;
+  color: #DB6C24;
+  font-weight: 600;
+}
+
+.sidebar-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 0.75rem;
+  font-size: 1.1rem;
+  width: 1.5rem;
+  color: inherit;
+  opacity: 0.9;
+}
+
+.sidebar-text {
+  font-size: 0.95rem;
+}
+
+/* Sidebar Footer */
+.sidebar-footer {
+  padding: 1.5rem;
+  text-align: center;
+  font-size: 0.8rem;
+  color: #888;
+  border-top: 1px solid rgba(0, 0, 0, 0.05);
+  margin-top: auto;
+}
+
+.sidebar-footer p {
+  margin: 0;
+}
+
+.version {
+  font-size: 0.7rem;
+  margin-top: 0.25rem;
+}
+
+/* Mobile Toggle Button */
+.sidebar-toggle {
+  position: fixed;
+  top: 1rem;
+  left: 1rem;
+  z-index: 200;
+  background: #DB6C24;
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 2.5rem;
+  height: 2.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  transition: all 0.2s ease;
+  display: none;
+}
+
+.sidebar-toggle:hover {
+  background: #c45c1c;
+}
+
+/* Mobile Responsiveness */
+@media (max-width: 768px) {
+  .sidebar-toggle {
+    display: flex;
+  }
+  
+  .sidebar {
+    transform: translateX(0);
+    transition: transform 0.3s ease, width 0.3s ease;
+  }
+  
+  .sidebar.closed {
+    transform: translateX(-100%);
+    width: 0;
+  }
+  
+  .sidebar.open {
+    transform: translateX(0);
+    width: 250px;
+  }
+  
+  .main-content {
+    margin-left: 0 !important;
+    width: 100% !important;
+  }
+}
+
+/* Add this to your Dashboard.css file */
+
+/* Occupancy bar styling */
+.occupancy-bar {
+  height: 8px;
+  background-color: #f1f1f1;
+  border-radius: 4px;
+  margin-top: 10px;
+  overflow: hidden;
+}
+
+.occupancy-fill {
+  height: 100%;
+  background-color: #DB6C24;
+  border-radius: 4px;
+  transition: width 0.3s ease;
+}
+
+/* Update card value for rooms occupied */
+.card-value {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #333;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Add this to your existing CSS to enhance the rooms card */
+.card {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.card-title {
+  margin-bottom: 1rem;
+}
+
+/* Make sure there's enough space for the occupancy bar */
+.card:nth-child(3) {
+  padding-bottom: 1.75rem;
+}
+/* Responsive adjustments */
+@media (max-width: 992px) {
+  .sidebar {
+    width: 220px;
+  }
+  
+  .main-content {
+    margin-left: 220px;
+  }
+  
+  .navbar {
+    width: calc(100% - 220px);
+  }
+  
+  .summary-cards {
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  }
+}
+
+@media (max-width: 768px) {
+  .sidebar {
+    width: 0;
+    transform: translateX(-100%);
+    transition: transform 0.3s ease;
+  }
+  
+  .sidebar.open {
+    width: 250px;
+    transform: translateX(0);
+  }
+  
+  .main-content {
+    margin-left: 0;
+  }
+  
+  .navbar {
+    width: 100%;
+  }
+  
+  .summary-cards {
+    grid-template-columns: 1fr;
+  }
 }

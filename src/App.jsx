@@ -24,6 +24,7 @@ import Cart from './pages/restaurant/Cart';
 import Checkout from './pages/restaurant/Checkout';
 import Orders from './pages/restaurant/Orders';
 import Profile from './pages/ProfilePage';
+import AdminSettings from './pages/AdminSettings';
 
 
 
@@ -56,6 +57,7 @@ const App = () => {
         <Route path="/restaurant/checkout" element={<Checkout />} />
         <Route path="/restaurant/orders" element={<Orders />} />
         <Route path="/profile" element={<Profile />} />
+        <Route path="/ad_settings" element={<AdminSettings />} />
 
 
 

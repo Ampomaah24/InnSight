@@ -38,7 +38,7 @@ const ConferenceBooking = () => {
     document.body.style.overflow = 'auto';
     
     if (!startDate || !endDate) {
-      console.error("❌ Missing query parameters for fetching conference rooms");
+      console.error(" Missing query parameters for fetching conference rooms");
       setLoading(false);
       return;
     }
@@ -76,7 +76,7 @@ const ConferenceBooking = () => {
         setConferenceRooms(availableRooms);
         setLoading(false);
       } catch (error) {
-        console.error("❌ Error fetching conference rooms:", error);
+        console.error(" Error fetching conference rooms:", error);
         setConferenceRooms([]);
         setLoading(false);
       }
@@ -99,8 +99,8 @@ const ConferenceBooking = () => {
 
   if (conference_rooms.length === 0) {
     return (
-      <div className="croom-booking-container">
-        <div className="nav-container">
+      <div className="croom-booking-container" >
+        <div className="nav-container"  style={{ backgroundColor: "transparent", boxShadow: "none" }}>
           <NavMenu menuOpen={menuOpen} setMenuOpen={setMenuOpen} />
         </div>
         
@@ -108,12 +108,12 @@ const ConferenceBooking = () => {
           <div className="no-rooms-content">
             <h2>No Conference Rooms Available</h2>
             <p>We couldn't find any available conference rooms for your selected dates.</p>
-            <button 
+ {/*            <button 
               className="back-button" 
               onClick={() => navigate('/')}
             >
               Return to Search
-            </button>
+            </button> */}
           </div>
         </div>
       </div>
@@ -125,7 +125,7 @@ const ConferenceBooking = () => {
 
   return (
     <div className="croom-booking-container">
-      <div className="nav-container">
+      <div className="nav-container"  style={{ backgroundColor: "none", boxShadow: "none" }}>
         <NavMenu menuOpen={menuOpen} setMenuOpen={setMenuOpen} />
       </div>
 

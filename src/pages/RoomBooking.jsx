@@ -193,7 +193,7 @@ const RoomBooking = () => {
   return (
     <div className="room-booking-container">
       {/* Moved NavMenu to a container with left alignment */}
-      <div className="nav-container">
+      <div className="nav-container"  style={{ backgroundColor: "transparent", boxShadow: "none" }}>
         <NavMenu menuOpen={menuOpen} setMenuOpen={setMenuOpen} />
       </div>
       
