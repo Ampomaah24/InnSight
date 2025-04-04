@@ -2,7 +2,9 @@ import React, { useEffect, useState, useRef } from "react";
 import { auth, db } from "../config/firebase";
 import { doc, getDoc, updateDoc } from "firebase/firestore";
 import { useNavigate } from "react-router-dom";
-import { FaArrowLeft, FaCamera, FaUser, FaPhone, FaCalendarAlt, FaMapMarkerAlt, FaEdit } from "react-icons/fa";
+import { FaArrowLeft, FaCamera, FaUser, FaPhone, FaCalendarAlt, FaMapMarkerAlt, FaEdit, FaEnvelope } from "react-icons/fa";
+import PhoneInput, { isValidPhoneNumber } from "react-phone-number-input";
+import "react-phone-number-input/style.css";
 import "../assets/styles/ProfilePage.css";
 
 const ProfilePage = () => {
@@ -11,13 +13,12 @@ const ProfilePage = () => {
   const [uploading, setUploading] = useState(false);
   const [editing, setEditing] = useState(false);
   const [formData, setFormData] = useState({
-    fname: "",
-    lname: "",
     phone: "",
     address: "",
     dateOfBirth: "",
     bio: ""
   });
+  const [phoneError, setPhoneError] = useState(false);
   const [localImage, setLocalImage] = useState(null);
   const [updateSuccess, setUpdateSuccess] = useState(false);
   const fileInputRef = useRef(null);
@@ -26,20 +27,77 @@ const ProfilePage = () => {
   useEffect(() => {
     const fetchUser = async () => {
       try {
+        setLoading(true);
         const currentUser = auth.currentUser;
+        
+        // Check sessionStorage first for cached user data
+        const sessionUser = sessionStorage.getItem('currentUser');
+        if (sessionUser) {
+          const parsedUser = JSON.parse(sessionUser);
+          setUserData(parsedUser);
+          setFormData({
+            phone: parsedUser.phone || "",
+            address: parsedUser.address || "",
+            dateOfBirth: parsedUser.dateOfBirth || "",
+            bio: parsedUser.bio || ""
+          });
+          setLoading(false);
+          return;
+        }
+
         if (currentUser) {
-          const userDoc = await getDoc(doc(db, "users", currentUser.uid));
+          const userDocRef = doc(db, "users", currentUser.uid);
+          const userDoc = await getDoc(userDocRef);
+          
           if (userDoc.exists()) {
             const data = userDoc.data();
-            setUserData(data);
-            setFormData({
-              fname: data.fname || "",
-              lname: data.lname || "",
+            
+            // Create a normalized user object
+            const normalizedUserData = {
+              id: currentUser.uid,
+              fname: data.fname || data.firstName || currentUser.displayName?.split(' ')[0] || "",
+              lname: data.lname || data.lastName || currentUser.displayName?.split(' ').slice(1).join(' ') || "",
               phone: data.phone || "",
               address: data.address || "",
               dateOfBirth: data.dateOfBirth || "",
-              bio: data.bio || ""
+              bio: data.bio || "",
+              email: data.email || currentUser.email,
+              photoURL: data.photoURL || currentUser.photoURL || null
+            };
+            
+            setUserData(normalizedUserData);
+            setFormData({
+              phone: normalizedUserData.phone,
+              address: normalizedUserData.address,
+              dateOfBirth: normalizedUserData.dateOfBirth,
+              bio: normalizedUserData.bio
             });
+            
+            // Cache user data in sessionStorage
+            sessionStorage.setItem('currentUser', JSON.stringify(normalizedUserData));
+          } else {
+            // Default values if no data exists
+            const defaultUserObj = {
+              id: currentUser.uid,
+              fname: currentUser.displayName?.split(' ')[0] || "",
+              lname: currentUser.displayName?.split(' ').slice(1).join(' ') || "",
+              phone: "",
+              address: "",
+              dateOfBirth: "",
+              bio: "",
+              email: currentUser.email,
+              photoURL: currentUser.photoURL || null
+            };
+            setUserData(defaultUserObj);
+            setFormData({
+              phone: "",
+              address: "",
+              dateOfBirth: "",
+              bio: ""
+            });
+            
+            // Cache default user data
+            sessionStorage.setItem('currentUser', JSON.stringify(defaultUserObj));
           }
         }
       } catch (error) {
@@ -58,6 +116,14 @@ const ProfilePage = () => {
       ...prev,
       [name]: value
     }));
+  };
+
+  const handlePhoneChange = (value) => {
+    setFormData(prev => ({
+      ...prev,
+      phone: value || ""
+    }));
+    setPhoneError(value ? !isValidPhoneNumber(value) : false);
   };
 
   const handlePhotoClick = () => {
@@ -84,19 +150,48 @@ const ProfilePage = () => {
       };
       reader.readAsDataURL(file);
       
-      // Simulate updating the database
-      setTimeout(() => {
-        // In a real implementation, you would upload to Firebase Storage
-        // and update the user document with the URL
-        setUserData(prev => ({
-          ...prev,
-          photoURL: "local-image" // This is a flag to use the local image
-        }));
-        
-        setUpdateSuccess(true);
-        setTimeout(() => setUpdateSuccess(false), 3000);
-        setUploading(false);
-      }, 1500); // Simulate network delay
+      // In a real implementation, you would upload to Firebase Storage
+      // For now, we'll simulate it and update sessionStorage as well
+      setTimeout(async () => {
+        try {
+          // Update local state
+          const updatedUserData = {
+            ...userData,
+            photoURL: "local-image" // This is a flag to use the local image
+          };
+          setUserData(updatedUserData);
+          
+          // Update Firestore - make sure this field exists
+          const currentUser = auth.currentUser;
+          if (currentUser) {
+            const userDocRef = doc(db, "users", currentUser.uid);
+            await updateDoc(userDocRef, {
+              photoURL: "local-image"
+            });
+          }
+          
+          // Update sessionStorage to reflect changes across the app
+          const sessionUser = JSON.parse(sessionStorage.getItem('currentUser') || '{}');
+          const updatedSessionUser = {
+            ...sessionUser,
+            photoURL: "local-image",
+            localImageData: localImage // Store the base64 image data
+          };
+          sessionStorage.setItem('currentUser', JSON.stringify(updatedSessionUser));
+          
+          // Show success message
+          setUpdateSuccess(true);
+          setTimeout(() => setUpdateSuccess(false), 3000);
+          
+          // Trigger storage event for other tabs
+          window.dispatchEvent(new Event('storage'));
+        } catch (error) {
+          console.error("Error updating photo in database:", error);
+          alert("Failed to save photo to database. Local preview only.");
+        } finally {
+          setUploading(false);
+        }
+      }, 1000); // Shorter network delay
       
     } catch (error) {
       console.error("Error handling image:", error);
@@ -107,24 +202,59 @@ const ProfilePage = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    
+    // Validate phone number if provided
+    if (formData.phone && !isValidPhoneNumber(formData.phone)) {
+      setPhoneError(true);
+      return;
+    }
+    
     try {
       const currentUser = auth.currentUser;
       if (currentUser) {
-        const userDocRef = doc(db, "users", currentUser.uid);
-        await updateDoc(userDocRef, formData);
-        setUserData(prev => ({
-          ...prev,
-          ...formData
-        }));
-        setEditing(false);
-        setUpdateSuccess(true);
+        setLoading(true);
         
-        setTimeout(() => {
-          setUpdateSuccess(false);
-        }, 3000);
+        // Create a data object for updating
+        const updateData = {
+          ...formData,
+          updatedAt: new Date().toISOString()
+        };
+        
+        const userDocRef = doc(db, "users", currentUser.uid);
+        
+        // Update Firestore
+        await updateDoc(userDocRef, updateData);
+        
+        // Update local state
+        const updatedUserData = {
+          ...userData,
+          ...updateData
+        };
+        setUserData(updatedUserData);
+        
+        // Update sessionStorage to reflect changes across the app
+        const sessionUser = JSON.parse(sessionStorage.getItem('currentUser') || '{}');
+        const updatedSessionUser = {
+          ...sessionUser,
+          ...updateData
+        };
+        sessionStorage.setItem('currentUser', JSON.stringify(updatedSessionUser));
+        
+        // Exit edit mode
+        setEditing(false);
+        
+        // Show success message
+        setUpdateSuccess(true);
+        setTimeout(() => setUpdateSuccess(false), 3000);
+        
+        // Trigger storage event for other tabs
+        window.dispatchEvent(new Event('storage'));
       }
     } catch (error) {
       console.error("Error updating profile:", error);
+      alert("Failed to update profile. Please try again.");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -147,11 +277,11 @@ const ProfilePage = () => {
 
   // Get display name
   const getDisplayName = () => {
-    return `${userData?.fname || ''} ${userData?.lname || ''}`;
+    return `${userData?.fname || ''} ${userData?.lname || ''}`.trim() || 'User Profile';
   };
 
   return (
-    <div className="profile-page">
+    <div className="profile-page profile-fullwidth">
       <div className="back-button" onClick={handleGoBack}>
         <FaArrowLeft />
       </div>
@@ -169,20 +299,29 @@ const ProfilePage = () => {
             {userData?.photoURL === "local-image" && localImage ? (
               <img src={localImage} alt="Profile" />
             ) : userData?.photoURL ? (
-              <img src={userData.photoURL} alt="Profile" />
+              <img 
+                src={userData.photoURL} 
+                alt="Profile" 
+                onError={(e) => {
+                  e.target.onerror = null;
+                  e.target.src = "https://via.placeholder.com/150?text=User";
+                }}
+              />
             ) : (
               <div className="avatar-initials">{getInitials()}</div>
             )}
-            <div className="avatar-edit">
-              {uploading ? (
-                <div className="avatar-uploading">
-                  <div className="spinner"></div>
-                  <span>Uploading...</span>
-                </div>
-              ) : (
+            
+            {uploading ? (
+              <div className="avatar-uploading">
+                <div className="spinner"></div>
+                <span>Uploading...</span>
+              </div>
+            ) : (
+              <div className="avatar-edit">
                 <FaCamera />
-              )}
-            </div>
+                <div style={{ fontSize: '0.8rem', marginTop: '5px' }}>Change Photo</div>
+              </div>
+            )}
           </div>
           <input 
             type="file" 
@@ -201,7 +340,7 @@ const ProfilePage = () => {
         
         <button 
           className={`edit-profile-button ${editing ? 'active' : ''}`}
-          onClick={() => setEditing(!editing)}
+          onClick={() => setEditing(prev => !prev)}
         >
           {editing ? "Cancel" : <><FaEdit /> Edit Profile</>}
         </button>
@@ -215,28 +354,15 @@ const ProfilePage = () => {
               
               <div className="form-row">
                 <div className="form-group">
-                  <label>First Name</label>
+                  <label>Full Name (from registration)</label>
                   <input
                     type="text"
-                    name="fname"
-                    value={formData.fname}
-                    onChange={handleInputChange}
-                    placeholder="Enter your first name"
+                    value={getDisplayName()}
+                    disabled
+                    className="disabled-input"
                   />
+                  <small>Name is set during registration</small>
                 </div>
-                <div className="form-group">
-                  <label>Last Name</label>
-                  <input
-                    type="text"
-                    name="lname"
-                    value={formData.lname}
-                    onChange={handleInputChange}
-                    placeholder="Enter your last name"
-                  />
-                </div>
-              </div>
-
-              <div className="form-row">
                 <div className="form-group">
                   <label>Email</label>
                   <input
@@ -247,19 +373,20 @@ const ProfilePage = () => {
                   />
                   <small>Email cannot be changed</small>
                 </div>
-                <div className="form-group">
-                  <label>Phone Number</label>
-                  <input
-                    type="tel"
-                    name="phone"
-                    value={formData.phone}
-                    onChange={handleInputChange}
-                    placeholder="Enter your phone number"
-                  />
-                </div>
               </div>
 
               <div className="form-row">
+                <div className="form-group phone-input-group">
+                  <label>Phone Number</label>
+                  <PhoneInput
+                    international
+                    defaultCountry="GH"
+                    value={formData.phone}
+                    onChange={handlePhoneChange}
+                    className={phoneError ? "phone-input error" : "phone-input"}
+                  />
+                  {phoneError && <small className="error-message">Please enter a valid phone number</small>}
+                </div>
                 <div className="form-group">
                   <label>Date of Birth</label>
                   <input
@@ -301,7 +428,13 @@ const ProfilePage = () => {
             </div>
 
             <div className="form-actions">
-              <button type="submit" className="save-button">Save Changes</button>
+              <button 
+                type="submit" 
+                className="save-button"
+                disabled={phoneError && formData.phone !== ""}
+              >
+                Save Changes
+              </button>
             </div>
           </form>
         ) : (
@@ -314,6 +447,14 @@ const ProfilePage = () => {
                 <div className="info-details">
                   <span className="info-label">Name</span>
                   <span className="info-value">{getDisplayName()}</span>
+                </div>
+              </div>
+              
+              <div className="info-row">
+                <div className="info-icon"><FaEnvelope /></div>
+                <div className="info-details">
+                  <span className="info-label">Email</span>
+                  <span className="info-value">{auth.currentUser?.email || ""}</span>
                 </div>
               </div>
               

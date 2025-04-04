@@ -1,50 +1,311 @@
-.reports-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
+/* FinancialReports.css */
+.main-content {
+  padding: 0;
+  background-color: #f8f9fa;
+  min-height: 100vh;
+}
+
+/* Financial Overview */
+.financial-container {
+  padding: 25px 35px;
+  width: 100%;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.financial-title {
+  font-size: 28px;
+  font-weight: 600;
+  color: #333;
+  text-align: center;
+  margin-bottom: 35px;
+  position: relative;
+  padding-bottom: 15px;
+}
+
+.financial-title:after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 80px;
+  height: 3px;
+  background-color: #e67e22; /* Accent color matching InnSight theme */
+  border-radius: 2px;
+}
+
+/* Card layout */
+.financial-cards {
+  display: flex;
+  justify-content: space-between;
+  gap: 24px;
+  margin-bottom: 45px;
+}
+
+.financial-card {
+  flex: 1;
+  border-radius: 10px;
+  padding: 25px 20px;
+  color: white;
+  text-align: center;
+  box-shadow: 0 6px 15px rgba(0,0,0,0.1);
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.financial-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+}
+
+.financial-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(45deg, rgba(255,255,255,0.1), rgba(255,255,255,0));
+  z-index: 1;
+}
+
+.revenue-card {
+  background: linear-gradient(135deg, #e67e22, #d35400);
+}
+
+.expenses-card {
+  background: linear-gradient(135deg, #34495e, #2c3e50);
+}
+
+.balance-card {
+  background: linear-gradient(135deg, #3498db, #2980b9);
+}
+
+.card-label {
+  font-size: 18px;
+  margin-bottom: 15px;
+  font-weight: 500;
+  position: relative;
+  z-index: 2;
+}
+
+.card-amount {
+  font-size: 28px;
+  font-weight: 700;
+  position: relative;
+  z-index: 2;
+}
+
+/* Transaction section */
+.transaction-section {
+  margin-bottom: 40px;
+  background-color: #fff;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+  padding: 25px;
+}
+
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 25px;
+}
+
+.section-header h2 {
+  font-size: 22px;
+  font-weight: 600;
+  color: #333;
+  margin: 0;
+}
+
+/* Tab selector */
+.tab-selector {
+  display: flex;
+  margin-bottom: 25px;
+  border-bottom: 1px solid #ddd;
+}
+
+.tab {
+  padding: 12px 24px;
+  cursor: pointer;
+  background-color: #f8f9fa;
+  border: 1px solid #ddd;
+  border-bottom: none;
+  margin-right: 6px;
+  border-top-left-radius: 8px;
+  border-top-right-radius: 8px;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+.tab:hover {
+  background-color: #f1f1f1;
+}
+
+.tab.active {
+  background-color: #e67e22; /* Match InnSight theme */
+  color: white;
+  border-color: #e67e22;
+}
+
+/* Export button */
+.export-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 25px;
+}
+
+.export-button {
+  background-color: #e67e22; /* Match InnSight theme */
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.3s;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+.export-button::before {
+  content: "📄";
+  font-size: 16px;
+}
+
+.export-button:hover {
+  background-color: #d35400; /* Darker shade for hover */
+  box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+}
+
+/* Table styling */
+.transaction-table-container {
+  background-color: #fff;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+}
+
+.transaction-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.transaction-table thead {
+  background-color: #e67e22; /* Match InnSight theme */
+  color: white;
+}
+
+.transaction-table th {
+  padding: 14px 18px;
+  text-align: left;
+  font-weight: 500;
+  color: white;
+  font-size: 14px;
+  letter-spacing: 0.5px;
+}
+
+.transaction-table td {
+  padding: 14px 18px;
+  border-bottom: 1px solid #eee;
+  font-size: 14px;
+}
+
+.transaction-table tr:nth-child(even) {
+  background-color: #f9f9f9;
+}
+
+.transaction-table tr:hover {
+  background-color: #f3f3f3;
+  transition: background-color 0.2s;
+}
+
+.amount-column {
+  width: 15%;
+}
+
+.amount-cell {
+  color: #4caf50;
+  font-weight: 600;
+}
+
+/* Make expenses appear in a different color */
+.expenses-table .amount-cell {
+  color: #e53935;
+}
+
+/* No data message */
+.no-data {
+  text-align: center;
+  padding: 30px 0;
+  color: #757575;
+  font-style: italic;
+}
+
+/* Responsive design */
+@media (max-width: 992px) {
+  .financial-container {
+    padding: 20px;
+  }
+  
+  .financial-cards {
+    flex-wrap: wrap;
+  }
+  
+  .financial-card {
+    flex: 0 0 calc(50% - 12px);
     margin-bottom: 20px;
   }
-  
-  .export-buttons button {
-    margin-left: 10px;
-    padding: 8px 15px;
-    border: none;
-    background: #3498db;
-    color: white;
-    border-radius: 5px;
-    cursor: pointer;
+}
+
+@media (max-width: 768px) {
+  .financial-title {
+    font-size: 24px;
+  }
+
+  .financial-cards {
+    flex-direction: column;
   }
   
-  .summary-cards {
-    display: flex;
-    justify-content: space-between;
-    margin-bottom: 30px;
+  .financial-card {
+    flex: 1 0 100%;
   }
   
-  .card {
-    padding: 20px;
-    border-radius: 10px;
-    text-align: center;
-    color: white;
-    flex: 1;
+  .section-header {
+    flex-direction: column;
+    align-items: flex-start;
   }
   
-  .card-income {
-    background: #2ecc71;
+  .section-header h2 {
+    margin-bottom: 15px;
   }
   
-  .card-expense {
-    background: #e74c3c;
+  .transaction-table th, 
+  .transaction-table td {
+    padding: 12px 10px;
+    font-size: 13px;
   }
   
-  .card-balance {
-    background: #3498db;
+  .tab {
+    padding: 10px 16px;
+    font-size: 14px;
+  }
+}
+
+@media (max-width: 576px) {
+  .transaction-table {
+    display: block;
+    overflow-x: auto;
+    white-space: nowrap;
   }
   
-  .chart-container {
-    background: #fff;
-    padding: 20px;
-    border-radius: 10px;
-    margin-top: 20px;
+  .export-button {
+    width: 100%;
+    justify-content: center;
   }
-  
+}

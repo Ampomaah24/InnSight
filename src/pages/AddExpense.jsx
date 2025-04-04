@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 import { db } from "../config/firebase";
 import { collection, addDoc, serverTimestamp } from "firebase/firestore";
-import Navbar from "../components/Navbar";
 import Sidebar from "../components/Sidebar";
 import "../assets/styles/Finance.css";
 
@@ -13,7 +12,8 @@ const AddExpense = () => {
     date: new Date().toISOString().slice(0, 10),
   });
 
-  const [loading, setLoading] = useState(false); // Tracks submission state
+  const [loading, setLoading] = useState(false);
+  const [success, setSuccess] = useState(false);
 
   const categories = [
     "Utilities",
@@ -36,6 +36,8 @@ const AddExpense = () => {
 
   const handleChange = (e) => {
     setExpense({ ...expense, [e.target.name]: e.target.value });
+    // Clear success message when form is being edited
+    if (success) setSuccess(false);
   };
 
   const submitExpense = async (e) => {
@@ -48,7 +50,7 @@ const AddExpense = () => {
     }
 
     try {
-      setLoading(true); // Show loading state
+      setLoading(true);
 
       // Convert amount to number and date to Firestore timestamp
       const docRef = await addDoc(collection(db, "transactions"), {
@@ -61,10 +63,18 @@ const AddExpense = () => {
       });
 
       console.log("Expense added with ID:", docRef.id);
-      alert("Expense added successfully!");
+      
+      // Show success message
+      setSuccess(true);
 
       // Reset form after successful submission
-      setExpense({ amount: "", category: "", description: "", date: new Date().toISOString().slice(0, 10) });
+      setExpense({
+        amount: "",
+        category: "",
+        description: "",
+        date: new Date().toISOString().slice(0, 10)
+      });
+      
       setLoading(false);
     } catch (error) {
       console.error("Error adding expense:", error);
@@ -77,62 +87,97 @@ const AddExpense = () => {
     <div className="dashboard-container">
       <Sidebar />
       <div className="main-content">
-        <Navbar />
-        <div className="form-container">
-          <h2>Add Expense</h2>
-          <form onSubmit={submitExpense}>
-            <div className="form-group">
-              <label>Amount (GHS)</label>
-              <input
-                type="number"
-                name="amount"
-                required
-                value={expense.amount}
-                onChange={handleChange}
-              />
-            </div>
+        <div className="expense-page">
+          <div className="expense-header">
+            <h1 className="page-title">Add Expense</h1>
+            <p className="expense-subheading">Record a new expense transaction</p>
+          </div>
+          
+          <div className="expense-form-container">
+            {success && (
+              <div className="success-message">
+                <div className="success-icon">✓</div>
+                <p>Expense added successfully!</p>
+              </div>
+            )}
+            
+            <form onSubmit={submitExpense}>
+              <div className="form-group">
+                <label htmlFor="amount">Amount (GHS)</label>
+                <div className="input-with-icon">
+                  <span className="currency-symbol">₵</span>
+                  <input
+                    id="amount"
+                    type="number"
+                    name="amount"
+                    required
+                    value={expense.amount}
+                    onChange={handleChange}
+                    placeholder="0.00"
+                    step="0.01"
+                    min="0"
+                  />
+                </div>
+              </div>
 
-            <div className="form-group">
-              <label>Category</label>
-              <select
-                name="category"
-                required
-                value={expense.category}
-                onChange={handleChange}
+              <div className="form-group">
+                <label htmlFor="category">Category</label>
+                <select
+                  id="category"
+                  name="category"
+                  required
+                  value={expense.category}
+                  onChange={handleChange}
+                >
+                  <option value="">Select Category</option>
+                  {categories.map((cat, index) => (
+                    <option key={index} value={cat}>{cat}</option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="form-group">
+                <label htmlFor="description">Description</label>
+                <input
+                  id="description"
+                  type="text"
+                  name="description"
+                  required
+                  value={expense.description}
+                  onChange={handleChange}
+                  placeholder="Brief description of the expense"
+                />
+              </div>
+
+              <div className="form-group">
+                <label htmlFor="date">Date</label>
+                <input
+                  id="date"
+                  type="date"
+                  name="date"
+                  required
+                  value={expense.date}
+                  onChange={handleChange}
+                />
+              </div>
+
+              <button 
+                type="submit" 
+                className="expense-save-btn" 
+                disabled={loading}
               >
-                <option value="">Select Category</option>
-                {categories.map((cat, index) => (
-                  <option key={index} value={cat}>{cat}</option>
-                ))}
-              </select>
+                {loading ? (
+                  <span className="loading-spinner"></span>
+                ) : (
+                  "Save Expense"
+                )}
+              </button>
+            </form>
+            
+            <div className="form-help-text">
+              <p>All expenses are recorded in Ghana Cedis (GHS) and will appear in the inflow and outflow report.</p>
             </div>
-
-            <div className="form-group">
-              <label>Description</label>
-              <input
-                type="text"
-                name="description"
-                required
-                value={expense.description}
-                onChange={handleChange}
-              />
-            </div>
-
-            <div className="form-group">
-              <label>Date</label>
-              <input
-                type="date"
-                name="date"
-                required
-                value={expense.date}
-                onChange={handleChange}
-              />
-            </div>
-
-            <button type="submit" className="save-btn" disabled={loading}>
-              {loading ? "Saving..." : "Save Expense"}
-            </button>
-          </form>
+          </div>
         </div>
       </div>
     </div>
@@ -140,3 +185,4 @@ const AddExpense = () => {
 };
 
 export default AddExpense;
+

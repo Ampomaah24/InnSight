@@ -336,7 +336,129 @@
     border-radius: 0.5rem;
     border: 1px dashed #ddd;
   }
+  /* Add these styles to your AdminSettings.css file */
+/* Add these styles to your AdminSettings.css file */
+
+/* Add these styles to your AdminSettings.css file */
+
+.database-error-banner {
+    background-color: #fff3cd;
+    color: #856404;
+    padding: 10px 15px;
+    border-radius: 4px;
+    margin-bottom: 15px;
+    border-left: 4px solid #ffeeba;
+    font-weight: 500;
+  }
   
+  .user-role-indicator {
+    position: absolute;
+    top: 10px;
+    right: 15px;
+    font-size: 14px;
+    color: #6c757d;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  
+  .permission-badge {
+    font-size: 12px;
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-weight: 600;
+  }
+  
+  .permission-badge.success {
+    background-color: #d4edda;
+    color: #155724;
+  }
+  
+  .permission-badge.warning {
+    background-color: #fff3cd;
+    color: #856404;
+  }
+  
+  .permission-notice {
+    color: #721c24;
+    font-size: 14px;
+    margin-left: 15px;
+    font-style: italic;
+    align-self: center;
+  }
+  
+  .settings-actions {
+    display: flex;
+    align-items: center;
+    margin-top: 20px;
+  }
+  
+  .save-button {
+    background-color: #e4822a;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-weight: 500;
+    transition: background-color 0.2s ease;
+  }
+  
+  .save-button:hover:not(:disabled) {
+    background-color: #d16f18;
+  }
+  
+  .save-button:disabled {
+    background-color: #f0cca5;
+    cursor: not-allowed;
+  }
+  
+  .add-button {
+    background-color: #6c757d;
+    color: white;
+    border: none;
+    padding: 10px 15px;
+    border-radius: 5px;
+    cursor: pointer;
+    margin-right: 10px;
+    transition: background-color 0.2s ease;
+  }
+  
+  .add-button:hover:not(:disabled) {
+    background-color: #5a6268;
+  }
+  
+  .add-button:disabled {
+    background-color: #d8dbe0;
+    cursor: not-allowed;
+  }
+  
+  /* Styles for disabled form elements */
+  input:disabled, 
+  select:disabled, 
+  textarea:disabled {
+    background-color: #f8f9fa;
+    cursor: not-allowed;
+    opacity: 0.8;
+    border-color: #dee2e6;
+  }
+  
+  .promotion-card input:disabled,
+  .promotion-card textarea:disabled,
+  .season-card input:disabled {
+    background-color: #f8f9fa;
+    cursor: not-allowed;
+  }
+  
+  .remove-btn:disabled {
+    background-color: #e9ecef;
+    color: #adb5bd;
+    cursor: not-allowed;
+  }
+  
+  .checkbox-group input:disabled + span {
+    color: #6c757d;
+  }
   /* Responsive Adjustments */
   @media (max-width: 768px) {
     .settings-tabs {

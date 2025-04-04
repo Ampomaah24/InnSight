@@ -3,8 +3,6 @@ import { collection, getDocs } from "firebase/firestore";
 import { db } from "../config/firebase";
 import { jsPDF } from "jspdf";
 import autoTable from "jspdf-autotable";
-import Chart from "react-apexcharts";
-import Navbar from "../components/Navbar";
 import Sidebar from "../components/Sidebar";
 import "../assets/styles/FinancialReports.css";
 
@@ -14,8 +12,7 @@ const FinancialReports = () => {
   const [totalIncome, setTotalIncome] = useState(0);
   const [totalExpenses, setTotalExpenses] = useState(0);
   const [balance, setBalance] = useState(0);
-  const [monthlySummary, setMonthlySummary] = useState({});
-  const [categoryBreakdown, setCategoryBreakdown] = useState({});
+  const [activeTab, setActiveTab] = useState('income');
 
   useEffect(() => {
     const fetchFinancialData = async () => {
@@ -24,10 +21,14 @@ const FinancialReports = () => {
         const transactions = querySnapshot.docs.map((doc) => {
           const data = doc.data();
           return {
+            id: doc.id,
             ...data,
             date: data.date.toDate ? data.date.toDate() : new Date(data.date),
           };
         });
+
+        // Sort transactions by date (newest first)
+        transactions.sort((a, b) => b.date - a.date);
 
         const income = transactions.filter((t) => t.type === "income");
         const expenses = transactions.filter((t) => t.type === "expense");
@@ -36,43 +37,11 @@ const FinancialReports = () => {
         const totalExpenses = expenses.reduce((sum, t) => sum + t.amount, 0);
         const balance = totalIncome - totalExpenses;
 
-        // Group data by month
-        const monthlySummary = transactions.reduce((summary, transaction) => {
-          const monthYear = transaction.date.toLocaleString("default", { month: "short", year: "numeric" });
-
-          if (!summary[monthYear]) {
-            summary[monthYear] = { income: 0, expenses: 0 };
-          }
-
-          if (transaction.type === "income") {
-            summary[monthYear].income += transaction.amount;
-          } else {
-            summary[monthYear].expenses += transaction.amount;
-          }
-
-          return summary;
-        }, {});
-
-        // Group data by category
-        const categoryBreakdown = transactions.reduce((summary, t) => {
-          if (!summary[t.category]) {
-            summary[t.category] = { income: 0, expenses: 0 };
-          }
-          if (t.type === "income") {
-            summary[t.category].income += t.amount;
-          } else {
-            summary[t.category].expenses += t.amount;
-          }
-          return summary;
-        }, {});
-
         setIncomeData(income);
         setExpenseData(expenses);
         setTotalIncome(totalIncome);
         setTotalExpenses(totalExpenses);
         setBalance(balance);
-        setMonthlySummary(monthlySummary);
-        setCategoryBreakdown(categoryBreakdown);
       } catch (error) {
         console.error("Error fetching financial data:", error);
       }
@@ -82,109 +51,168 @@ const FinancialReports = () => {
   }, []);
 
   // Generate PDF Report
-  const generatePDF = (reportType) => {
+  const generatePDF = () => {
     const doc = new jsPDF();
     doc.setFont("times", "bold");
     doc.setFontSize(16);
 
-    if (reportType === "IncomeExpenditure") {
-      doc.text("INCOME AND EXPENDITURE ACCOUNT", 50, 15);
-    } else {
-      doc.text("PROFIT & LOSS STATEMENT", 60, 15);
-    }
-
+    doc.text("FINANCIAL STATEMENT", 75, 15);
     doc.setFontSize(12);
-    doc.text("For the year ended December 31, 2025", 65, 22);
+    doc.text("For the period ending April 4, 2025", 70, 22);
 
     autoTable(doc, {
       startY: 30,
-      head: [["EXPENDITURE", "AMOUNT (GHS)", "INCOME", "AMOUNT (GHS)"]],
+      head: [["ITEM", "AMOUNT (GHS)"]],
       body: [
-        ...expenseData.map((t) => [t.category, `GHS ${t.amount.toFixed(2)}`, "", ""]),
-        ...incomeData.map((t) => ["", "", t.category, `GHS ${t.amount.toFixed(2)}`]),
-        ["", "", "Total Income", `GHS ${totalIncome.toFixed(2)}`],
-        ["Total Expenses", `GHS ${totalExpenses.toFixed(2)}`, "Net Profit/Loss", `GHS ${balance.toFixed(2)}`],
+        ["Total Income", `${totalIncome.toFixed(2)}`],
+        ["Total Expenses", `${totalExpenses.toFixed(2)}`],
+        ["Net Balance", `${balance.toFixed(2)}`],
       ],
       theme: "grid",
       styles: { fontSize: 10, halign: "center" },
       columnStyles: {
         0: { halign: "left", fontStyle: "bold" },
         1: { halign: "right" },
-        2: { halign: "left", fontStyle: "bold" },
+      },
+    });
+
+    // Add transaction details
+    let y = doc.lastAutoTable.finalY + 10;
+    doc.text("Transaction Details", 14, y);
+    y += 10;
+
+    const tableData = activeTab === 'income' ? 
+      incomeData.map(t => [
+        t.date.toLocaleDateString(),
+        t.category,
+        t.description,
+        `${t.amount.toFixed(2)}`
+      ]) : 
+      expenseData.map(t => [
+        t.date.toLocaleDateString(),
+        t.category,
+        t.description,
+        `${t.amount.toFixed(2)}`
+      ]);
+
+    autoTable(doc, {
+      startY: y,
+      head: [["Date", "Category", "Description", "Amount (GHS)"]],
+      body: tableData,
+      theme: "grid",
+      styles: { fontSize: 9 },
+      columnStyles: {
         3: { halign: "right" },
       },
     });
 
-    if (reportType === "IncomeExpenditure") {
-      doc.save("Income_and_Expenditure_Report.pdf");
-    } else {
-      doc.save("Profit_and_Loss_Report.pdf");
-    }
+    doc.save(`Financial_Report_${activeTab}.pdf`);
+  };
+
+  const formatCurrency = (amount) => {
+    return new Intl.NumberFormat('en-GH', {
+      style: 'decimal',
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2
+    }).format(amount);
   };
 
   return (
     <div className="dashboard-container">
       <Sidebar />
       <div className="main-content">
-        <Navbar />
-
-        <div className="reports-header">
-          <h1>Financial Report Summary</h1>
-          <div className="export-buttons">
-            <button className="pdf-btn" onClick={() => generatePDF("IncomeExpenditure")}>
-              Export Income & Expenditure Report
-            </button>
-            <button className="pdf-btn" onClick={() => generatePDF("ProfitLoss")}>
-              Export Profit & Loss Report
-            </button>
+        <div className="financial-container">
+          <h1 className="financial-title">Financial Overview</h1>
+          
+          <div className="financial-cards">
+            <div className="financial-card revenue-card">
+              <div className="card-label">Total Revenue</div>
+              <div className="card-amount">GHS {formatCurrency(totalIncome)}</div>
+            </div>
+            
+            <div className="financial-card expenses-card">
+              <div className="card-label">Total Expenses</div>
+              <div className="card-amount">GHS {formatCurrency(totalExpenses)}</div>
+            </div>
+            
+            <div className="financial-card balance-card">
+              <div className="card-label">Net Balance</div>
+              <div className="card-amount">GHS {formatCurrency(balance)}</div>
+            </div>
           </div>
-        </div>
-
-        {/* Summary Cards */}
-        <div className="summary-cards">
-          <div className="card card-income">
-            <p className="card-title">Total Income</p>
-            <h2>GHS {totalIncome.toFixed(2)}</h2>
+          
+          <div className="transaction-section">
+            <div className="tab-selector">
+              <div 
+                className={`tab ${activeTab === 'income' ? 'active' : ''}`}
+                onClick={() => setActiveTab('income')}
+              >
+                Income Transactions
+              </div>
+              <div 
+                className={`tab ${activeTab === 'expense' ? 'active' : ''}`}
+                onClick={() => setActiveTab('expense')}
+              >
+                Expense Transactions
+              </div>
+            </div>
+            
+            <div className="export-actions">
+              <button onClick={generatePDF} className="export-button">
+                Export Report
+              </button>
+            </div>
+            
+            <div className="section-header">
+              <h2>{activeTab === 'income' ? 'Income Transactions' : 'Expense Transactions'}</h2>
+            </div>
+            
+            <div className="transaction-table-container">
+              <table className={`transaction-table ${activeTab === 'expense' ? 'expenses-table' : ''}`}>
+                <thead>
+                  <tr>
+                    <th className="amount-column">Amount</th>
+                    <th>Category</th>
+                    <th>Description</th>
+                    <th>Date</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {activeTab === 'income' ? (
+                    incomeData.length > 0 ? (
+                      incomeData.map((transaction, index) => (
+                        <tr key={transaction.id || index}>
+                          <td className="amount-cell">GHS {formatCurrency(transaction.amount)}</td>
+                          <td>{transaction.category}</td>
+                          <td>{transaction.description}</td>
+                          <td>{transaction.date.toLocaleDateString()}</td>
+                        </tr>
+                      ))
+                    ) : (
+                      <tr>
+                        <td colSpan="4" className="no-data">No income transactions found</td>
+                      </tr>
+                    )
+                  ) : (
+                    expenseData.length > 0 ? (
+                      expenseData.map((transaction, index) => (
+                        <tr key={transaction.id || index}>
+                          <td className="amount-cell">GHS {formatCurrency(transaction.amount)}</td>
+                          <td>{transaction.category}</td>
+                          <td>{transaction.description}</td>
+                          <td>{transaction.date.toLocaleDateString()}</td>
+                        </tr>
+                      ))
+                    ) : (
+                      <tr>
+                        <td colSpan="4" className="no-data">No expense transactions found</td>
+                      </tr>
+                    )
+                  )}
+                </tbody>
+              </table>
+            </div>
           </div>
-          <div className="card card-expense">
-            <p className="card-title">Total Expenses</p>
-            <h2>GHS {totalExpenses.toFixed(2)}</h2>
-          </div>
-          <div className="card card-balance">
-            <p className="card-title">Net Profit/Loss</p>
-            <h2 style={{ color: balance >= 0 ? "#2ecc71" : "#e74c3c" }}>
-              GHS {balance.toFixed(2)}
-            </h2>
-          </div>
-        </div>
-
-        {/* Monthly Financial Summary */}
-        <div className="financial-summary">
-          <h3>Monthly Financial Summary</h3>
-          <ul>
-            {Object.entries(monthlySummary).map(([month, data], index) => (
-              <li key={index}>
-                <strong>{month}:</strong> Income: GHS {data.income.toFixed(2)}, Expenses: GHS {data.expenses.toFixed(2)}
-              </li>
-            ))}
-          </ul>
-        </div>
-
-        {/* Financial Trend Chart */}
-        <div className="chart-container">
-          <h3>Financial Trends</h3>
-          <Chart
-            options={{
-              chart: { type: "line", height: 350 },
-              xaxis: { categories: Object.keys(monthlySummary) },
-            }}
-            series={[
-              { name: "Income", data: Object.values(monthlySummary).map((item) => item.income) },
-              { name: "Expenses", data: Object.values(monthlySummary).map((item) => item.expenses) },
-            ]}
-            type="line"
-            height={350}
-          />
         </div>
       </div>
     </div>

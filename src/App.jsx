@@ -12,7 +12,6 @@ import Dashboard from "./pages/Dashboard"; // Import Conference Booking Page
 import Reservations from "./pages/Reservations";
 import CheckIn from "./pages/CheckIn";
 import Rooms from "./pages/Rooms";
-import Reports from "./pages/Reports";
 import BookingPage from "./pages/BookingPage";
 import UserHistory from "./pages/UserHistory"; 
 import AddExpense from "./pages/AddExpense";
@@ -46,7 +45,6 @@ const App = () => {
         <Route path="/check-in" element={<CheckIn />} />
         <Route path="/rooms" element={<Rooms />} />
         <Route path="/add-expense" element={<AddExpense />} />
-        <Route path="/reports" element={<Reports />} />
         <Route path="/book-room" element={<BookingPage />} /> 
         <Route path="/user-history" element={<UserHistory />} />
         <Route path="/freports" element={<FinancialReports />} />

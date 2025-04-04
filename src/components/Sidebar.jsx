@@ -2,68 +2,82 @@ import React, { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { 
   FaHome, 
-  FaCalendarCheck, 
-  FaUsers, 
-  FaChartBar, 
+  FaCalendarAlt, 
+  FaKey, 
   FaBed, 
-  FaMoneyBillWave, 
   FaCog, 
-  FaKey,
-  FaBars,
-  FaTimes
+  FaChartBar, 
+  FaMoneyBillWave, 
+  FaSignOutAlt 
 } from "react-icons/fa";
+import { auth } from "../config/firebase";
+import { useNavigate } from "react-router-dom";
 
 const Sidebar = () => {
   const location = useLocation();
-  const [isMobile, setIsMobile] = useState(false);
-  const [sidebarOpen, setSidebarOpen] = useState(false);
-  
-  // Check if current path matches the menu item path
+  const navigate = useNavigate();
+  const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(!isMobile);
+
+  // Check if the current path matches the specified path
   const isActive = (path) => {
     return location.pathname === path;
   };
-  
-  // Toggle sidebar on mobile
-  const toggleSidebar = () => {
-    setSidebarOpen(!sidebarOpen);
-  };
-  
-  // Handle window resize
+
+  // Set sidebar state based on screen size
   useEffect(() => {
     const handleResize = () => {
-      setIsMobile(window.innerWidth < 768);
+      const mobile = window.innerWidth <= 768;
+      setIsMobile(mobile);
+      if (!mobile && !isSidebarOpen) {
+        setIsSidebarOpen(true);
+      } else if (mobile && isSidebarOpen) {
+        setIsSidebarOpen(false);
+      }
     };
-    
-    // Initial check
-    handleResize();
-    
-    // Listen for window resize
-    window.addEventListener('resize', handleResize);
-    
-    // Cleanup
-    return () => {
-      window.removeEventListener('resize', handleResize);
-    };
-  }, []);
-  
+
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, [isSidebarOpen]);
+
+  // Toggle sidebar on mobile
+  const toggleSidebar = () => {
+    setIsSidebarOpen(!isSidebarOpen);
+  };
+
+  // Handle logout
+  const handleLogout = () => {
+    auth.signOut()
+      .then(() => {
+        // Clear session storage
+        sessionStorage.removeItem('currentUser');
+        // Redirect to login page
+        navigate("/login");
+      })
+      .catch((error) => {
+        console.error("Error signing out:", error);
+      });
+  };
+
   return (
     <>
       {isMobile && (
         <button 
-          className="sidebar-toggle"
+          className="sidebar-toggle" 
           onClick={toggleSidebar}
+          aria-label="Toggle Sidebar"
         >
-          {sidebarOpen ? <FaTimes /> : <FaBars />}
+          <span>☰</span>
         </button>
       )}
       
-      <div className={`sidebar ${isMobile && sidebarOpen ? 'open' : ''} ${isMobile && !sidebarOpen ? 'closed' : ''}`}>
+      <aside className={`sidebar ${isMobile ? (isSidebarOpen ? 'open' : 'closed') : ''}`}>
         <div className="sidebar-logo">
           <h2>InnSight</h2>
         </div>
         
         <ul className="sidebar-menu">
-          <li className={`sidebar-item ${isActive('/admin-dashboard') ? 'active' : ''}`}>
+          <li className={`sidebar-item ${isActive('/') ? 'active' : ''}`}>
             <Link to="/admin-dashboard">
               <span className="sidebar-icon"><FaHome /></span>
               <span className="sidebar-text">Dashboard</span>
@@ -72,7 +86,7 @@ const Sidebar = () => {
           
           <li className={`sidebar-item ${isActive('/reservations') ? 'active' : ''}`}>
             <Link to="/reservations">
-              <span className="sidebar-icon"><FaCalendarCheck /></span>
+              <span className="sidebar-icon"><FaCalendarAlt /></span>
               <span className="sidebar-text">Reservations</span>
             </Link>
           </li>
@@ -91,15 +105,15 @@ const Sidebar = () => {
             </Link>
           </li>
           
-          <li className={`sidebar-item ${isActive('/ad_settings') ? 'active' : ''}`}>
-            <Link to="/ad_settings">
-              <span className="sidebar-icon"><FaUsers /></span>
+          <li className={`sidebar-item ${isActive('/settings') ? 'active' : ''}`}>
+            <Link to="/settings">
+              <span className="sidebar-icon"><FaCog /></span>
               <span className="sidebar-text">Settings</span>
             </Link>
           </li>
           
-          <li className={`sidebar-item ${isActive('/add-expense') ? 'active' : ''}`}>
-            <Link to="/add-expense">
+          <li className={`sidebar-item ${isActive('/expenses') ? 'active' : ''}`}>
+            <Link to="/expenses">
               <span className="sidebar-icon"><FaMoneyBillWave /></span>
               <span className="sidebar-text">Expenses</span>
             </Link>
@@ -112,14 +126,19 @@ const Sidebar = () => {
             </Link>
           </li>
           
-
+  {/*         <li className="sidebar-item" onClick={handleLogout}>
+            <Link to="#">
+              <span className="sidebar-icon"><FaSignOutAlt /></span>
+              <span className="sidebar-text">Logout</span>
+            </Link>
+          </li> */}
         </ul>
         
         <div className="sidebar-footer">
           <p>Ampomaah Tourist Hotel</p>
-          
+          <p className="version">v1.0.0</p>
         </div>
-      </div>
+      </aside>
     </>
   );
 };

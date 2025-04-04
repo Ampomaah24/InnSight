@@ -3,7 +3,9 @@ import { useNavigate } from "react-router-dom";
 import { collection, getDocs, query, where, Timestamp } from "firebase/firestore";
 import { db } from "../config/firebase";
 import Sidebar from "../components/Sidebar";
+import TopRightProfile from "../components/TopRightProfile";
 import "../assets/styles/Dashboard.css";
+import "../assets/styles/TopRightProfile.css";
 
 // Total rooms in the hotel
 const TOTAL_ROOMS = 53;
@@ -266,6 +268,7 @@ const Dashboard = () => {
   return (
     <div className="dashboard-container">
       <Sidebar />
+      <TopRightProfile />
       <div className="main-content">
         <div className="dashboard-header">
           <h1 className="dashboard-title">InnSight</h1>
