@@ -1,24 +1,68 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { db } from "../config/firebase";
-import { collection, getDocs, query, where } from "firebase/firestore";
+import { collection, getDocs, query, where, doc, getDoc } from "firebase/firestore";
 import NavMenu from "../components/NavMenu";
 import "../assets/styles/RoomBooking.css";
 
 const RoomBooking = () => {
   const navigate = useNavigate();
   const location = useLocation();
+
+   // App state variables
   const [rooms, setRooms] = useState([]);
   const [menuOpen, setMenuOpen] = useState(false);
   const [loading, setLoading] = useState(true);
   const [roomIndexes, setRoomIndexes] = useState({});
   const [selectedRooms, setSelectedRooms] = useState([]);
 
+   // Discount configuration pulled from Firestore
+  const [discounts, setDiscounts] = useState({
+    conferenceAttendeeDiscount: 0,
+    corporateDiscount: 0,
+    groupDiscountMinRooms: 0,
+    groupDiscountRate: 0,
+    longStayDiscount: 0,
+    longStayMinNights: 0,
+    weekdayDiscount: 0
+  });
+
+    // Extract query parameters from the URL
   const params = new URLSearchParams(location.search);
   const checkIn = params.get("checkIn") ? decodeURIComponent(params.get("checkIn")) : null;
   const checkOut = params.get("checkOut") ? decodeURIComponent(params.get("checkOut")) : null;
   const fromConference = params.get("fromConference") === "true";
-  const discount = parseFloat(params.get("discount")) || 0;
+
+  // Fetch discounts from Firestore
+  useEffect(() => {
+    const fetchDiscounts = async () => {
+      try {
+        const discountsRef = doc(db, "settings", "discounts");
+        const docSnap = await getDoc(discountsRef);
+        
+        if (docSnap.exists()) {
+          const discountData = docSnap.data();
+          console.log("Fetched discount data:", discountData);
+          
+          setDiscounts({
+            conferenceAttendeeDiscount: discountData.conferenceAttendeeDiscount || 0,
+            corporateDiscount: discountData.corporateDiscount || 0,
+            groupDiscountMinRooms: discountData.groupDiscountMinRooms || 0,
+            groupDiscountRate: discountData.groupDiscountRate || 0,
+            longStayDiscount: discountData.longStayDiscount || 0,
+            longStayMinNights: discountData.longStayMinNights || 0,
+            weekdayDiscount: discountData.weekdayDiscount || 0
+          });
+        } else {
+          console.warn("Discounts document doesn't exist");
+        }
+      } catch (error) {
+        console.error("Error fetching discounts:", error);
+      }
+    };
+
+    fetchDiscounts();
+  }, []);
 
   // Fix for scrolling issues
   useEffect(() => {
@@ -35,7 +79,7 @@ const RoomBooking = () => {
     document.body.style.overflow = 'auto';
     document.body.style.height = 'auto';
     
-    // Fix any potential CSS issues that might be affecting the container height
+
     const root = document.getElementById('root');
     if (root) {
       root.style.minHeight = '100vh';
@@ -43,20 +87,20 @@ const RoomBooking = () => {
       root.style.overflow = 'visible';
     }
     
-    // Remove any large margin-top that might be causing cutoff
+
     const container = document.querySelector('.room-booking-container');
     if (container) {
       container.style.marginTop = '0';
     }
     
-    // Force layout recalculation
+  
     setTimeout(() => {
       window.scrollTo(0, 0);
       window.dispatchEvent(new Event('resize'));
     }, 100);
     
     return () => {
-      // Clean up when component unmounts
+    
       document.documentElement.style.overflow = '';
       document.body.style.overflow = '';
       document.body.style.height = '';
@@ -70,11 +114,12 @@ const RoomBooking = () => {
 
   useEffect(() => {
     if (!checkIn || !checkOut) {
-      console.error("❌ Missing query parameters for fetching rooms");
+      console.error(" Missing query parameters for fetching rooms");
       setLoading(false);
       return;
     }
 
+     //  Fetch available rooms from Firestore
     const getAvailableRooms = async () => {
       try {
         const roomsCollection = collection(db, "rooms");
@@ -111,7 +156,7 @@ const RoomBooking = () => {
         });
         setRoomIndexes(initialIndexes);
       } catch (error) {
-        console.error("❌ Error fetching available rooms:", error);
+        console.error(" Error fetching available rooms:", error);
         setRooms([]);
         setLoading(false);
       }
@@ -120,6 +165,7 @@ const RoomBooking = () => {
     getAvailableRooms();
   }, [checkIn, checkOut]);
 
+  //  Group rooms by type
   const groupedRooms = rooms.reduce((acc, room) => {
     const type = room.t_room || "Other";
     if (!acc[type]) acc[type] = [];
@@ -160,6 +206,50 @@ const RoomBooking = () => {
   };
 
   const nights = calculateNights();
+  
+  // Determine which discount to apply
+  const getApplicableDiscount = () => {
+    // Priority of discounts
+    if (fromConference) {
+      return discounts.conferenceAttendeeDiscount; // Conference attendee discount
+    }
+    
+    // Long stay discount if staying longer than min nights
+    if (nights >= discounts.longStayMinNights) {
+      return discounts.longStayDiscount;
+    }
+    
+    // Group discount if selecting more than min rooms
+    if (selectedRooms.length >= discounts.groupDiscountMinRooms) {
+      return discounts.groupDiscountRate;
+    }
+    
+    // Weekday discount if check-in is on weekday (Monday-Thursday)
+    const checkInDay = checkIn ? new Date(checkIn).getDay() : -1;
+    if (checkInDay >= 1 && checkInDay <= 4) { // Monday=1, Thursday=4
+      return discounts.weekdayDiscount;
+    }
+    
+    return 0; // No discount applies
+  };
+
+  // Get discount name for display
+  const getDiscountName = () => {
+    if (fromConference) return 'Conference Attendee';
+    if (nights >= discounts.longStayMinNights) return 'Long Stay';
+    if (selectedRooms.length >= discounts.groupDiscountMinRooms) return 'Group Booking';
+    const checkInDay = checkIn ? new Date(checkIn).getDay() : -1;
+    if (checkInDay >= 1 && checkInDay <= 4) return 'Weekday';
+    return '';
+  };
+
+  const applicableDiscount = getApplicableDiscount();
+  const discountName = getDiscountName();
+
+  // Function to return to home page
+  const goToHome = () => {
+    navigate('/');
+  };
 
   if (loading) {
     return (
@@ -192,12 +282,22 @@ const RoomBooking = () => {
 
   return (
     <div className="room-booking-container">
-      {/* Moved NavMenu to a container with left alignment */}
-      <div className="nav-container"  style={{ backgroundColor: "transparent", boxShadow: "none" }}>
+ 
+      <div className="nav-container" style={{ backgroundColor: "transparent", boxShadow: "none" }}>
         <NavMenu menuOpen={menuOpen} setMenuOpen={setMenuOpen} />
       </div>
+         
+           <div className="back-button-container">
+      <button className="floating-back-button" onClick={() => navigate(-1)}>
+  ←
+</button>
       
       <h2 className="available-rooms-heading">Available Rooms</h2>
+
+ 
+
+</div>
+
 
       <div className="rooms-list">
         {checkIn && checkOut && (
@@ -217,9 +317,13 @@ const RoomBooking = () => {
         {Object.keys(groupedRooms).map((roomType) => {
           const currentIndex = roomIndexes[roomType] || 0;
           const currentRoom = groupedRooms[roomType][currentIndex];
-          const discountedPrice = fromConference
+          
+          // Apply discount if applicable
+          const discount = getApplicableDiscount();
+          const discountedPrice = discount > 0
             ? currentRoom.price - (currentRoom.price * discount / 100)
             : currentRoom.price;
+            
           const totalRooms = groupedRooms[roomType].length;
           const totalPrice = discountedPrice * nights;
 
@@ -229,7 +333,7 @@ const RoomBooking = () => {
 
               <div className="room-row">
                 <div className="image-carousel">
-                  {/* Updated carousel buttons to use CSS arrows instead of HTML entities */}
+                  
                   <button 
                     className="carousel-btn prev" 
                     onClick={() => changeRoomIndex(roomType, "prev")}
@@ -250,10 +354,15 @@ const RoomBooking = () => {
                   <div className="room-name">{roomType} Room</div>
                   
                   <div className="price-section">
+                    {discount > 0 && (
+                      <div className="original-price" style={{ textDecoration: "line-through", color: "#999", fontSize: "0.9em" }}>
+                        GHS {currentRoom.price.toFixed(2)}
+                      </div>
+                    )}
                     <h3>GHS {discountedPrice.toFixed(2)} <span className="per-night">per night</span></h3>
                     <p className="total-price">Total: GHS {totalPrice.toFixed(2)} for {nights} {nights === 1 ? 'night' : 'nights'}</p>
-                    {fromConference && (
-                      <small className="discount-label">{discount}% conference discount applied</small>
+                    {discount > 0 && (
+                      <small className="discount-label">{discount}% {discountName} discount applied</small>
                     )}
                   </div>
 
@@ -290,9 +399,9 @@ const RoomBooking = () => {
               rooms: encodedRooms,
               checkIn: encodedCheckIn,
               checkOut: encodedCheckOut,
-              roomCategory: "regular",
-              ...(fromConference && { discount: discount.toString(), fromConference: "true" }),
+              roomCategory: "regular"
             }).toString();
+            
 
             navigate(`/book-room?${query}`);
           }}

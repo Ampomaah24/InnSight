@@ -41,14 +41,17 @@ const BookingConfirmation = () => {
 
   return (
     <div className="confirmation-page">
-      <h2>Booking Confirmed!</h2>
-      <p>
-        Thank you for your booking. A confirmation has been sent to{" "}
-        <strong>{booking?.email}</strong>.
-      </p>
-      <button onClick={() => navigate("/services")}>Back</button>
+      <div className="confirmation-container">
+        <h2>Booking Confirmed!</h2>
+        <p>
+          Thank you for your booking. A confirmation has been sent to{" "}
+          <strong>{booking?.email}</strong>.
+        </p>
+        <button onClick={() => navigate("/services")}>Back</button>
+      </div>
     </div>
   );
+  
 };
 
 export default BookingConfirmation;

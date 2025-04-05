@@ -1,8 +1,8 @@
-
 import React, { useState, useEffect } from 'react';
 import { collection, doc, getDoc, setDoc, updateDoc, Timestamp, writeBatch } from 'firebase/firestore';
 import { db } from '../config/firebase';
 import { getAuth, onAuthStateChanged } from 'firebase/auth';
+import { useNavigate } from 'react-router-dom';
 import Sidebar from '../components/Sidebar';
 import '../assets/styles/AdminSettings.css';
 
@@ -13,9 +13,9 @@ const AdminSettings = () => {
   const [notification, setNotification] = useState(null);
   const [currentUser, setCurrentUser] = useState(null);
   const [userRole, setUserRole] = useState(null);
-  const [hasWritePermission, setHasWritePermission] = useState(false);
-  const [hasReadPermission, setHasReadPermission] = useState(false);
   const [dbError, setDbError] = useState(false);
+  const [isViewOnly, setIsViewOnly] = useState(false);
+  const navigate = useNavigate();
   
   // Settings state objects
   const [taxSettings, setTaxSettings] = useState({
@@ -87,33 +87,41 @@ const AdminSettings = () => {
       setCurrentUser(user);
       if (!user) {
         console.warn('User not authenticated');
-        setDbError(true);
-        setHasReadPermission(false);
-        setHasWritePermission(false);
-        showNotification('Authentication required. Sign in with admin privileges.', 'error');
+        navigate("/login");
         return;
       }
       
-      // For testing/development - set these directly if custom claims aren't working
-      // In production, you should rely on proper Firebase auth claims
-      const userRole = localStorage.getItem('userRole') || 'admin'; // Default for testing
-      setUserRole(userRole);
-      
-      // Check permissions based on role
-      const hasRead = userRole === 'admin' || userRole === 'superadmin';
-      const hasWrite = userRole === 'superadmin';
-      
-      setHasReadPermission(hasRead);
-      setHasWritePermission(hasWrite);
-      
-      if (!hasRead) {
+      // Check user role from Firestore
+      try {
+        const userDoc = await getDoc(doc(db, "users", user.uid));
+        if (userDoc.exists()) {
+          const userData = userDoc.data();
+          setUserRole(userData.role);
+          
+          // Both admin and superadmin can view settings
+          if (userData.role === 'superadmin') {
+            setIsViewOnly(false); // Superadmin has full edit access
+            fetchSettings();
+          } else if (userData.role === 'admin') {
+            setIsViewOnly(true); // Admin has view-only access
+            fetchSettings();
+          } else {
+            // Non-admin users are redirected
+            navigate("/services");
+          }
+        } else {
+          console.warn('No user role found.');
+          navigate("/services");
+        }
+      } catch (error) {
+        console.error("Error checking user role:", error);
         setDbError(true);
-        showNotification('You need admin or superadmin privileges to view settings', 'error');
+        // Don't redirect here to allow offline mode to work
       }
     });
     
     return () => unsubscribe();
-  }, []);
+  }, [navigate]);
 
   // Load settings from local storage if available
   useEffect(() => {
@@ -144,103 +152,100 @@ const AdminSettings = () => {
     }
   }, [dbError]);
 
-  useEffect(() => {
-    const fetchSettings = async () => {
+  const fetchSettings = async () => {
+    try {
+      setLoading(true);
+      
       try {
-        setLoading(true);
-        
-        try {
-          // Fetch tax settings
-          const taxDoc = await getDoc(doc(db, 'settings', 'taxes'));
-          if (taxDoc.exists()) {
-            setTaxSettings(taxDoc.data());
-          }
-        } catch (error) {
-          console.warn('Could not fetch tax settings:', error);
-          // Continue with default values
+        // Fetch tax settings
+        const taxDoc = await getDoc(doc(db, 'settings', 'taxes'));
+        if (taxDoc.exists()) {
+          setTaxSettings(taxDoc.data());
         }
-        
-        try {
-          // Fetch discount settings
-          const discountDoc = await getDoc(doc(db, 'settings', 'discounts'));
-          if (discountDoc.exists()) {
-            setDiscountSettings(discountDoc.data());
-          }
-        } catch (error) {
-          console.warn('Could not fetch discount settings:', error);
-          // Continue with default values
-        }
-        
-        try {
-          // Fetch promotions
-          const promotionDoc = await getDoc(doc(db, 'settings', 'promotions'));
-          if (promotionDoc.exists() && promotionDoc.data().items) {
-            // Convert Firestore timestamps to JS dates
-            const promotions = promotionDoc.data().items.map(promo => ({
-              ...promo,
-              startDate: promo.startDate instanceof Timestamp ? 
-                promo.startDate.toDate() : new Date(promo.startDate),
-              endDate: promo.endDate instanceof Timestamp ? 
-                promo.endDate.toDate() : new Date(promo.endDate)
-            }));
-            setPromotionSettings(promotions);
-          }
-        } catch (error) {
-          console.warn('Could not fetch promotion settings:', error);
-          // Continue with default values
-        }
-        
-        try {
-          // Fetch seasonal pricing
-          const seasonalDoc = await getDoc(doc(db, 'settings', 'seasonal'));
-          if (seasonalDoc.exists() && seasonalDoc.data().items) {
-            // Convert Firestore timestamps to JS dates
-            const seasons = seasonalDoc.data().items.map(season => ({
-              ...season,
-              startDate: season.startDate instanceof Timestamp ? 
-                season.startDate.toDate() : new Date(season.startDate),
-              endDate: season.endDate instanceof Timestamp ? 
-                season.endDate.toDate() : new Date(season.endDate)
-            }));
-            setSeasonalSettings(seasons);
-          }
-        } catch (error) {
-          console.warn('Could not fetch seasonal settings:', error);
-          // Continue with default values
-        }
-        
-        try {
-          // Fetch general settings
-          const generalDoc = await getDoc(doc(db, 'settings', 'general'));
-          if (generalDoc.exists()) {
-            setGeneralSettings(generalDoc.data());
-          }
-        } catch (error) {
-          console.warn('Could not fetch general settings:', error);
-          // Continue with default values
-        }
-        
-        setLoading(false);
       } catch (error) {
-        console.error('Error in fetchSettings:', error);
-        showNotification('Loading default settings due to database connection issues', 'warning');
-        setLoading(false);
+        console.warn('Could not fetch tax settings:', error);
+        // Continue with default values
       }
-    };
-
-    if (hasReadPermission && currentUser) {
-      fetchSettings();
+      
+      try {
+        // Fetch discount settings
+        const discountDoc = await getDoc(doc(db, 'settings', 'discounts'));
+        if (discountDoc.exists()) {
+          setDiscountSettings(discountDoc.data());
+        }
+      } catch (error) {
+        console.warn('Could not fetch discount settings:', error);
+        // Continue with default values
+      }
+      
+      try {
+        // Fetch promotions
+        const promotionDoc = await getDoc(doc(db, 'settings', 'promotions'));
+        if (promotionDoc.exists() && promotionDoc.data().items) {
+          // Convert Firestore timestamps to JS dates
+          const promotions = promotionDoc.data().items.map(promo => ({
+            ...promo,
+            startDate: promo.startDate instanceof Timestamp ? 
+              promo.startDate.toDate() : new Date(promo.startDate),
+            endDate: promo.endDate instanceof Timestamp ? 
+              promo.endDate.toDate() : new Date(promo.endDate)
+          }));
+          setPromotionSettings(promotions);
+        }
+      } catch (error) {
+        console.warn('Could not fetch promotion settings:', error);
+        // Continue with default values
+      }
+      
+      try {
+        // Fetch seasonal pricing
+        const seasonalDoc = await getDoc(doc(db, 'settings', 'seasonal'));
+        if (seasonalDoc.exists() && seasonalDoc.data().items) {
+          // Convert Firestore timestamps to JS dates
+          const seasons = seasonalDoc.data().items.map(season => ({
+            ...season,
+            startDate: season.startDate instanceof Timestamp ? 
+              season.startDate.toDate() : new Date(season.startDate),
+            endDate: season.endDate instanceof Timestamp ? 
+              season.endDate.toDate() : new Date(season.endDate)
+          }));
+          setSeasonalSettings(seasons);
+        }
+      } catch (error) {
+        console.warn('Could not fetch seasonal settings:', error);
+        // Continue with default values
+      }
+      
+      try {
+        // Fetch general settings
+        const generalDoc = await getDoc(doc(db, 'settings', 'general'));
+        if (generalDoc.exists()) {
+          setGeneralSettings(generalDoc.data());
+        }
+      } catch (error) {
+        console.warn('Could not fetch general settings:', error);
+        // Continue with default values
+      }
+      
+      setLoading(false);
+    } catch (error) {
+      console.error('Error in fetchSettings:', error);
+      showNotification('Loading default settings due to database connection issues', 'warning');
+      setLoading(false);
     }
-  }, [currentUser, hasReadPermission]);
+  };
 
+  // This check prevents any save operations if not a superadmin
+  // It provides an additional safety measure beyond the UI restrictions
   const saveSettings = async (settingType) => {
+    // Additional security check - prevent any save operations if not superadmin
+    if (isViewOnly || userRole !== 'superadmin') {
+      showNotification('You do not have permission to save settings. Only superadmin users can modify settings.', 'error');
+      return;
+    }
+    
     try {
       setSaving(true);
-      
-      // Only superadmins can write to settings
-      if (!hasWritePermission) {
-        throw new Error('You need superadmin privileges to save settings');
-      }
       
       // Create a reference to the collection
       const settingsCollection = collection(db, 'settings');
@@ -352,15 +357,22 @@ const AdminSettings = () => {
       setSaving(false);
     } catch (error) {
       console.error(`Error saving ${settingType} settings:`, error);
-      // Store locally even if Firebase save fails
-      localStorage.setItem(`settings_${settingType}`, JSON.stringify(
-        settingType === 'taxes' ? taxSettings : 
-        settingType === 'discounts' ? discountSettings :
-        settingType === 'promotions' ? promotionSettings :
-        settingType === 'seasonal' ? seasonalSettings :
-        generalSettings
-      ));
-      showNotification(`Settings saved locally. Database error: ${error.message}`, 'warning');
+      
+      // Check for permission errors
+      if (error.message && error.message.includes("permission")) {
+        showNotification(`Permission denied: Only superadmin users can save settings.`, 'error');
+      } else {
+        // Store locally even if Firebase save fails
+        localStorage.setItem(`settings_${settingType}`, JSON.stringify(
+          settingType === 'taxes' ? taxSettings : 
+          settingType === 'discounts' ? discountSettings :
+          settingType === 'promotions' ? promotionSettings :
+          settingType === 'seasonal' ? seasonalSettings :
+          generalSettings
+        ));
+        showNotification(`Settings saved locally. Database error: ${error.message}`, 'warning');
+      }
+      
       setSaving(false);
     }
   };
@@ -370,11 +382,13 @@ const AdminSettings = () => {
     setNotification({ message, type });
     setTimeout(() => {
       setNotification(null);
-    }, 3000);
+    }, 5000); // Increased to 5 seconds for better readability of error messages
   };
   
-  // Handle tax settings changes
+  // Handle tax settings changes - prevent changes in view-only mode
   const handleTaxChange = (e) => {
+    if (isViewOnly) return; // Prevent changes in view-only mode
+    
     const { name, value, type, checked } = e.target;
     setTaxSettings(prev => ({
       ...prev,
@@ -382,8 +396,10 @@ const AdminSettings = () => {
     }));
   };
   
-  // Handle discount settings changes
+  // Handle discount settings changes - prevent changes in view-only mode
   const handleDiscountChange = (e) => {
+    if (isViewOnly) return; // Prevent changes in view-only mode
+    
     const { name, value, type, checked } = e.target;
     setDiscountSettings(prev => ({
       ...prev,
@@ -391,8 +407,10 @@ const AdminSettings = () => {
     }));
   };
   
-  // Handle general settings changes
+  // Handle general settings changes - prevent changes in view-only mode
   const handleGeneralChange = (e) => {
+    if (isViewOnly) return; // Prevent changes in view-only mode
+    
     const { name, value, type, checked } = e.target;
     setGeneralSettings(prev => ({
       ...prev,
@@ -400,8 +418,13 @@ const AdminSettings = () => {
     }));
   };
   
-  // Handle adding a new promotion
+  // Handle adding a new promotion - prevent in view-only mode
   const addPromotion = () => {
+    if (isViewOnly) {
+      showNotification("You're in view-only mode. Only superadmin users can add promotions.", 'warning');
+      return;
+    }
+    
     const newPromotion = {
       id: `promo-${Date.now()}`,
       name: 'New Promotion',
@@ -417,8 +440,13 @@ const AdminSettings = () => {
     setPromotionSettings([...promotionSettings, newPromotion]);
   };
   
-  // Handle adding a new seasonal rate
+  // Handle adding a new seasonal rate - prevent in view-only mode
   const addSeason = () => {
+    if (isViewOnly) {
+      showNotification("You're in view-only mode. Only superadmin users can add seasonal rates.", 'warning');
+      return;
+    }
+    
     const newSeason = {
       id: `season-${Date.now()}`,
       name: 'New Season',
@@ -431,22 +459,31 @@ const AdminSettings = () => {
     setSeasonalSettings([...seasonalSettings, newSeason]);
   };
   
-  // Handle promotion changes
+  // Handle promotion changes - prevent in view-only mode
   const handlePromotionChange = (index, field, value) => {
+    if (isViewOnly) return; // Prevent changes in view-only mode
+    
     const updatedPromotions = [...promotionSettings];
     updatedPromotions[index][field] = value;
     setPromotionSettings(updatedPromotions);
   };
   
-  // Handle seasonal rate changes
+  // Handle seasonal rate changes - prevent in view-only mode
   const handleSeasonalChange = (index, field, value) => {
+    if (isViewOnly) return; // Prevent changes in view-only mode
+    
     const updatedSeasons = [...seasonalSettings];
     updatedSeasons[index][field] = value;
     setSeasonalSettings(updatedSeasons);
   };
   
-  // Handle removing a promotion
+  // Handle removing a promotion - prevent in view-only mode
   const removePromotion = (index) => {
+    if (isViewOnly) {
+      showNotification("You're in view-only mode. Only superadmin users can remove promotions.", 'warning');
+      return;
+    }
+    
     if (window.confirm('Are you sure you want to delete this promotion?')) {
       const updatedPromotions = [...promotionSettings];
       updatedPromotions.splice(index, 1);
@@ -454,8 +491,13 @@ const AdminSettings = () => {
     }
   };
   
-  // Handle removing a seasonal rate
+  // Handle removing a seasonal rate - prevent in view-only mode
   const removeSeason = (index) => {
+    if (isViewOnly) {
+      showNotification("You're in view-only mode. Only superadmin users can remove seasonal rates.", 'warning');
+      return;
+    }
+    
     if (window.confirm('Are you sure you want to delete this seasonal rate?')) {
       const updatedSeasons = [...seasonalSettings];
       updatedSeasons.splice(index, 1);
@@ -479,18 +521,20 @@ const AdminSettings = () => {
         <div className="page-header">
           <h1 className="page-title">Admin Settings</h1>
           <p className="page-subtitle">Configure pricing, taxes, discounts and promotions</p>
+          
+          {isViewOnly && (
+            <div className="view-only-banner">
+              <strong>View-Only Mode:</strong> You can view settings but cannot make changes. 
+              Only superadmin users can modify settings.
+            </div>
+          )}
+          
           {dbError && (
             <div className="database-error-banner">
               Working in offline mode. Changes will be saved locally.
             </div>
           )}
         </div>
-        
-        {notification && (
-          <div className={`notification ${notification.type}`}>
-            {notification.message}
-          </div>
-        )}
         
         {notification && (
           <div className={`notification ${notification.type}`}>
@@ -554,8 +598,8 @@ const AdminSettings = () => {
                           step="0.01"
                           value={taxSettings.nhilRate}
                           onChange={handleTaxChange}
-                          disabled={!hasWritePermission}
-                          readOnly={!hasWritePermission}
+                          readOnly={isViewOnly}
+                          className={isViewOnly ? 'readonly' : ''}
                         />
                       </div>
                       
@@ -570,8 +614,8 @@ const AdminSettings = () => {
                           step="0.01"
                           value={taxSettings.vatRate}
                           onChange={handleTaxChange}
-                          disabled={!hasWritePermission}
-                          readOnly={!hasWritePermission}
+                          readOnly={isViewOnly}
+                          className={isViewOnly ? 'readonly' : ''}
                         />
                       </div>
                     </div>
@@ -588,8 +632,8 @@ const AdminSettings = () => {
                           step="0.01"
                           value={taxSettings.serviceTaxRate}
                           onChange={handleTaxChange}
-                          disabled={!hasWritePermission}
-                          readOnly={!hasWritePermission}
+                          readOnly={isViewOnly}
+                          className={isViewOnly ? 'readonly' : ''}
                         />
                       </div>
                       
@@ -604,8 +648,8 @@ const AdminSettings = () => {
                           step="0.01"
                           value={taxSettings.cityTaxRate}
                           onChange={handleTaxChange}
-                          disabled={!hasWritePermission}
-                          readOnly={!hasWritePermission}
+                          readOnly={isViewOnly}
+                          className={isViewOnly ? 'readonly' : ''}
                         />
                       </div>
                     </div>
@@ -619,7 +663,8 @@ const AdminSettings = () => {
                             name="taxIncluded"
                             checked={taxSettings.taxIncluded}
                             onChange={handleTaxChange}
-                            disabled={!hasWritePermission}
+                            disabled={isViewOnly}
+                            className={isViewOnly ? 'readonly' : ''}
                           />
                           <span>Rates include taxes</span>
                         </label>
@@ -627,20 +672,17 @@ const AdminSettings = () => {
                     </div>
                   </div>
                   
-                  <div className="settings-actions">
-                    <button 
-                      className="save-button"
-                      onClick={() => saveSettings('taxes')}
-                      disabled={saving || !hasWritePermission}
-                    >
-                      {saving ? 'Saving...' : 'Save Tax Settings'}
-                    </button>
-                    {!hasWritePermission && (
-                      <span className="permission-notice">
-                        You need superadmin privileges to save changes
-                      </span>
-                    )}
-                  </div>
+                  {!isViewOnly && (
+                    <div className="settings-actions">
+                      <button 
+                        className="save-button"
+                        onClick={() => saveSettings('taxes')}
+                        disabled={saving}
+                      >
+                        {saving ? 'Saving...' : 'Save Tax Settings'}
+                      </button>
+                    </div>
+                  )}
                 </div>
               )}
               
@@ -662,8 +704,8 @@ const AdminSettings = () => {
                           step="0.01"
                           value={discountSettings.conferenceAttendeeDiscount}
                           onChange={handleDiscountChange}
-                          disabled={!hasWritePermission}
-                          readOnly={!hasWritePermission}
+                          readOnly={isViewOnly}
+                          className={isViewOnly ? 'readonly' : ''}
                         />
                       </div>
                       
@@ -678,8 +720,8 @@ const AdminSettings = () => {
                           step="0.01"
                           value={discountSettings.corporateDiscount}
                           onChange={handleDiscountChange}
-                          disabled={!hasWritePermission}
-                          readOnly={!hasWritePermission}
+                          readOnly={isViewOnly}
+                          className={isViewOnly ? 'readonly' : ''}
                         />
                       </div>
                     </div>
@@ -696,8 +738,8 @@ const AdminSettings = () => {
                           step="0.01"
                           value={discountSettings.weekdayDiscount}
                           onChange={handleDiscountChange}
-                          disabled={!hasWritePermission}
-                          readOnly={!hasWritePermission}
+                          readOnly={isViewOnly}
+                          className={isViewOnly ? 'readonly' : ''}
                         />
                       </div>
                       
@@ -712,8 +754,8 @@ const AdminSettings = () => {
                           step="0.01"
                           value={discountSettings.longStayDiscount}
                           onChange={handleDiscountChange}
-                          disabled={!hasWritePermission}
-                          readOnly={!hasWritePermission}
+                          readOnly={isViewOnly}
+                          className={isViewOnly ? 'readonly' : ''}
                         />
                       </div>
                     </div>
@@ -729,8 +771,8 @@ const AdminSettings = () => {
                           step="1"
                           value={discountSettings.longStayMinNights}
                           onChange={handleDiscountChange}
-                          disabled={!hasWritePermission}
-                          readOnly={!hasWritePermission}
+                          readOnly={isViewOnly}
+                          className={isViewOnly ? 'readonly' : ''}
                         />
                       </div>
                       
@@ -745,8 +787,8 @@ const AdminSettings = () => {
                           step="0.01"
                           value={discountSettings.groupDiscountRate}
                           onChange={handleDiscountChange}
-                          disabled={!hasWritePermission}
-                          readOnly={!hasWritePermission}
+                          readOnly={isViewOnly}
+                          className={isViewOnly ? 'readonly' : ''}
                         />
                       </div>
                     </div>
@@ -762,27 +804,24 @@ const AdminSettings = () => {
                           step="1"
                           value={discountSettings.groupDiscountMinRooms}
                           onChange={handleDiscountChange}
-                          disabled={!hasWritePermission}
-                          readOnly={!hasWritePermission}
+                          readOnly={isViewOnly}
+                          className={isViewOnly ? 'readonly' : ''}
                         />
                       </div>
                     </div>
                   </div>
                   
-                  <div className="settings-actions">
-                    <button 
-                      className="save-button"
-                      onClick={() => saveSettings('discounts')}
-                      disabled={saving || !hasWritePermission}
-                    >
-                      {saving ? 'Saving...' : 'Save Discount Settings'}
-                    </button>
-                    {!hasWritePermission && (
-                      <span className="permission-notice">
-                        You need superadmin privileges to save changes
-                      </span>
-                    )}
-                  </div>
+                  {!isViewOnly && (
+                    <div className="settings-actions">
+                      <button 
+                        className="save-button"
+                        onClick={() => saveSettings('discounts')}
+                        disabled={saving}
+                      >
+                        {saving ? 'Saving...' : 'Save Discount Settings'}
+                      </button>
+                    </div>
+                  )}
                 </div>
               )}
               
@@ -797,19 +836,19 @@ const AdminSettings = () => {
                         <div className="promotion-header">
                           <input
                             type="text"
-                            className="promotion-name"
+                            className={`promotion-name ${isViewOnly ? 'readonly' : ''}`}
                             value={promotion.name}
                             onChange={(e) => handlePromotionChange(index, 'name', e.target.value)}
-                            disabled={!hasWritePermission}
-                            readOnly={!hasWritePermission}
+                            readOnly={isViewOnly}
                           />
-                          <button 
-                            className="remove-btn"
-                            onClick={() => removePromotion(index)}
-                            disabled={!hasWritePermission}
-                          >
-                            Remove
-                          </button>
+                          {!isViewOnly && (
+                            <button 
+                              className="remove-btn"
+                              onClick={() => removePromotion(index)}
+                            >
+                              Remove
+                            </button>
+                          )}
                         </div>
                         
                         <div className="promotion-body">
@@ -823,8 +862,8 @@ const AdminSettings = () => {
                                 step="0.01"
                                 value={promotion.discountRate}
                                 onChange={(e) => handlePromotionChange(index, 'discountRate', parseFloat(e.target.value))}
-                                disabled={!hasWritePermission}
-                                readOnly={!hasWritePermission}
+                                readOnly={isViewOnly}
+                                className={isViewOnly ? 'readonly' : ''}
                               />
                             </div>
                             
@@ -834,8 +873,8 @@ const AdminSettings = () => {
                                 type="text"
                                 value={promotion.code}
                                 onChange={(e) => handlePromotionChange(index, 'code', e.target.value.toUpperCase())}
-                                disabled={!hasWritePermission}
-                                readOnly={!hasWritePermission}
+                                readOnly={isViewOnly}
+                                className={isViewOnly ? 'readonly' : ''}
                               />
                             </div>
                           </div>
@@ -847,8 +886,8 @@ const AdminSettings = () => {
                                 type="date"
                                 value={formatDateForInput(promotion.startDate)}
                                 onChange={(e) => handlePromotionChange(index, 'startDate', new Date(e.target.value))}
-                                disabled={!hasWritePermission}
-                                readOnly={!hasWritePermission}
+                                readOnly={isViewOnly}
+                                className={isViewOnly ? 'readonly' : ''}
                               />
                             </div>
                             
@@ -858,8 +897,8 @@ const AdminSettings = () => {
                                 type="date"
                                 value={formatDateForInput(promotion.endDate)}
                                 onChange={(e) => handlePromotionChange(index, 'endDate', new Date(e.target.value))}
-                                disabled={!hasWritePermission}
-                                readOnly={!hasWritePermission}
+                                readOnly={isViewOnly}
+                                className={isViewOnly ? 'readonly' : ''}
                               />
                             </div>
                           </div>
@@ -871,7 +910,8 @@ const AdminSettings = () => {
                                   type="checkbox"
                                   checked={promotion.active}
                                   onChange={(e) => handlePromotionChange(index, 'active', e.target.checked)}
-                                  disabled={!hasWritePermission}
+                                  disabled={isViewOnly}
+                                  className={isViewOnly ? 'readonly' : ''}
                                 />
                                 <span>Active</span>
                               </label>
@@ -884,8 +924,8 @@ const AdminSettings = () => {
                               rows="2"
                               value={promotion.description}
                               onChange={(e) => handlePromotionChange(index, 'description', e.target.value)}
-                              disabled={!hasWritePermission}
-                              readOnly={!hasWritePermission}
+                              readOnly={isViewOnly}
+                              className={isViewOnly ? 'readonly' : ''}
                             ></textarea>
                           </div>
                         </div>
@@ -894,33 +934,29 @@ const AdminSettings = () => {
                     
                     {promotionSettings.length === 0 && (
                       <div className="empty-state">
-                        No promotions created yet. Click 'Add Promotion' to create one.
+                        No promotions created yet. {!isViewOnly && "Click 'Add Promotion' to create one."}
                       </div>
                     )}
                   </div>
                   
-                  <div className="settings-actions">
-                    <button 
-                      className="add-button"
-                      onClick={addPromotion}
-                      disabled={!hasWritePermission}
-                    >
-                      Add Promotion
-                    </button>
-                    
-                    <button 
-                      className="save-button"
-                      onClick={() => saveSettings('promotions')}
-                      disabled={saving || !hasWritePermission}
-                    >
-                      {saving ? 'Saving...' : 'Save Promotions'}
-                    </button>
-                    {!hasWritePermission && (
-                      <span className="permission-notice">
-                        You need superadmin privileges to save changes
-                      </span>
-                    )}
-                  </div>
+                  {!isViewOnly && (
+                    <div className="settings-actions">
+                      <button 
+                        className="add-button"
+                        onClick={addPromotion}
+                      >
+                        Add Promotion
+                      </button>
+                      
+                      <button 
+                        className="save-button"
+                        onClick={() => saveSettings('promotions')}
+                        disabled={saving}
+                      >
+                        {saving ? 'Saving...' : 'Save Promotions'}
+                      </button>
+                    </div>
+                  )}
                 </div>
               )}
               
@@ -935,19 +971,19 @@ const AdminSettings = () => {
                         <div className="season-header">
                           <input
                             type="text"
-                            className="season-name"
+                            className={`season-name ${isViewOnly ? 'readonly' : ''}`}
                             value={season.name}
                             onChange={(e) => handleSeasonalChange(index, 'name', e.target.value)}
-                            disabled={!hasWritePermission}
-                            readOnly={!hasWritePermission}
+                            readOnly={isViewOnly}
                           />
-                          <button 
-                            className="remove-btn"
-                            onClick={() => removeSeason(index)}
-                            disabled={!hasWritePermission}
-                          >
-                            Remove
-                          </button>
+                          {!isViewOnly && (
+                            <button 
+                              className="remove-btn"
+                              onClick={() => removeSeason(index)}
+                            >
+                              Remove
+                            </button>
+                          )}
                         </div>
                         
                         <div className="season-body">
@@ -958,8 +994,8 @@ const AdminSettings = () => {
                                 type="date"
                                 value={formatDateForInput(season.startDate)}
                                 onChange={(e) => handleSeasonalChange(index, 'startDate', new Date(e.target.value))}
-                                disabled={!hasWritePermission}
-                                readOnly={!hasWritePermission}
+                                readOnly={isViewOnly}
+                                className={isViewOnly ? 'readonly' : ''}
                               />
                             </div>
                             
@@ -969,8 +1005,8 @@ const AdminSettings = () => {
                                 type="date"
                                 value={formatDateForInput(season.endDate)}
                                 onChange={(e) => handleSeasonalChange(index, 'endDate', new Date(e.target.value))}
-                                disabled={!hasWritePermission}
-                                readOnly={!hasWritePermission}
+                                readOnly={isViewOnly}
+                                className={isViewOnly ? 'readonly' : ''}
                               />
                             </div>
                           </div>
@@ -985,8 +1021,8 @@ const AdminSettings = () => {
                                 step="0.01"
                                 value={season.priceMultiplier}
                                 onChange={(e) => handleSeasonalChange(index, 'priceMultiplier', parseFloat(e.target.value))}
-                                disabled={!hasWritePermission}
-                                readOnly={!hasWritePermission}
+                                readOnly={isViewOnly}
+                                className={isViewOnly ? 'readonly' : ''}
                               />
                               <small>Base price × {season.priceMultiplier} = Seasonal price</small>
                             </div>
@@ -997,7 +1033,8 @@ const AdminSettings = () => {
                                   type="checkbox"
                                   checked={season.active}
                                   onChange={(e) => handleSeasonalChange(index, 'active', e.target.checked)}
-                                  disabled={!hasWritePermission}
+                                  disabled={isViewOnly}
+                                  className={isViewOnly ? 'readonly' : ''}
                                 />
                                 <span>Active</span>
                               </label>
@@ -1009,33 +1046,29 @@ const AdminSettings = () => {
                     
                     {seasonalSettings.length === 0 && (
                       <div className="empty-state">
-                        No seasonal rates created yet. Click 'Add Season' to create one.
+                        No seasonal rates created yet. {!isViewOnly && "Click 'Add Season' to create one."}
                       </div>
                     )}
                   </div>
                   
-                  <div className="settings-actions">
-                    <button 
-                      className="add-button"
-                      onClick={addSeason}
-                      disabled={!hasWritePermission}
-                    >
-                      Add Season
-                    </button>
-                    
-                    <button 
-                      className="save-button"
-                      onClick={() => saveSettings('seasonal')}
-                      disabled={saving || !hasWritePermission}
-                    >
-                      {saving ? 'Saving...' : 'Save Seasonal Rates'}
-                    </button>
-                    {!hasWritePermission && (
-                      <span className="permission-notice">
-                        You need superadmin privileges to save changes
-                      </span>
-                    )}
-                  </div>
+                  {!isViewOnly && (
+                    <div className="settings-actions">
+                      <button 
+                        className="add-button"
+                        onClick={addSeason}
+                      >
+                        Add Season
+                      </button>
+                      
+                      <button 
+                        className="save-button"
+                        onClick={() => saveSettings('seasonal')}
+                        disabled={saving}
+                      >
+                        {saving ? 'Saving...' : 'Save Seasonal Rates'}
+                      </button>
+                    </div>
+                  )}
                 </div>
               )}
               
@@ -1055,8 +1088,8 @@ const AdminSettings = () => {
                           name="defaultCheckInTime"
                           value={generalSettings.defaultCheckInTime}
                           onChange={handleGeneralChange}
-                          disabled={!hasWritePermission}
-                          readOnly={!hasWritePermission}
+                          readOnly={isViewOnly}
+                          className={isViewOnly ? 'readonly' : ''}
                         />
                       </div>
                       
@@ -1068,8 +1101,8 @@ const AdminSettings = () => {
                           name="defaultCheckOutTime"
                           value={generalSettings.defaultCheckOutTime}
                           onChange={handleGeneralChange}
-                          disabled={!hasWritePermission}
-                          readOnly={!hasWritePermission}
+                          readOnly={isViewOnly}
+                          className={isViewOnly ? 'readonly' : ''}
                         />
                       </div>
                     </div>
@@ -1086,8 +1119,8 @@ const AdminSettings = () => {
                           step="0.01"
                           value={generalSettings.lateCheckoutFee}
                           onChange={handleGeneralChange}
-                          disabled={!hasWritePermission}
-                          readOnly={!hasWritePermission}
+                          readOnly={isViewOnly}
+                          className={isViewOnly ? 'readonly' : ''}
                         />
                       </div>
                     </div>
@@ -1105,8 +1138,8 @@ const AdminSettings = () => {
                           step="0.01"
                           value={generalSettings.requireDepositPercentage}
                           onChange={handleGeneralChange}
-                          disabled={!hasWritePermission}
-                          readOnly={!hasWritePermission}
+                          readOnly={isViewOnly}
+                          className={isViewOnly ? 'readonly' : ''}
                         />
                       </div>
                       
@@ -1121,6 +1154,8 @@ const AdminSettings = () => {
                           step="0.01"
                           value={generalSettings.cancellationFee}
                           onChange={handleGeneralChange}
+                          readOnly={isViewOnly}
+                          className={isViewOnly ? 'readonly' : ''}
                         />
                       </div>
                     </div>
@@ -1136,6 +1171,8 @@ const AdminSettings = () => {
                           step="1"
                           value={generalSettings.freeCancellationHours}
                           onChange={handleGeneralChange}
+                          readOnly={isViewOnly}
+                          className={isViewOnly ? 'readonly' : ''}
                         />
                         <small>Hours before check-in when cancellation is free</small>
                       </div>
@@ -1147,6 +1184,8 @@ const AdminSettings = () => {
                           name="currency"
                           value={generalSettings.currency}
                           onChange={handleGeneralChange}
+                          disabled={isViewOnly}
+                          className={isViewOnly ? 'readonly' : ''}
                         >
                           <option value="USD">USD - US Dollar</option>
                           <option value="EUR">EUR - Euro</option>
@@ -1162,20 +1201,17 @@ const AdminSettings = () => {
                     </div>
                   </div>
                   
-                  <div className="settings-actions">
-                    <button 
-                      className="save-button"
-                      onClick={() => saveSettings('general')}
-                      disabled={saving || !hasWritePermission}
-                    >
-                      {saving ? 'Saving...' : 'Save General Settings'}
-                    </button>
-                    {!hasWritePermission && (
-                      <span className="permission-notice">
-                        You need superadmin privileges to save changes
-                      </span>
-                    )}
-                  </div>
+                  {!isViewOnly && (
+                    <div className="settings-actions">
+                      <button 
+                        className="save-button"
+                        onClick={() => saveSettings('general')}
+                        disabled={saving}
+                      >
+                        {saving ? 'Saving...' : 'Save General Settings'}
+                      </button>
+                    </div>
+                  )}
                 </div>
               )}
             </>

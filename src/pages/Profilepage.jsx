@@ -1,6 +1,8 @@
 import React, { useEffect, useState, useRef } from "react";
 import { auth, db } from "../config/firebase";
 import { doc, getDoc, updateDoc } from "firebase/firestore";
+import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
+
 import { useNavigate } from "react-router-dom";
 import { FaArrowLeft, FaCamera, FaUser, FaPhone, FaCalendarAlt, FaMapMarkerAlt, FaEdit, FaEnvelope } from "react-icons/fa";
 import PhoneInput, { isValidPhoneNumber } from "react-phone-number-input";
@@ -133,72 +135,54 @@ const ProfilePage = () => {
   const handleFileChange = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
-
-    // Validate file is an image
-    if (!file.type.startsWith('image/')) {
-      alert('Please select an image file');
+  
+    if (!file.type.startsWith("image/")) {
+      alert("Please select an image file");
       return;
     }
-
+  
     try {
       setUploading(true);
-      
-      // Create a local preview of the image
-      const reader = new FileReader();
-      reader.onload = (event) => {
-        setLocalImage(event.target.result);
-      };
-      reader.readAsDataURL(file);
-      
-      // In a real implementation, you would upload to Firebase Storage
-      // For now, we'll simulate it and update sessionStorage as well
-      setTimeout(async () => {
-        try {
-          // Update local state
-          const updatedUserData = {
-            ...userData,
-            photoURL: "local-image" // This is a flag to use the local image
-          };
-          setUserData(updatedUserData);
-          
-          // Update Firestore - make sure this field exists
-          const currentUser = auth.currentUser;
-          if (currentUser) {
-            const userDocRef = doc(db, "users", currentUser.uid);
-            await updateDoc(userDocRef, {
-              photoURL: "local-image"
-            });
-          }
-          
-          // Update sessionStorage to reflect changes across the app
-          const sessionUser = JSON.parse(sessionStorage.getItem('currentUser') || '{}');
-          const updatedSessionUser = {
-            ...sessionUser,
-            photoURL: "local-image",
-            localImageData: localImage // Store the base64 image data
-          };
-          sessionStorage.setItem('currentUser', JSON.stringify(updatedSessionUser));
-          
-          // Show success message
-          setUpdateSuccess(true);
-          setTimeout(() => setUpdateSuccess(false), 3000);
-          
-          // Trigger storage event for other tabs
-          window.dispatchEvent(new Event('storage'));
-        } catch (error) {
-          console.error("Error updating photo in database:", error);
-          alert("Failed to save photo to database. Local preview only.");
-        } finally {
-          setUploading(false);
-        }
-      }, 1000); // Shorter network delay
-      
+  
+      const currentUser = auth.currentUser;
+      if (!currentUser) return;
+  
+      const storage = getStorage();
+      const storageRef = ref(storage, `profilePictures/${currentUser.uid}`);
+  
+      // Upload image to Firebase Storage
+      await uploadBytes(storageRef, file);
+  
+      // Get the download URL
+      const downloadURL = await getDownloadURL(storageRef);
+  
+      // Update Firestore with the photoURL
+      const userDocRef = doc(db, "users", currentUser.uid);
+      await updateDoc(userDocRef, {
+        photoURL: downloadURL,
+        updatedAt: new Date().toISOString()
+      });
+  
+      // Update local state and session storage
+      const updatedUserData = { ...userData, photoURL: downloadURL };
+      setUserData(updatedUserData);
+  
+      const sessionUser = JSON.parse(sessionStorage.getItem("currentUser") || "{}");
+      const updatedSessionUser = { ...sessionUser, photoURL: downloadURL };
+      sessionStorage.setItem("currentUser", JSON.stringify(updatedSessionUser));
+  
+      setUpdateSuccess(true);
+      setTimeout(() => setUpdateSuccess(false), 3000);
+  
+      window.dispatchEvent(new Event("storage"));
     } catch (error) {
-      console.error("Error handling image:", error);
-      alert("Failed to process image. Please try again.");
+      console.error("Error uploading photo:", error);
+      alert("Failed to upload photo. Please try again.");
+    } finally {
       setUploading(false);
     }
   };
+  
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -283,7 +267,7 @@ const ProfilePage = () => {
   return (
     <div className="profile-page profile-fullwidth">
       <div className="back-button" onClick={handleGoBack}>
-        <FaArrowLeft />
+        <FaArrowLeft size={16}/>
       </div>
       
       {updateSuccess && (
@@ -304,7 +288,8 @@ const ProfilePage = () => {
                 alt="Profile" 
                 onError={(e) => {
                   e.target.onerror = null;
-                  e.target.src = "https://via.placeholder.com/150?text=User";
+                  e.target.src = "/default-avatar.png"; // place a default avatar in your `public/` folder
+
                 }}
               />
             ) : (

@@ -1,0 +1,364 @@
+.bills-page {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+    font-family: 'Roboto', sans-serif;
+  }
+  
+  .bills-wrapper {
+    background-color: white;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    padding: 24px;
+    margin-top: 20px;
+  }
+  
+  .bills-header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 24px;
+  }
+  
+  .bills-icon {
+    font-size: 2rem;
+    color: #3f51b5;
+    margin-right: 12px;
+  }
+  
+  .bills-title {
+    font-size: 1.8rem;
+    color: #333;
+    margin: 0;
+  }
+  
+  .back-button {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background-color: transparent;
+    border: 1px solid #ccc;
+    color: #555;
+    padding: 8px 16px;
+    border-radius: 6px;
+    cursor: pointer;
+    margin-bottom: 24px;
+    font-size: 0.9rem;
+    transition: all 0.2s ease;
+  }
+  
+  .back-button:hover {
+    background-color: #f5f5f5;
+  }
+  
+  /* Guest Information Section */
+  .guest-info, .not-guest-info {
+    margin-bottom: 24px;
+  }
+  
+  .info-card {
+    background-color: #f8f9fa;
+    border-radius: 8px;
+    padding: 16px;
+    border-left: 4px solid #3f51b5;
+  }
+  
+  .info-card.warning {
+    border-left-color: #ff9800;
+  }
+  
+  .info-card h3 {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 0;
+    color: #333;
+    font-size: 1.2rem;
+  }
+  
+  .urgent {
+    color: #d32f2f;
+    font-weight: bold;
+  }
+  
+  /* Bills Summary Section */
+  .bills-summary {
+    margin-bottom: 24px;
+  }
+  
+  .summary-card {
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    padding: 20px;
+  }
+  
+  .summary-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+  }
+  
+  .summary-header h2 {
+    font-size: 1.4rem;
+    margin: 0;
+    color: #333;
+  }
+  
+  .summary-amount {
+    font-size: 1.6rem;
+    font-weight: bold;
+    color: #3f51b5;
+  }
+  
+  .summary-info {
+    color: #666;
+    margin: 0;
+  }
+  
+  .checkout-warning {
+    display: block;
+    margin-top: 8px;
+    color: #d32f2f;
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  
+  /* Bills List Section */
+  .bills-list {
+    margin-bottom: 24px;
+  }
+  
+  .section-heading {
+    font-size: 1.4rem;
+    color: #333;
+    margin-top: 0;
+    margin-bottom: 16px;
+  }
+  
+  .bill-card {
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    padding: 20px;
+    margin-bottom: 16px;
+  }
+  
+  .bill-header {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 16px;
+    color: #666;
+    font-size: 0.9rem;
+  }
+  
+  .bill-date, .bill-ref {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  
+  .bill-items {
+    margin-bottom: 16px;
+  }
+  
+  .bill-item {
+    display: flex;
+    justify-content: space-between;
+    padding: 8px 0;
+    border-bottom: 1px dashed #eee;
+  }
+  
+  .bill-item:last-child {
+    border-bottom: none;
+  }
+  
+  .item-details {
+    display: flex;
+    align-items: center;
+  }
+  
+  .item-name {
+    margin-right: 8px;
+  }
+  
+  .item-quantity {
+    color: #666;
+    font-size: 0.9rem;
+  }
+  
+  .item-price {
+    font-weight: 500;
+  }
+  
+  .bill-summary {
+    background-color: #f8f9fa;
+    border-radius: 6px;
+    padding: 12px;
+    margin-bottom: 16px;
+  }
+  
+  .bill-summary-line {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 8px;
+    font-size: 0.9rem;
+    color: #666;
+  }
+  
+  .bill-total {
+    display: flex;
+    justify-content: space-between;
+    padding-top: 8px;
+    border-top: 1px solid #ddd;
+    font-size: 1.1rem;
+  }
+  
+  .bill-status {
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .status-badge {
+    display: inline-block;
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    font-weight: 500;
+    align-self: flex-start;
+  }
+  
+  .status-badge.pending {
+    background-color: #fff3e0;
+    color: #e65100;
+  }
+  
+  .status-badge.charged {
+    background-color: #e3f2fd;
+    color: #0d47a1;
+  }
+  
+  .bill-notes {
+    margin-top: 12px;
+    font-size: 0.9rem;
+    font-style: italic;
+    color: #666;
+  }
+  
+  /* No Bills Section */
+  .no-bills {
+    text-align: center;
+    padding: 40px 0;
+    color: #666;
+  }
+  
+  .menu-btn {
+    background-color: #3f51b5;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 6px;
+    font-size: 1rem;
+    cursor: pointer;
+    margin-top: 16px;
+    transition: background-color 0.2s ease;
+  }
+  
+  .menu-btn:hover {
+    background-color: #303f9f;
+  }
+  
+  /* Payment Information Section */
+  .payment-info {
+    background-color: #f8f9fa;
+    border-radius: 8px;
+    padding: 20px;
+    margin-top: 24px;
+  }
+  
+  .payment-info h3 {
+    margin-top: 0;
+    color: #333;
+  }
+  
+  .payment-actions {
+    margin-top: 16px;
+    display: flex;
+    gap: 12px;
+  }
+  
+  .payment-btn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 20px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.95rem;
+    border: none;
+    background-color: #3f51b5;
+    color: white;
+    transition: background-color 0.2s ease;
+  }
+  
+  .payment-btn:hover {
+    background-color: #303f9f;
+  }
+  
+  /* Loading state */
+  .loading-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 50vh;
+  }
+  
+  .spinner {
+    border: 4px solid rgba(0, 0, 0, 0.1);
+    border-radius: 50%;
+    border-top: 4px solid #3f51b5;
+    width: 3rem;
+    height: 3rem;
+    animation: spin 1s linear infinite;
+    margin-bottom: 20px;
+  }
+  
+  @keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+  }
+  
+  /* Responsive styles */
+  @media (max-width: 768px) {
+    .bills-wrapper {
+      padding: 16px;
+    }
+    
+    .summary-header {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 8px;
+    }
+    
+    .bill-header {
+      flex-direction: column;
+      gap: 8px;
+    }
+    
+    .payment-actions {
+      flex-direction: column;
+    }
+  }
+  
+  @media (max-width: 480px) {
+    .bills-page {
+      padding: 12px;
+    }
+    
+    .bills-title {
+      font-size: 1.5rem;
+    }
+  }

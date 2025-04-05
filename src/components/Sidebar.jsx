@@ -105,27 +105,32 @@ const Sidebar = () => {
             </Link>
           </li>
           
-          <li className={`sidebar-item ${isActive('/settings') ? 'active' : ''}`}>
-            <Link to="/settings">
+          <li className={`sidebar-item ${isActive('/pickup') ? 'active' : ''}`}>
+            <Link to="/pickup">
               <span className="sidebar-icon"><FaCog /></span>
-              <span className="sidebar-text">Settings</span>
+              <span className="sidebar-text">Airpot Pickups</span>
             </Link>
           </li>
           
-          <li className={`sidebar-item ${isActive('/expenses') ? 'active' : ''}`}>
-            <Link to="/expenses">
+          <li className={`sidebar-item ${isActive('/add-expense') ? 'active' : ''}`}>
+            <Link to="/add-expense">
               <span className="sidebar-icon"><FaMoneyBillWave /></span>
               <span className="sidebar-text">Expenses</span>
             </Link>
           </li>
           
-          <li className={`sidebar-item ${isActive('/reports') ? 'active' : ''}`}>
-            <Link to="/reports">
+          <li className={`sidebar-item ${isActive('/freports') ? 'active' : ''}`}>
+            <Link to="/freports">
               <span className="sidebar-icon"><FaChartBar /></span>
               <span className="sidebar-text">Reports & Analytics</span>
             </Link>
           </li>
-          
+          <li className={`sidebar-item ${isActive('/ad_settings') ? 'active' : ''}`}>
+            <Link to="/ad_settings">
+              <span className="sidebar-icon"><FaCog /></span>
+              <span className="sidebar-text">Settings</span>
+            </Link>
+          </li>
   {/*         <li className="sidebar-item" onClick={handleLogout}>
             <Link to="#">
               <span className="sidebar-icon"><FaSignOutAlt /></span>
@@ -136,7 +141,7 @@ const Sidebar = () => {
         
         <div className="sidebar-footer">
           <p>Ampomaah Tourist Hotel</p>
-          <p className="version">v1.0.0</p>
+     
         </div>
       </aside>
     </>

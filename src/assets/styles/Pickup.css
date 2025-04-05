@@ -1,0 +1,65 @@
+.pickup-admin-container {
+    padding: 20px;
+    font-family: 'Poppins', sans-serif;
+    background: #f9fafb;
+    min-height: 100vh;
+  }
+  
+  .nav-container {
+    margin-bottom: 20px;
+  }
+  
+  .pickup-content {
+    background: white;
+    padding: 24px;
+    border-radius: 16px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+  }
+  
+  .page-heading {
+    font-size: 24px;
+    font-weight: 600;
+    margin-bottom: 8px;
+  }
+  
+  .subtext {
+    color: #555;
+    font-size: 14px;
+    margin-bottom: 24px;
+  }
+  
+  .pickup-table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+  
+  .pickup-table th, .pickup-table td {
+    padding: 12px;
+    border-bottom: 1px solid #eee;
+    text-align: left;
+    font-size: 14px;
+  }
+  
+  .pickup-table th {
+    background: #f1f1f1;
+    font-weight: 600;
+  }
+  
+  .reminder-badge {
+    padding: 4px 8px;
+    font-size: 12px;
+    border-radius: 12px;
+    background: #e0e0e0;
+    color: #333;
+  }
+  
+  .reminder-badge.orange {
+    background: #ff9800;
+    color: white;
+  }
+  
+  .reminder-badge.red {
+    background: #e53935;
+    color: white;
+  }
+  

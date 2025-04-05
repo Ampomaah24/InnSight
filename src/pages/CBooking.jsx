@@ -125,7 +125,7 @@ const ConferenceBooking = () => {
 
   return (
     <div className="croom-booking-container">
-      <div className="nav-container"  style={{ backgroundColor: "none", boxShadow: "none" }}>
+      <div className="nav-container"  style={{ backgroundColor: "transparent", boxShadow: "none" }}>
         <NavMenu menuOpen={menuOpen} setMenuOpen={setMenuOpen} />
       </div>
 

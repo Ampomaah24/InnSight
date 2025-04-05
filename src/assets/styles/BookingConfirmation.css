@@ -1,17 +1,74 @@
+/* BookingConfirmation.css */
+
+.confirmation-page {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #f0f2f5;
+  padding: 2rem;
+}
+
 .confirmation-container {
-    padding: 2rem;
-    max-width: 600px;
-    margin: auto;
-    background: #f9f9f9;
-    border-radius: 12px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  background: #ffffff;
+  padding: 3rem 2rem;
+  border-radius: 1rem;
+  box-shadow: 0 0.5rem 1.25rem rgba(0, 0, 0, 0.1);
+  max-width: 32rem;
+  width: 100%;
+  text-align: center;
+  font-family: 'Poppins', sans-serif;
+}
+
+.confirmation-container h2 {
+  color: #2e8b57;
+  font-size: 1.75rem;
+  margin-bottom: 1rem;
+}
+
+.confirmation-container p {
+  font-size: 1.1rem;
+  color: #333;
+  margin: 1rem 0 2rem;
+}
+
+.confirmation-container strong {
+  color: #2e8b57;
+}
+
+.confirmation-container button {
+  background-color: #2e8b57;
+  color: #fff;
+  border: none;
+  padding: 0.75rem 2rem;
+  border-radius: 0.5rem;
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.confirmation-container button:hover {
+  background-color: #256d47;
+  transform: translateY(-0.125rem);
+  box-shadow: 0 0.25rem 0.75rem rgba(0, 0, 0, 0.1);
+}
+
+/* Responsive Design */
+@media (max-width: 480px) {
+  .confirmation-container {
+    padding: 2rem 1.25rem;
   }
+
   .confirmation-container h2 {
-    color: #2e8b57;
-    margin-bottom: 1rem;
+    font-size: 1.5rem;
   }
+
   .confirmation-container p {
-    margin: 0.5rem 0;
-    font-size: 1.1rem;
+    font-size: 1rem;
   }
-  
+
+  .confirmation-container button {
+    width: 100%;
+  }
+}

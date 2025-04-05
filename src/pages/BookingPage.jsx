@@ -2,14 +2,38 @@ import React, { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { getAuth } from "firebase/auth";
 import { db } from "../config/firebase";
+
 import {
-  collection, addDoc, serverTimestamp, query, where, getDocs, updateDoc, doc
+  collection, addDoc, serverTimestamp, query, where, getDocs, updateDoc, doc, getDoc
 } from "firebase/firestore";
 import { PaystackConsumer } from "react-paystack";
 import PhoneInput, { isValidPhoneNumber } from "react-phone-number-input";
 import "react-phone-number-input/style.css";
-import NavMenu from "../components/NavMenu"; // Import NavMenu component
+import NavMenu from "../components/NavMenu";
 import "../assets/styles/BookingPage.css";
+
+// Add this to your CSS file or append it to the component
+const phoneInputStyles = `
+  .PhoneInput {
+    width: 100%;
+    margin-bottom: 15px;
+  }
+  
+  .PhoneInputInput {
+    height: 40px;
+    padding: 8px 12px;
+    font-size: 16px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    width: 100%;
+    box-sizing: border-box;
+  }
+  
+  .PhoneInputCountry {
+    margin-right: 10px;
+    align-items: center;
+  }
+`;
 
 const getRoomCapacity = (type) => {
   switch ((type || "").toLowerCase()) {
@@ -24,14 +48,26 @@ const BookingPage = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const auth = getAuth();
-  const [menuOpen, setMenuOpen] = useState(false); // State for NavMenu
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [discounts, setDiscounts] = useState({
+    conferenceAttendeeDiscount: 0,
+    corporateDiscount: 0,
+    groupDiscountMinRooms: 0,
+    groupDiscountRate: 0,
+    longStayDiscount: 0,
+    longStayMinNights: 0,
+    weekdayDiscount: 0
+  });
 
   const params = new URLSearchParams(location.search);
   const selectedRooms = params.get("rooms") ? JSON.parse(decodeURIComponent(params.get("rooms"))) : [];
   const checkInParam = params.get("checkIn") ? decodeURIComponent(params.get("checkIn")) : "";
   const checkOutParam = params.get("checkOut") ? decodeURIComponent(params.get("checkOut")) : "";
   const roomCategory = params.get("roomCategory") || "regular";
-  const discount = parseFloat(params.get("discount")) || 0;
+  const fromConference = params.get("fromConference") === "true";
+  const discountFromURL = parseFloat(params.get("discount")) || 0;
+  const discountType = params.get("discountType") ? decodeURIComponent(params.get("discountType")) : "";
 
   const [formData, setFormData] = useState({
     firstName: "", lastName: "", email: "", phone: "",
@@ -49,18 +85,111 @@ const BookingPage = () => {
     return initial;
   });
 
+  // Fetch discounts from Firestore if we don't have a discount from URL
+  useEffect(() => {
+    const fetchDiscounts = async () => {
+      // If we already have discount from URL params, use it
+      if (discountFromURL > 0) {
+        setDiscounts(prev => ({ 
+          ...prev, 
+          conferenceAttendeeDiscount: fromConference ? discountFromURL : prev.conferenceAttendeeDiscount 
+        }));
+        setLoading(false);
+        return;
+      }
+
+      try {
+        const discountsRef = doc(db, "settings", "discounts");
+        const docSnap = await getDoc(discountsRef);
+        
+        if (docSnap.exists()) {
+          const discountData = docSnap.data();
+          console.log("Fetched discount data:", discountData);
+          
+          setDiscounts({
+            conferenceAttendeeDiscount: discountData.conferenceAttendeeDiscount || 0,
+            corporateDiscount: discountData.corporateDiscount || 0,
+            groupDiscountMinRooms: discountData.groupDiscountMinRooms || 0,
+            groupDiscountRate: discountData.groupDiscountRate || 0,
+            longStayDiscount: discountData.longStayDiscount || 0,
+            longStayMinNights: discountData.longStayMinNights || 0,
+            weekdayDiscount: discountData.weekdayDiscount || 0
+          });
+        } else {
+          console.warn("Discounts document doesn't exist");
+        }
+      } catch (error) {
+        console.error("Error fetching discounts:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchDiscounts();
+  }, [discountFromURL, fromConference]);
+
   // Fix scroll to top on page load
   useEffect(() => {
     window.scrollTo(0, 0);
+
+    // Inject phone input styles
+    const styleEl = document.createElement('style');
+    styleEl.type = 'text/css';
+    styleEl.appendChild(document.createTextNode(phoneInputStyles));
+    document.head.appendChild(styleEl);
+
+    return () => {
+      document.head.removeChild(styleEl);
+    };
   }, []);
 
   const checkInDate = new Date(formData.checkIn);
   const checkOutDate = new Date(formData.checkOut);
   const numberOfDays = (checkOutDate - checkInDate) / (1000 * 3600 * 24) || 1;
 
+  // Determine which discount to apply
+  const getApplicableDiscount = () => {
+    // If we have a discount from URL, use it
+    if (discountFromURL > 0) {
+      return discountFromURL;
+    }
+    
+    // Priority of discounts
+    if (fromConference) {
+      return discounts.conferenceAttendeeDiscount; // Conference attendee discount
+    }
+    
+    // Long stay discount if staying longer than min nights
+    if (numberOfDays >= discounts.longStayMinNights) {
+      return discounts.longStayDiscount;
+    }
+    
+    // Group discount if booking more than min rooms
+    if (selectedRooms.length >= discounts.groupDiscountMinRooms) {
+      return discounts.groupDiscountRate;
+    }
+    
+    // Weekday discount if check-in is on weekday (Monday-Thursday)
+    const checkInDay = checkInDate.getDay();
+    if (checkInDay >= 1 && checkInDay <= 4) { // Monday=1, Thursday=4
+      return discounts.weekdayDiscount;
+    }
+    
+    return 0; // No discount applies
+  };
+
+  // Calculate the effective discount
+  const applicableDiscount = getApplicableDiscount();
+  const actualDiscountName = discountType || (
+    fromConference ? 'Conference Attendee' : 
+    numberOfDays >= discounts.longStayMinNights ? 'Long Stay' :
+    selectedRooms.length >= discounts.groupDiscountMinRooms ? 'Group Booking' :
+    checkInDate.getDay() >= 1 && checkInDate.getDay() <= 4 ? 'Weekday' : ''
+  );
+
   const totalAmount = selectedRooms.reduce((acc, room) => {
     const originalPrice = Number(room.price || 0);
-    const discountedPrice = discount ? originalPrice - (originalPrice * discount / 100) : originalPrice;
+    const discountedPrice = applicableDiscount ? originalPrice - (originalPrice * applicableDiscount / 100) : originalPrice;
     return acc + (discountedPrice * numberOfDays);
   }, 0);
 
@@ -149,12 +278,21 @@ const BookingPage = () => {
           }]
         });
 
+        // Calculate prices with discount
+        const originalPrice = Number(room.price || 0) * numberOfDays;
+        const discountedPrice = applicableDiscount ? 
+          originalPrice - (originalPrice * applicableDiscount / 100) : 
+          originalPrice;
+
         await addDoc(collection(db, roomCategory === "conference" ? "conferenceBookings" : "bookings"), {
           userId: auth.currentUser?.uid || "guest",
           roomType: room.t_room || room.type,
           roomName: room.name || "Unnamed",
           roomNumber: dbRoomId,
-          price: Number(room.price || 0) * numberOfDays,
+          originalPrice: originalPrice,
+          discountApplied: applicableDiscount,
+          discountType: actualDiscountName,
+          finalPrice: discountedPrice,
           numberOfGuests: guestCount,
           checkIn: formData.checkIn,
           checkOut: formData.checkOut,
@@ -206,7 +344,6 @@ const BookingPage = () => {
     if (roomCategory === "conference" && formData.alsoBookingStay === "Yes") {
       const query = new URLSearchParams({
         fromConference: "true",
-        discount: "20",
         checkIn: formData.checkIn,
         checkOut: formData.checkOut,
       }).toString();
@@ -216,10 +353,21 @@ const BookingPage = () => {
     }
   };
 
+  if (loading) {
+    return (
+      <div className="main-container">
+        <div className="loading-container">
+          <div className="spinner" style={{ width: '3rem', height: '3rem' }} />
+          <p>Loading booking details...</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <>
       {/* NavMenu in top left */}
-      <div className="nav-container"  style={{ backgroundColor: "transparent", boxShadow: "none" }}>
+      <div className="nav-container" style={{ backgroundColor: "transparent", boxShadow: "none" }}>
         <NavMenu menuOpen={menuOpen} setMenuOpen={setMenuOpen} />
       </div>
 
@@ -236,15 +384,16 @@ const BookingPage = () => {
             <div><label>First Name</label><input type="text" name="firstName" value={formData.firstName} onChange={handleChange} required /></div>
             <div><label>Last Name</label><input type="text" name="lastName" value={formData.lastName} onChange={handleChange} required /></div>
             <div><label>Email</label><input type="email" name="email" value={formData.email} onChange={handleChange} required /></div>
-            <div>
+            <div className="phone-input-container" style={{ width: '100%' }}>
               <label>Phone</label>
               <PhoneInput
-                international
-                defaultCountry="GH"
-                value={formData.phone}
-                onChange={handlePhoneChange}
-                className={phoneError ? "error" : ""}
-              />
+  international
+  defaultCountry="GH"
+  value={formData.phone}
+  onChange={handlePhoneChange}
+  className={`PhoneInput ${phoneError ? "error" : ""}`}
+/>
+
               {phoneError && <small style={{ color: "red" }}>Please enter a valid international phone number</small>}
             </div>
 
@@ -328,7 +477,7 @@ const BookingPage = () => {
 
             <div className="full-width">
               <label>Special Requests</label>
-              <textarea name="specialRequests" value={formData.specialRequests} onChange={handleChange} />
+              <textarea name="specialRequests" value={formData.specialRequests} onChange={handleChange} placeholder="e.g., I'll be arriving late, please hold my reservation" rows="3" />
             </div>
 
             {/* Summary */}
@@ -340,11 +489,43 @@ const BookingPage = () => {
               {formData.paymentOption === "Deposit for Reservation" && (
                 <small style={{ color: "orange" }}>20% deposit applied. Remaining due at check-in.</small>
               )}
-              {discount > 0 && (
+              {applicableDiscount > 0 && (
                 <small style={{ color: "green" }}>
-                  {discount}% discount applied for booking for conference attendees
+                  {applicableDiscount}% {actualDiscountName} discount applied
                 </small>
               )}
+            </div>
+
+            {/* Navigation Buttons */}
+            <div className="full-width button-container" style={{ display: 'flex', gap: '10px', marginBottom: '16px' }}>
+              {/* <button 
+                type="button" 
+                className="back-to-home" 
+                onClick={() => navigate("/")}
+                style={{
+                  padding: '10px 20px',
+                  background: '#fff',
+                  color: '#333',
+                  border: '1px solid #ccc',
+                  borderRadius: '4px',
+                  cursor: 'pointer',
+                  flex: '1'
+                }}
+              >
+                Back to Home
+              </button> */}
+              
+              <button
+  type="button"
+  onClick={() =>
+    navigate(
+      `/room-booking?checkIn=${encodeURIComponent(formData.checkIn)}&checkOut=${encodeURIComponent(formData.checkOut)}`
+    )
+  }
+>
+  Back to Rooms
+</button>
+
             </div>
 
             {/* Pay Button */}

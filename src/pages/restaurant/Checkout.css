@@ -500,6 +500,108 @@ body, html {
   opacity: 1;
   visibility: visible;
 }
+/* Additional styles for room verification */
+.room-verification-container {
+  display: flex;
+  gap: 10px;
+}
+
+.room-verification-container input {
+  flex-grow: 1;
+}
+
+.verify-btn {
+  padding: 8px 15px;
+  background-color: #4a6fa5;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: background-color 0.2s;
+}
+
+.verify-btn:hover {
+  background-color: #3a5a8f;
+}
+
+.verify-btn:disabled {
+  background-color: #b0b0b0;
+  cursor: not-allowed;
+}
+
+.verification-error {
+  color: #e74c3c;
+  margin-top: 5px;
+  font-size: 0.85rem;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.verification-success {
+  color: #2ecc71;
+  margin-top: 5px;
+  font-size: 0.85rem;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.checkout-date-info {
+  margin-top: 5px;
+  font-size: 0.85rem;
+  color: #555;
+}
+
+input.verified {
+  border-color: #2ecc71;
+  background-color: rgba(46, 204, 113, 0.05);
+}
+
+input.error {
+  border-color: #e74c3c;
+  background-color: rgba(231, 76, 60, 0.05);
+}
+
+/* Field tooltip styles */
+.field-tooltip {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.tooltip-icon {
+  position: relative;
+  color: #666;
+  font-size: 0.85rem;
+  cursor: help;
+}
+
+.tooltip-text {
+  visibility: hidden;
+  width: 200px;
+  background-color: #333;
+  color: #fff;
+  text-align: center;
+  border-radius: 6px;
+  padding: 8px;
+  position: absolute;
+  z-index: 1;
+  bottom: 125%;
+  left: 50%;
+  transform: translateX(-50%);
+  opacity: 0;
+  transition: opacity 0.3s;
+  font-size: 0.75rem;
+  font-weight: normal;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+}
+
+.tooltip-icon:hover .tooltip-text {
+  visibility: visible;
+  opacity: 1;
+}
 
 /* Responsive Design */
 @media screen and (max-width: 64rem) {

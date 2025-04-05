@@ -455,7 +455,49 @@
     color: #adb5bd;
     cursor: not-allowed;
   }
-  
+ /* Add these styles to your CSS files */
+
+/* View-only banner */
+.view-only-banner {
+  background-color: #f8f9fa;
+  border-left: 4px solid #6c757d;
+  padding: 10px 15px;
+  margin-bottom: 20px;
+  color: #495057;
+  font-size: 0.9rem;
+  border-radius: 4px;
+}
+
+/* Read-only form inputs */
+.readonly {
+  background-color: #f8f9fa !important;
+  border-color: #dee2e6 !important;
+  color: #6c757d !important;
+  cursor: default !important;
+  opacity: 0.8;
+}
+
+input[type="checkbox"].readonly,
+input[type="radio"].readonly {
+  opacity: 0.7;
+}
+
+select.readonly {
+  background-color: #f8f9fa !important;
+  color: #6c757d !important;
+}
+
+textarea.readonly {
+  background-color: #f8f9fa !important;
+  border-color: #dee2e6 !important;
+  color: #6c757d !important;
+}
+
+/* Hover styles for read-only inputs */
+.readonly:hover {
+  border-color: #dee2e6 !important;
+  box-shadow: none !important;
+} 
   .checkbox-group input:disabled + span {
     color: #6c757d;
   }

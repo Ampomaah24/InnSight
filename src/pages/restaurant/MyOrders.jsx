@@ -8,8 +8,9 @@ import {
   getDocs,
   Timestamp,
 } from "firebase/firestore";
+import { useNavigate } from "react-router-dom"; // Import useNavigate
 import NavMenu from "../../components/NavMenu";
-import { FaReceipt, FaArrowLeft, FaCalendarAlt, FaShoppingBag, FaClock } from 'react-icons/fa';
+import { FaReceipt, FaArrowLeft, FaCalendarAlt, FaShoppingBag, FaClock, FaUtensils } from 'react-icons/fa';
 import "./Orders.css";
 
 const Orders = () => {
@@ -17,6 +18,7 @@ const Orders = () => {
   const [loading, setLoading] = useState(true);
   const [menuOpen, setMenuOpen] = useState(false);
   const [userId, setUserId] = useState(null);
+  const navigate = useNavigate(); // Initialize navigate
 
   // Set up auth listener to get the current user ID
   useEffect(() => {
@@ -103,8 +105,13 @@ const Orders = () => {
     window.scrollTo(0, 0);
   }, []);
 
+  // Updated navigation functions using React Router
   const goToMenu = () => {
-    window.location.href = "/restaurant/menu";
+    navigate("/restaurant/menu");
+  };
+
+  const goToRestaurant = () => {
+    navigate("/restaurant");
   };
 
   return (
@@ -118,6 +125,28 @@ const Orders = () => {
         <div className="orders-header">
           <FaReceipt className="orders-icon" />
           <h1 className="orders-title">My Orders</h1>
+          
+          {/* Add back to restaurant button */}
+          <button 
+            onClick={goToRestaurant} 
+            className="back-to-restaurant-btn"
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: "8px",
+              padding: "10px 16px",
+              backgroundColor: "#fff",
+              color: "#e67e22",
+              border: "1px solid #e67e22",
+              borderRadius: "4px",
+              cursor: "pointer",
+              fontSize: "14px",
+              fontWeight: "500",
+              marginTop: "16px"
+            }}
+          >
+            <FaUtensils /> Back to Restaurant
+          </button>
         </div>
 
         {loading ? (
@@ -131,55 +160,101 @@ const Orders = () => {
               <FaShoppingBag size={80} />
             </div>
             <p className="empty-orders">You haven't placed any orders yet.</p>
-            <button className="back-to-menu-btn" onClick={goToMenu}>
-              <FaArrowLeft /> Browse Menu
-            </button>
+            <div className="empty-order-buttons" style={{ display: "flex", gap: "12px" }}>
+              <button className="back-to-menu-btn" onClick={goToMenu}>
+                <FaArrowLeft /> Browse Menu
+              </button>
+              <button 
+                onClick={goToRestaurant} 
+                className="back-to-restaurant-btn"
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "8px",
+                  padding: "10px 16px",
+                  backgroundColor: "#fff",
+                  color: "#e67e22",
+                  border: "1px solid #e67e22",
+                  borderRadius: "4px",
+                  cursor: "pointer",
+                  fontSize: "14px",
+                  fontWeight: "500"
+                }}
+              >
+                <FaUtensils /> Back to Restaurant
+              </button>
+            </div>
           </div>
         ) : (
-          <div className="orders-list">
-            {orders.map((order) => (
-              <div key={order.id} className="order-card">
-                <div className="order-header">
-                  <div className="order-id">
-                    <span className="order-label">Order ID:</span> 
-                    <span className="order-value">{order.id.substring(0, 8)}</span>
-                  </div>
-                  <div className="order-status">
-                    <span className="order-label">Status:</span>
-                    <span className={`status-badge status-${(order.status || "pending").toLowerCase().replace(/\s+/g, '-')}`}>
-                      {order.status || "Pending"}
-                    </span>
-                  </div>
-                </div>
-                
-                <div className="order-content">
-                  {order.cartItems?.map((item, index) => (
-                    <div key={index} className="order-item">
-                      <div className="item-details">
-                        <span className="item-name">{item.name}</span>
-                        <span className="item-quantity">× {item.quantity}</span>
-                      </div>
-                      <span className="item-price">
-                        GHS {(item.price * item.quantity).toFixed(2)}
+          <>
+            <div className="orders-list">
+              {orders.map((order) => (
+                <div key={order.id} className="order-card">
+                  <div className="order-header">
+                    <div className="order-id">
+                      <span className="order-label">Order ID:</span> 
+                      <span className="order-value">{order.id.substring(0, 8)}</span>
+                    </div>
+                    <div className="order-status">
+                      <span className="order-label">Status:</span>
+                      <span className={`status-badge status-${(order.status || "pending").toLowerCase().replace(/\s+/g, '-')}`}>
+                        {order.status || "Pending"}
                       </span>
                     </div>
-                  ))}
+                  </div>
                   
-                  <div className="order-summary">
-                    <div className="order-total">
-                      <span className="total-label">Total:</span>
-                      <span className="total-value">GHS {order.total?.toFixed(2)}</span>
-                    </div>
+                  <div className="order-content">
+                    {order.cartItems?.map((item, index) => (
+                      <div key={index} className="order-item">
+                        <div className="item-details">
+                          <span className="item-name">{item.name}</span>
+                          <span className="item-quantity">× {item.quantity}</span>
+                        </div>
+                        <span className="item-price">
+                          GHS {(item.price * item.quantity).toFixed(2)}
+                        </span>
+                      </div>
+                    ))}
                     
-                    <div className="order-date">
-                      <FaCalendarAlt className="date-icon" />
-                      <span>{order.formattedDate}</span>
+                    <div className="order-summary">
+                      <div className="order-total">
+                        <span className="total-label">Total:</span>
+                        <span className="total-value">GHS {order.total?.toFixed(2)}</span>
+                      </div>
+                      
+                      <div className="order-date">
+                        <FaCalendarAlt className="date-icon" />
+                        <span>{order.formattedDate}</span>
+                      </div>
                     </div>
                   </div>
                 </div>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+            
+            {/* Add back button after the orders list */}
+            <div style={{ display: "flex", justifyContent: "center", margin: "24px 0" }}>
+              <button 
+                onClick={goToRestaurant} 
+                className="back-to-restaurant-btn"
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "8px",
+                  padding: "12px 20px",
+                  backgroundColor: "#e67e22",
+                  color: "#fff",
+                  border: "none",
+                  borderRadius: "4px",
+                  cursor: "pointer",
+                  fontSize: "16px",
+                  fontWeight: "500"
+                }}
+              >
+                <FaUtensils /> Back to Restaurant
+              </button>
+            </div>
+          </>
         )}
       </div>
     </div>

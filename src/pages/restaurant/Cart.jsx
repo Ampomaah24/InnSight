@@ -211,34 +211,12 @@ const Cart = () => {
                 ))}
               </div>
 
-              <div className="cart-right">
-                <div className="cart-summary-block">
-                  <div className="cart-summary-line">
-                    <span>Subtotal</span>
-                    <span>GHS {subtotal.toFixed(2)}</span>
-                  </div>
-                  <div className="cart-summary-line">
-                    <span>VAT (12.5%)</span>
-                    <span>GHS {vat.toFixed(2)}</span>
-                  </div>
-                  <div className="cart-summary-line">
-                    <span>NHIL (2.5%)</span>
-                    <span>GHS {nhil.toFixed(2)}</span>
-                  </div>
-                  <div className="cart-summary-line">
-                    <span>Service Fee</span>
-                    <span>GHS 0.00</span>
-                  </div>
-                  <hr />
-                  <div className="cart-summary-total">
-                    <strong>Total</strong>
-                    <strong>GHS {grandTotal.toFixed(2)}</strong>
-                  </div>
-                </div>
+              
+               
                 <button className="place-order-btn" onClick={handlePlaceOrder}>
                   <FaShoppingCart /> Place Order ({cartItems.length} {cartItems.length > 1 ? "items" : "item"})
                 </button>
-              </div>
+              
             </div>
           )}
         </div>

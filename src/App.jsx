@@ -24,6 +24,8 @@ import Checkout from './pages/restaurant/Checkout';
 import Orders from './pages/restaurant/Orders';
 import Profile from './pages/ProfilePage';
 import AdminSettings from './pages/AdminSettings';
+import Bills from './pages/Bills';
+import Pickup from './pages/Pickup';
 
 
 
@@ -56,6 +58,8 @@ const App = () => {
         <Route path="/restaurant/orders" element={<Orders />} />
         <Route path="/profile" element={<Profile />} />
         <Route path="/ad_settings" element={<AdminSettings />} />
+        <Route path="/bills" element={<Bills />} />
+        <Route path="/pickup" element={<Pickup />} />
 
 
 

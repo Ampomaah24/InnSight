@@ -1,12 +1,15 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { createUserWithEmailAndPassword } from "firebase/auth";
+import {
+  createUserWithEmailAndPassword,
+  sendEmailVerification,
+} from "firebase/auth";
 import { setDoc, doc } from "firebase/firestore";
 import { auth, db } from "../config/firebase";
 import "../assets/styles/SignUp.css";
 
 export default function SignUp() {
-  // State hook to manage form data (user's input fields)
+  // State for user input
   const [formData, setFormData] = useState({
     fullName: "",
     email: "",
@@ -14,33 +17,53 @@ export default function SignUp() {
     confirmPassword: "",
   });
 
-  // State hook to handle error messages
+ 
   const [error, setError] = useState("");
-  
-  // React Router's navigate hook to redirect users after successful sign up
+  const [message, setMessage] = useState("");
+
   const navigate = useNavigate();
 
-  // Handles form input changes and updates the state with user input
+  // Handle input field changes
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  // Handles form submission, creating a new user in Firebase
+  // Sanitize input (removes dangerous characters)
+  const sanitize = (str) => str.replace(/[<>]/g, "").trim();
+
+  // Map Firebase auth error codes to user-friendly messages
+  const mapAuthCodeToMessage = (code) => {
+    switch (code) {
+      case "auth/email-already-in-use":
+        return "This email is already registered.";
+      case "auth/invalid-email":
+        return "Invalid email address.";
+      case "auth/weak-password":
+        return "Password is too weak.";
+      case "auth/network-request-failed":
+        return "Network error. Please try again.";
+      default:
+        return "Something went wrong. Please try again.";
+    }
+  };
+
+  // Handle form submission
   const handleSubmit = async (e) => {
     e.preventDefault();
-
-    // Reset the error message before checking validations
     setError("");
+    setMessage("");
 
-    // Check if the passwords match
-    if (formData.password !== formData.confirmPassword) {
+    const { fullName, email, password, confirmPassword } = formData;
+
+    // Check if passwords match
+    if (password !== confirmPassword) {
       setError("Passwords do not match.");
       return;
     }
 
-    // Password strength validation (ensures at least one uppercase, one lowercase, a number, a special character, and a period)
+    // Enforce strong password rules
     const strongPasswordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&.])[A-Za-z\d@$!%*?&.]{8,}$/;
-    if (!strongPasswordRegex.test(formData.password)) {
+    if (!strongPasswordRegex.test(password)) {
       setError(
         "Password must be at least 8 characters and include uppercase, lowercase, number, special character, and a period."
       );
@@ -48,42 +71,59 @@ export default function SignUp() {
     }
 
     try {
-      // Create a new user with email and password using Firebase Authentication
+      // Create user account
       const userCredential = await createUserWithEmailAndPassword(
         auth,
-        formData.email,
-        formData.password
+        email.trim(),
+        password
       );
       const user = userCredential.user;
 
-      // Store additional user information in Firestore after successful registration
+      // Send email verification
+      await sendEmailVerification(user);
+
+      // Store extra user details in Firestore
       await setDoc(doc(db, "users", user.uid), {
-        fullName: formData.fullName,
-        email: formData.email,
+        fullName: sanitize(fullName),
+        email: email.trim(),
         uid: user.uid,
         role: "user",
         createdAt: new Date(),
       });
 
-      // Log success and navigate to the homepage after registration
-      console.log("User registered and saved to Firestore:", user.email);
-      navigate("/login"); // Redirect to homepage or desired page after registration
+      setMessage("Account created! Please verify your email.");
+      setFormData({
+        fullName: "",
+        email: "",
+        password: "",
+        confirmPassword: "",
+      });
+
+      // Redirect to login after delay
+      setTimeout(() => {
+        navigate("/login");
+      }, 3000);
     } catch (err) {
-      // Catch any errors from Firebase and display the error message
       console.error("Firebase error:", err.code, err.message);
-      setError(err.message); // Set the error message to display to the user
+      setError(mapAuthCodeToMessage(err.code));
     }
   };
 
   return (
     <div className="signup-container">
       <div className="signup-image"></div>
+
       <div className="signup-form-container">
         <div className="signup-form">
           <h2 className="signup-title">Sign Up</h2>
-          {error && <p className="error-message">{error}</p>} 
-          <form onSubmit={handleSubmit} className="signup-form-fields">
 
+   
+          {error && <p className="error-message">{error}</p>}
+          {message && <p className="success-message">{message}</p>}
+
+          {/* Signup Form */}
+          <form onSubmit={handleSubmit} className="signup-form-fields">
+        
             <div>
               <label className="signup-label">Full Name</label>
               <input
@@ -97,6 +137,7 @@ export default function SignUp() {
               />
             </div>
 
+            
             <div>
               <label className="signup-label">Email</label>
               <input
@@ -110,6 +151,7 @@ export default function SignUp() {
               />
             </div>
 
+       
             <div>
               <label className="signup-label">Password</label>
               <input
@@ -123,6 +165,7 @@ export default function SignUp() {
               />
             </div>
 
+         
             <div>
               <label className="signup-label">Confirm Password</label>
               <input
@@ -130,11 +173,13 @@ export default function SignUp() {
                 name="confirmPassword"
                 value={formData.confirmPassword}
                 onChange={handleChange}
-                placeholder="Enter Password..."
+                placeholder="Confirm Password..."
                 className="signup-input"
                 required
               />
             </div>
+
+            
             <button type="submit" className="signup-button">
               Sign Up
             </button>
