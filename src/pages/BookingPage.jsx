@@ -28,7 +28,10 @@ const phoneInputStyles = `
     width: 100%;
     box-sizing: border-box;
   }
-  
+    input.error {
+    border: 1px solid red;
+    background-color: #fff0f0;
+  }
   .PhoneInputCountry {
     margin-right: 10px;
     align-items: center;
@@ -78,6 +81,8 @@ const BookingPage = () => {
   });
 
   const [phoneError, setPhoneError] = useState(false);
+  
+  const [pickupDateError, setPickupDateError] = useState(false);
 
   const [guestCounts, setGuestCounts] = useState(() => {
     const initial = {};
@@ -206,10 +211,36 @@ const BookingPage = () => {
     }
   }, [auth.currentUser]);
 
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData({ ...formData, [name]: value });
-  };
+// Modify the handleChange function to automatically set pickup date when airportPickup is set to "Yes"
+const handleChange = (e) => {
+  const { name, value } = e.target;
+  
+  // If the user is selecting airport pickup as "Yes", automatically set the pickup date
+  if (name === 'airportPickup' && value === 'Yes') {
+    setFormData(prev => ({ 
+      ...prev, 
+      [name]: value,
+      pickupDate: prev.checkIn // Automatically set pickup date to match check-in date
+    }));
+    setPickupDateError(false); // Clear any pickup date error
+    return;
+  }
+  
+  // Special validation for pickup date
+  if (name === 'pickupDate') {
+    const pickupDate = new Date(value);
+    const checkInDate = new Date(formData.checkIn);
+    
+    // Reset dates to midnight for comparison
+    pickupDate.setHours(0, 0, 0, 0);
+    checkInDate.setHours(0, 0, 0, 0);
+    
+    // Set error if pickup date is not equal to check-in date
+    setPickupDateError(pickupDate.getTime() !== checkInDate.getTime());
+  }
+  
+  setFormData(prev => ({ ...prev, [name]: value }));
+};
 
   const handlePhoneChange = (value) => {
     setFormData((prev) => ({ ...prev, phone: value }));
@@ -225,9 +256,9 @@ const BookingPage = () => {
   };
 
   const isAirportPickupValid =
-    formData.airportPickup === "No" ||
-    formData.alsoBookingStay === "Yes" ||
-    (formData.pickupDate && formData.pickupTime && formData.flightNumber);
+  formData.airportPickup === "No" ||
+  formData.alsoBookingStay === "Yes" ||
+  (formData.pickupDate && formData.pickupTime && formData.flightNumber && !pickupDateError);
 
   const isFormValid =
     Object.values({
@@ -448,10 +479,19 @@ const BookingPage = () => {
                 {formData.airportPickup === "Yes" && (
                   <>
                     <div className="pickup-row full-width">
-                      <div className="half-width">
-                        <label>Pickup Date</label>
-                        <input type="date" name="pickupDate" value={formData.pickupDate} onChange={handleChange} required />
-                      </div>
+                    <div className="half-width">
+  <label>Pickup Date</label>
+  <input 
+    type="date" 
+    name="pickupDate" 
+    value={formData.pickupDate} 
+    readOnly  // Make the field read-only since it must match check-in date
+    className={pickupDateError ? "error" : ""} 
+  />
+  {pickupDateError && 
+    <small style={{ color: "red" }}>Pickup date must be the same as your check-in date</small>
+  }
+</div>
                       <div className="half-width">
                         <label>Pickup Time</label>
                         <input type="time" name="pickupTime" value={formData.pickupTime} onChange={handleChange} required />

@@ -1,16 +1,15 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import {
-  createUserWithEmailAndPassword,
-  sendEmailVerification,
-  onAuthStateChanged
+import { 
+  createUserWithEmailAndPassword, 
+  sendEmailVerification 
 } from "firebase/auth";
 import { setDoc, doc } from "firebase/firestore";
 import { auth, db } from "../config/firebase";
 import "../assets/styles/SignUp.css";
 
 export default function SignUp() {
-  // State for user input
+  // State hook to manage form data (user's input fields)
   const [formData, setFormData] = useState({
     fullName: "",
     email: "",
@@ -18,213 +17,269 @@ export default function SignUp() {
     confirmPassword: "",
   });
 
+  // State hook to handle error messages
   const [error, setError] = useState("");
-  const [message, setMessage] = useState("");
-  const [loading, setLoading] = useState(false);
+  // State to track if submission is in progress
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  // State to track success message
+  const [successMessage, setSuccessMessage] = useState("");
   
+  // React Router's navigate hook to redirect users after successful sign up
   const navigate = useNavigate();
 
-  // Check if user is already authenticated
-  useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
-      if (user) {
-        // User is already signed in, redirect to appropriate page
-        navigate("/services");
-      }
-    });
+  // Sanitize input to prevent XSS attacks
+  const sanitizeInput = (input) => {
+    // Basic sanitization - remove script tags and convert special chars
+    return input
+      .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
+      .trim();
+  };
 
-    return () => unsubscribe();
-  }, [navigate]);
-
-  // Handle input field changes
+  // Handles form input changes and updates the state with user input
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData({ ...formData, [name]: value });
+    // Sanitize the input before updating state
+    const sanitizedValue = sanitizeInput(value);
+    setFormData({ ...formData, [name]: sanitizedValue });
   };
 
-  // Sanitize input (removes dangerous characters)
-  const sanitize = (str) => str.replace(/[<>]/g, "").trim();
-
-  // Map Firebase auth error codes to user-friendly messages
-  const mapAuthCodeToMessage = (code) => {
-    switch (code) {
+  // Provide user-friendly error messages
+  const getFriendlyErrorMessage = (errorCode) => {
+    switch (errorCode) {
       case "auth/email-already-in-use":
-        return "This email is already registered.";
+        return "This email is already registered. Please use a different email or try logging in.";
       case "auth/invalid-email":
-        return "Invalid email address.";
+        return "The email address format is invalid. Please check and try again.";
       case "auth/weak-password":
-        return "Password is too weak.";
+        return "The password is too weak. Please choose a stronger password.";
       case "auth/network-request-failed":
-        return "Network error. Please try again.";
-      case "auth/operation-not-allowed":
-        return "Email/password registration is not enabled.";
-      case "auth/internal-error":
-        return "Internal error. Please try again.";
+        return "Network error. Please check your internet connection and try again.";
+      case "auth/too-many-requests":
+        return "Too many unsuccessful attempts. Please try again later.";
       default:
-        return `Something went wrong. Please try again. (${code})`;
+        return "An error occurred during registration. Please try again.";
     }
   };
 
-  // Handle form submission
+  // Enhanced password strength validation
+  const validatePasswordStrength = (password) => {
+    // Check length
+    if (password.length < 8) {
+      return "Password must be at least 8 characters long.";
+    }
+    
+    // Check for uppercase letter
+    if (!/[A-Z]/.test(password)) {
+      return "Password must include at least one uppercase letter.";
+    }
+    
+    // Check for lowercase letter
+    if (!/[a-z]/.test(password)) {
+      return "Password must include at least one lowercase letter.";
+    }
+    
+    // Check for number
+    if (!/\d/.test(password)) {
+      return "Password must include at least one number.";
+    }
+    
+    // Check for special character
+    if (!/[@$!%*?&.]/.test(password)) {
+      return "Password must include at least one special character (@$!%*?&.).";
+    }
+    
+    // All checks passed
+    return null;
+  };
+
+  // Handles form submission, creating a new user in Firebase
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError("");
-    setMessage("");
-    setLoading(true);
-
-    const { fullName, email, password, confirmPassword } = formData;
     
-    // Form validation
-    if (!fullName || !email || !password || !confirmPassword) {
-      setError("All fields are required");
-      setLoading(false);
+    // Prevent multiple submissions
+    if (isSubmitting) return;
+    
+    setIsSubmitting(true);
+    setError("");
+    setSuccessMessage("");
+
+    // Additional input validation
+    if (!formData.fullName || formData.fullName.length < 2) {
+      setError("Please enter a valid name with at least 2 characters.");
+      setIsSubmitting(false);
       return;
     }
 
-    // Sanitize inputs
-    const sanitizedFullName = sanitize(fullName);
-    const sanitizedEmail = sanitize(email);
+    // Email format validation (more thorough than HTML5 validation)
+    const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+    if (!emailRegex.test(formData.email)) {
+      setError("Please enter a valid email address.");
+      setIsSubmitting(false);
+      return;
+    }
 
-    // Check if passwords match
-    if (password !== confirmPassword) {
+    // Check if the passwords match
+    if (formData.password !== formData.confirmPassword) {
       setError("Passwords do not match.");
-      setLoading(false);
+      setIsSubmitting(false);
       return;
     }
 
-    // Enforce strong password rules
-    const strongPasswordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&.])[A-Za-z\d@$!%*?&.]{8,}$/;
-    if (!strongPasswordRegex.test(password)) {
-      setError(
-        "Password must be at least 8 characters and include uppercase, lowercase, number, special character, and a period."
-      );
-      setLoading(false);
+    // Enhanced password strength validation
+    const passwordError = validatePasswordStrength(formData.password);
+    if (passwordError) {
+      setError(passwordError);
+      setIsSubmitting(false);
       return;
     }
 
     try {
-      // Create user account
+      // Create a new user with email and password using Firebase Authentication
       const userCredential = await createUserWithEmailAndPassword(
         auth,
-        sanitizedEmail,
-        password
+        formData.email,
+        formData.password
       );
       const user = userCredential.user;
 
       // Send email verification
       await sendEmailVerification(user);
 
-      // Store extra user details in Firestore
+      // Store additional user information in Firestore after successful registration
       await setDoc(doc(db, "users", user.uid), {
-        fullName: sanitizedFullName,
-        email: sanitizedEmail,
+        fullName: formData.fullName,
+        email: formData.email,
         uid: user.uid,
         role: "user",
         createdAt: new Date(),
-        lastLogin: new Date(),
-        isVerified: false
+        emailVerified: false,
       });
 
-      setMessage("Account created! Please verify your email.");
+      // Show success message and navigate after a delay
+      setSuccessMessage("Account created successfully! Please check your email to verify your account.");
+      
+      // Clear form data
       setFormData({
         fullName: "",
         email: "",
         password: "",
         confirmPassword: "",
       });
-
-      // Redirect to login after delay
+      
+      // Navigate to login page after short delay
       setTimeout(() => {
         navigate("/login");
       }, 3000);
+      
     } catch (err) {
+      // Catch any errors from Firebase and display user-friendly error message
       console.error("Firebase error:", err.code, err.message);
-      setError(mapAuthCodeToMessage(err.code));
+      setError(getFriendlyErrorMessage(err.code));
     } finally {
-      setLoading(false);
+      setIsSubmitting(false);
     }
   };
 
   return (
     <div className="signup-container">
       <div className="signup-image"></div>
-
       <div className="signup-form-container">
         <div className="signup-form">
           <h2 className="signup-title">Sign Up</h2>
-
-          {error && <p className="error-message">{error}</p>}
-          {message && <p className="success-message">{message}</p>}
-
-          {/* Signup Form */}
-          <form onSubmit={handleSubmit} className="signup-form-fields">
+          
+          {/* Error message display */}
+          {error && <p className="error-message" role="alert">{error}</p>}
+          
+          {/* Success message display */}
+          {successMessage && <p className="success-message" role="status">{successMessage}</p>}
+          
+          <form onSubmit={handleSubmit} className="signup-form-fields" noValidate>
             <div>
-              <label className="signup-label">Full Name</label>
+              <label className="signup-label" htmlFor="fullName">Full Name</label>
               <input
                 type="text"
+                id="fullName"
                 name="fullName"
                 value={formData.fullName}
                 onChange={handleChange}
                 placeholder="Name..."
                 className="signup-input"
                 required
+                aria-label="Full Name"
+                aria-required="true"
+                autoComplete="name"
+                minLength="2"
               />
             </div>
 
             <div>
-              <label className="signup-label">Email</label>
+              <label className="signup-label" htmlFor="email">Email</label>
               <input
                 type="email"
+                id="email"
                 name="email"
                 value={formData.email}
                 onChange={handleChange}
                 placeholder="Email address..."
                 className="signup-input"
                 required
+                aria-label="Email"
+                aria-required="true"
+                autoComplete="email"
               />
             </div>
 
             <div>
-              <label className="signup-label">Password</label>
+              <label className="signup-label" htmlFor="password">Password</label>
               <input
                 type="password"
+                id="password"
                 name="password"
                 value={formData.password}
                 onChange={handleChange}
                 placeholder="Enter Password..."
                 className="signup-input"
                 required
+                aria-label="Password"
+                aria-required="true"
+                autoComplete="new-password"
+                minLength="8"
               />
-              <small className="password-hint">
-                Must contain 8+ characters with uppercase, lowercase, number, and special character.
-              </small>
+          
             </div>
 
             <div>
-              <label className="signup-label">Confirm Password</label>
+              <label className="signup-label" htmlFor="confirmPassword">Confirm Password</label>
               <input
                 type="password"
+                id="confirmPassword"
                 name="confirmPassword"
                 value={formData.confirmPassword}
                 onChange={handleChange}
-                placeholder="Confirm Password..."
+                placeholder="Enter Password..."
                 className="signup-input"
                 required
+                aria-label="Confirm Password"
+                aria-required="true"
+                autoComplete="new-password"
+                minLength="8"
+                aria-describedby="password-requirements"
               />
             </div>
-
+            
             <button 
               type="submit" 
-              className="signup-button" 
-              disabled={loading}
+              className={`signup-button ${isSubmitting ? 'loading' : ''}`}
+              disabled={isSubmitting}
+              aria-busy={isSubmitting}
             >
-              {loading ? "Creating Account..." : "Sign Up"}
+              {isSubmitting ? "Creating Account..." : "Sign Up"}
             </button>
-            
-            <p className="login-link">
-              Already have an account? <a href="/login">Login here</a>
-            </p>
           </form>
+          
+          <div className="login-redirect">
+            <p>Already have an account? <a href="/login">Login here</a></p>
+          </div>
         </div>
       </div>
     </div>
