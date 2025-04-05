@@ -4,70 +4,93 @@ import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { db, auth } from "../config/firebase";
 import { collection, addDoc, doc, getDoc } from "firebase/firestore";
-import { serverTimestamp } from "firebase/firestore";
 import NavMenu from "../components/NavMenu";
 import "../assets/styles/ServicesPage.css";
 
-// Services Page Component
 const ServicesPage = () => {
   const navigate = useNavigate();
-  const today = new Date();
-
-  // UI state
   const [menuOpen, setMenuOpen] = useState(false);
   const [selectedService, setSelectedService] = useState(null);
+  const today = new Date();
 
-  // Booking form state
-  const [roomBookingDetails, setRoomBookingDetails] = useState({ checkIn: null, checkOut: null });
-  const [conferenceBookingDetails, setConferenceBookingDetails] = useState({ startDate: null, endDate: null });
+  const [roomBookingDetails, setRoomBookingDetails] = useState({
+    checkIn: null,
+    checkOut: null,
+  });
 
+  const [conferenceBookingDetails, setConferenceBookingDetails] = useState({
+    startDate: null,
+    endDate: null,
+  });
 
+  // State for user profile data
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  // Load user profile from session or Firestore
+  // Fetch user profile data - with sessionStorage check
   useEffect(() => {
     const fetchUserProfile = async () => {
       try {
-        const sessionUser = sessionStorage.getItem("currentUser");
+        // First check sessionStorage for cached user data
+        const sessionUser = sessionStorage.getItem('currentUser');
         if (sessionUser) {
-          setUser(JSON.parse(sessionUser));
+          const parsedUser = JSON.parse(sessionUser);
+          setUser(parsedUser);
           setLoading(false);
           return;
         }
 
+        // If not in sessionStorage, get from Firestore
         const currentUser = auth.currentUser;
 
         if (currentUser) {
           const userDocRef = doc(db, "users", currentUser.uid);
           const userDoc = await getDoc(userDocRef);
-          const userData = userDoc.exists() ? userDoc.data() : {};
 
-          // Build user object for UI and local cache
-          const userObj = {
-            id: currentUser.uid,
-            fname: userData.firstName || userData.fname || "User",
-            lname: userData.lastName || userData.lname || "",
-            photoURL: userData.photoURL || currentUser.photoURL || "/images/profile-placeholder.png",
-            email: userData.email || currentUser.email,
-          };
+          if (userDoc.exists()) {
+            const userData = userDoc.data();
 
-          setUser(userObj);
-          sessionStorage.setItem("currentUser", JSON.stringify(userObj));
+            // Create user object
+            const userObj = {
+              id: currentUser.uid,
+              fname: userData.firstName || userData.fname || "User",
+              lname: userData.lastName || userData.lname || "",
+              photoURL: userData.photoURL || currentUser.photoURL || "/images/profile-placeholder.png",
+              email: userData.email || currentUser.email
+            };
+
+            // Save to state
+            setUser(userObj);
+
+            // Cache in sessionStorage
+            sessionStorage.setItem('currentUser', JSON.stringify(userObj));
+          } else {
+            // Fallback to auth data
+            const userObj = {
+              id: currentUser.uid,
+              fname: currentUser.displayName?.split(' ')[0] || "User",
+              lname: currentUser.displayName?.split(' ').slice(1).join(' ') || "",
+              photoURL: currentUser.photoURL || "/images/profile-placeholder.png",
+              email: currentUser.email
+            };
+            setUser(userObj);
+            sessionStorage.setItem('currentUser', JSON.stringify(userObj));
+          }
         } else {
-          // Guest user fallback
+          // Default user for demo purposes if not logged in
           setUser({
             fname: "Guest",
             lname: "User",
-            photoURL: "/images/profile-placeholder.png",
+            photoURL: "/images/profile-placeholder.png"
           });
         }
-      } catch (err) {
-        console.error("Error fetching user profile:", err);
+      } catch (error) {
+        console.error("Error fetching user profile:", error);
+        // Fallback to default profile
         setUser({
           fname: "Guest",
           lname: "User",
-          photoURL: "/images/profile-placeholder.png",
+          photoURL: "/images/profile-placeholder.png"
         });
       } finally {
         setLoading(false);
@@ -76,56 +99,41 @@ const ServicesPage = () => {
 
     fetchUserProfile();
 
-    // Listen for session storage updates
-    window.addEventListener("storage", (e) => {
-      if (e.key === "currentUser") {
+    // Add listener for storage events to catch updates from other tabs/pages
+    const handleStorageChange = (e) => {
+      if (e.key === 'currentUser') {
         try {
-          const updated = JSON.parse(e.newValue);
-          if (updated) setUser(updated);
-        } catch {}
+          const newUserData = JSON.parse(e.newValue);
+          if (newUserData) {
+            setUser(newUserData);
+          }
+        } catch (error) {
+          console.error("Error parsing updated user data:", error);
+        }
       }
-    });
+    };
+
+    window.addEventListener('storage', handleStorageChange);
 
     return () => {
-      window.removeEventListener("storage", () => {});
+      window.removeEventListener('storage', handleStorageChange);
     };
   }, []);
 
-  
-  useEffect(() => {
-    const intervalId = setInterval(() => {
-      const stored = sessionStorage.getItem("currentUser");
-      if (stored) {
-        const parsed = JSON.parse(stored);
-        if (
-          parsed.photoURL !== user?.photoURL ||
-          parsed.fname !== user?.fname ||
-          parsed.lname !== user?.lname
-        ) {
-          setUser(parsed);
-        }
-      }
-    }, 5000);
-
-    return () => clearInterval(intervalId);
-  }, [user]);
-
-
   const toggleDropdown = (service) => {
-    setSelectedService((prev) => (prev === service ? null : service));
+    // Close other dropdowns when opening a new one
+    setSelectedService(selectedService === service ? null : service);
   };
 
-
+  // Handle clicks outside dropdowns
   useEffect(() => {
     const handleClickOutside = (event) => {
-      const dropdowns = document.querySelectorAll(".dropdown");
+      const dropdowns = document.querySelectorAll('.dropdown');
       let clickedOutside = true;
 
-      dropdowns.forEach((dropdown) => {
-        if (
-          dropdown.contains(event.target) ||
-          event.target.closest(".service-item") === dropdown.closest(".service-item")
-        ) {
+      dropdowns.forEach(dropdown => {
+        if (dropdown.contains(event.target) ||
+          event.target.closest('.service-item') === dropdown.closest('.service-item')) {
           clickedOutside = false;
         }
       });
@@ -135,101 +143,102 @@ const ServicesPage = () => {
       }
     };
 
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
   }, [selectedService]);
 
-  // Submit Room Booking
+  // ✅ Handles Room Booking Submission
   const handleRoomBooking = async () => {
     const { checkIn, checkOut } = roomBookingDetails;
 
     if (!checkIn || !checkOut) {
-      alert("Please select both check-in and check-out dates.");
-      return;
-    }
-
-    if (checkOut <= checkIn) {
-      alert("Check-out date must be after check-in date.");
-      return;
-    }
-
-    const diffInDays = (checkOut - checkIn) / (1000 * 60 * 60 * 24);
-    if (diffInDays > 30) {
-      alert("Maximum stay is 30 days.");
+      alert("Please select check-in and check-out dates!");
       return;
     }
 
     try {
-      await addDoc(collection(db, "roomBookings"), {
+      const docRef = await addDoc(collection(db, "roomBookings"), {
         checkIn: checkIn.toISOString(),
         checkOut: checkOut.toISOString(),
-        createdAt: serverTimestamp(),
+        createdAt: new Date().toISOString(),
         userId: user?.id || auth.currentUser?.uid || "guest",
-        isGuest: !auth.currentUser,
       });
 
-      // Navigate to Room Booking details
       navigate(
-        `/room-booking?checkIn=${encodeURIComponent(checkIn.toISOString())}&checkOut=${encodeURIComponent(checkOut.toISOString())}`
+        `/room-booking?checkIn=${checkIn.toISOString()}&checkOut=${checkOut.toISOString()}`
       );
     } catch (error) {
       console.error("Error saving room booking:", error.message);
-      alert("Failed to save room booking.");
+      alert(`Failed to save room booking: ${error.message}`);
     }
   };
 
-  //  Submit Conference Booking
+  // ✅ Handles Conference Booking Submission
   const handleConferenceBooking = async () => {
     const { startDate, endDate } = conferenceBookingDetails;
 
     if (!startDate || !endDate) {
-      alert("Please select both start and end dates.");
-      return;
-    }
-
-    if (endDate <= startDate) {
-      alert("End date must be after start date.");
-      return;
-    }
-
-    const diffInDays = (endDate - startDate) / (1000 * 60 * 60 * 24);
-    if (diffInDays > 20) {
-      alert("Conference bookings can't exceed 10 days.");
+      alert("Please select a start date and end date!");
       return;
     }
 
     try {
-      await addDoc(collection(db, "conferenceBookings"), {
+      const docRef = await addDoc(collection(db, "conferenceBookings"), {
         startDate: startDate.toISOString(),
         endDate: endDate.toISOString(),
-        createdAt: serverTimestamp(),
+        createdAt: new Date().toISOString(),
         userId: user?.id || auth.currentUser?.uid || "guest",
-        isGuest: !auth.currentUser,
       });
 
-      // Navigate to Conference Booking details
       navigate(
-        `/conference-booking?startDate=${encodeURIComponent(startDate.toISOString())}&endDate=${encodeURIComponent(endDate.toISOString())}`
+        `/conference-booking?startDate=${startDate.toISOString()}&endDate=${endDate.toISOString()}`
       );
     } catch (error) {
-      console.error("Error saving conference booking:", error.message);
-      alert("Failed to save conference booking.");
+      console.error("Error saving conference booking:", error);
+      alert("Failed to save conference booking. Please try again.");
     }
   };
 
+  // Check for profile photo updates every 5 seconds
+  useEffect(() => {
+    const checkProfileUpdates = () => {
+      const sessionUser = sessionStorage.getItem('currentUser');
+      if (sessionUser) {
+        const parsedUser = JSON.parse(sessionUser);
+        // Only update if there's a difference (prevents unnecessary re-renders)
+        if (parsedUser.photoURL !== user?.photoURL ||
+          parsedUser.fname !== user?.fname ||
+          parsedUser.lname !== user?.lname) {
+          setUser(parsedUser);
+        }
+      }
+    };
+
+    const intervalId = setInterval(checkProfileUpdates, 5000);
+
+    return () => clearInterval(intervalId);
+  }, [user]);
+
+  // Function to handle profile click
+  const handleProfileClick = () => {
+    navigate("/profile");
+  };
 
   return (
     <>
+      {/* Top Navigation Bar - Moved outside and detached from services-page */}
       <div className="nav-container" style={{ backgroundColor: "transparent", boxShadow: "none" }}>
-        <NavMenu menuOpen={menuOpen} setMenuOpen={setMenuOpen} />
+      <NavMenu menuOpen={menuOpen} setMenuOpen={setMenuOpen} />
         <h1 className="booking-services-heading">Booking Services</h1>
 
-      
+        {/* Top-right profile section */}
         {!loading && user && (
-          <div className="profile-bar" onClick={() => navigate("/profile")}>
+          <div className="profile-bar" onClick={handleProfileClick}>
             <div className="profile-info">
               <img
-                src={user.photoURL}
+                src={user.photoURL || "/images/profile-placeholder.png"}
                 alt="Profile"
                 className="profile-pic"
                 onError={(e) => {
@@ -245,13 +254,17 @@ const ServicesPage = () => {
         )}
       </div>
 
-
+      {/* Services Page Content - Separated from nav */}
       <div className="services-page">
+        {/* Booking Options */}
         <div className="services-grid">
-          
-          {/*  Room Booking */}
+          {/* ✅ Room Booking */}
           <div className="service-item" onClick={() => toggleDropdown("room")}>
-            <img src="/src/assets/images/IMG_0111.JPG" alt="Room Booking" className="service-image" />
+            <img
+              src="/src/assets/images/IMG_0111.JPG"
+              alt="Room Booking"
+              className="service-image"
+            />
             <p className="service-title">Room Booking</p>
             <div
               className={`dropdown ${selectedService === "room" ? "active" : ""}`}
@@ -260,49 +273,68 @@ const ServicesPage = () => {
               <label>Check-in Date:</label>
               <DatePicker
                 selected={roomBookingDetails.checkIn}
-                onChange={(date) => setRoomBookingDetails((prev) => ({ ...prev, checkIn: date }))}
+                onChange={(date) =>
+                  setRoomBookingDetails((prev) => ({ ...prev, checkIn: date }))
+                }
                 minDate={today}
                 placeholderText="Select check-in date"
               />
+
               <label>Check-out Date:</label>
               <DatePicker
                 selected={roomBookingDetails.checkOut}
-                onChange={(date) => setRoomBookingDetails((prev) => ({ ...prev, checkOut: date }))}
+                onChange={(date) =>
+                  setRoomBookingDetails((prev) => ({ ...prev, checkOut: date }))
+                }
                 minDate={roomBookingDetails.checkIn || today}
                 placeholderText="Select check-out date"
               />
+
               <button className="learn-more" onClick={handleRoomBooking}>
                 Proceed to Room Booking
               </button>
             </div>
           </div>
 
-          {/* Conference Booking */}
+          {/* ✅ Conference Booking */}
           <div className="service-item" onClick={() => toggleDropdown("conference")}>
-            <img src="/src/assets/images/pixelcut-export.jpeg" alt="Conference Booking" className="service-image" />
+            <img
+              src="/src/assets/images/pixelcut-export.jpeg"
+              alt="Conference Booking"
+              className="service-image"
+            />
             <p className="service-title">Conference Booking</p>
             <div
-              className={`dropdown ${selectedService === "conference" ? "active" : ""}`}
+              className={`dropdown ${selectedService === "conference" ? "active" : ""
+                }`}
               onClick={(e) => e.stopPropagation()}
             >
               <label>Start Date:</label>
               <DatePicker
                 selected={conferenceBookingDetails.startDate}
                 onChange={(date) =>
-                  setConferenceBookingDetails((prev) => ({ ...prev, startDate: date }))
+                  setConferenceBookingDetails((prev) => ({
+                    ...prev,
+                    startDate: date,
+                  }))
                 }
                 minDate={today}
                 placeholderText="Select start date"
               />
+
               <label>End Date:</label>
               <DatePicker
                 selected={conferenceBookingDetails.endDate}
                 onChange={(date) =>
-                  setConferenceBookingDetails((prev) => ({ ...prev, endDate: date }))
+                  setConferenceBookingDetails((prev) => ({
+                    ...prev,
+                    endDate: date,
+                  }))
                 }
                 minDate={conferenceBookingDetails.startDate || today}
                 placeholderText="Select end date"
               />
+
               <button className="learn-more" onClick={handleConferenceBooking}>
                 Proceed to Conference Booking
               </button>

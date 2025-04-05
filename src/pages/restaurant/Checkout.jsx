@@ -328,7 +328,22 @@ const Checkout = () => {
   const handlePaymentSuccess = async (reference) => {
     try {
       setIsSubmitting(true);
-      await saveOrder("Paid", reference.reference);
+  
+      // Save order to 'orders' collection
+      const orderId = await saveOrder("Paid", reference.reference);
+  
+      // ✅ Save transaction to 'transactions' collection
+      await addDoc(collection(db, "transactions"), {
+        type: "income",
+        amount: orderTotals.total,
+        category: "Restaurant Order",
+        reference: reference.reference,
+        description: `Payment for Order #${orderId}`,
+        date: new Date(),
+        createdBy: getOrCreateUserId(),
+        method: "MoMo"
+      });
+  
       await clearCart();
       setOrderComplete(true);
     } catch (error) {
@@ -338,6 +353,7 @@ const Checkout = () => {
       setIsSubmitting(false);
     }
   };
+  
 
   const paystackConfig = {
     reference: new Date().getTime().toString(),

@@ -30,6 +30,7 @@ import Pickup from './pages/Pickup';
 
 
 
+
 const App = () => {
   return (
     <Router>
@@ -60,6 +61,7 @@ const App = () => {
         <Route path="/ad_settings" element={<AdminSettings />} />
         <Route path="/bills" element={<Bills />} />
         <Route path="/pickup" element={<Pickup />} />
+        
 
 
 
