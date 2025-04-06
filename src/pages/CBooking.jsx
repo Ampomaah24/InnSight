@@ -108,6 +108,7 @@ const ConferenceBooking = () => {
           <div className="no-rooms-content">
             <h2>No Conference Rooms Available</h2>
             <p>We couldn't find any available conference rooms for your selected dates.</p>
+ 
  {/*            <button 
               className="back-button" 
               onClick={() => navigate('/')}
@@ -122,6 +123,14 @@ const ConferenceBooking = () => {
 
   const currentRoom = conference_rooms[currentIndex];
   const totalPrice = currentRoom.price * duration;
+<div className="back-button-container">
+  <button 
+    className="back-button"
+    onClick={() => navigate(-1)}
+  >
+    ← 
+  </button>
+</div>
 
   return (
     <div className="croom-booking-container">

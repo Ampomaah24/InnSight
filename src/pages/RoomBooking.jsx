@@ -269,12 +269,8 @@ const RoomBooking = () => {
         <div className="no-rooms-content">
           <h2>No Available Rooms</h2>
           <p>We couldn't find any available rooms for your selected dates.</p>
-          <button 
-            className="back-button" 
-            onClick={() => navigate('/')}
-          >
-            Return to Search
-          </button>
+       
+       
         </div>
       </div>
     );
@@ -288,9 +284,7 @@ const RoomBooking = () => {
       </div>
          
            <div className="back-button-container">
-      <button className="floating-back-button" onClick={() => navigate(-1)}>
-  ←
-</button>
+
       
       <h2 className="available-rooms-heading">Available Rooms</h2>
 

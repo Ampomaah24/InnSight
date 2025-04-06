@@ -26,6 +26,8 @@ import Profile from './pages/ProfilePage';
 import AdminSettings from './pages/AdminSettings';
 import Bills from './pages/Bills';
 import Pickup from './pages/Pickup';
+import ContactUs from "./pages/ContactUs";
+import GuestBills from "./pages/GuestBills";
 
 
 
@@ -61,9 +63,8 @@ const App = () => {
         <Route path="/ad_settings" element={<AdminSettings />} />
         <Route path="/bills" element={<Bills />} />
         <Route path="/pickup" element={<Pickup />} />
-        
-
-
+        <Route path="/contact" element={<ContactUs />} />
+        <Route path="/guest-bills" element={<GuestBills />} />
 
 
       </Routes>

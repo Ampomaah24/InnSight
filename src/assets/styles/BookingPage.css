@@ -237,6 +237,18 @@
   flex: 1;
 }
 
+
+@media (max-width: 768px) {
+  .back-button-container {
+    width: 95%;
+    margin-bottom: 0.5rem;
+  }
+  
+  .back-button {
+    font-size: 0.85rem;
+    padding: 6px 12px;
+  }
+}
 /* Responsive tweaks */
 @media (max-width: 56.25rem) {
   .booking-page-wrapper {

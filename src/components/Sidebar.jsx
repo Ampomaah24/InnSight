@@ -111,7 +111,12 @@ const Sidebar = () => {
               <span className="sidebar-text">Airpot Pickups</span>
             </Link>
           </li>
-          
+          <li className={`sidebar-item ${isActive('/bills') ? 'active' : ''}`}>
+            <Link to="/bills">
+              <span className="sidebar-icon"><FaCog /></span>
+              <span className="sidebar-text">Oustanding Bills</span>
+            </Link>
+          </li>
           <li className={`sidebar-item ${isActive('/add-expense') ? 'active' : ''}`}>
             <Link to="/add-expense">
               <span className="sidebar-icon"><FaMoneyBillWave /></span>

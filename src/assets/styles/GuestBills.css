@@ -1,0 +1,414 @@
+/* GuestBills.css - Styles for user-facing guest bills page */
+
+.guest-bills-container {
+    display: flex;
+    flex-direction: column;
+    padding: 1.5rem;
+    max-width: 1200px;
+    margin: 0 auto;
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  }
+  
+  .guest-bills-card {
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+  }
+  
+  .guest-bills-header {
+    padding: 1.5rem;
+    border-bottom: 1px solid #eaeaea;
+    background-color: #f8f9fb;
+  }
+  
+  .guest-bills-title {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: #333;
+    margin: 0 0 0.5rem 0;
+  }
+  
+  .guest-bills-subtitle {
+    color: #666;
+    margin: 0;
+    font-size: 0.9rem;
+  }
+  
+  .guest-bills-content {
+    padding: 1.5rem;
+  }
+  
+  /* Loading state */
+  .loading-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 300px;
+    text-align: center;
+  }
+  
+  .loading-spinner {
+    border: 3px solid #f3f3f3;
+    border-top: 3px solid #3498db;
+    border-radius: 50%;
+    width: 30px;
+    height: 30px;
+    animation: spin 1s linear infinite;
+    margin: 0 auto 1rem;
+  }
+  
+  @keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+  }
+  
+  .loading-text {
+    color: #666;
+  }
+  
+  /* Error state */
+  .error-container {
+    padding: 2rem;
+    text-align: center;
+    color: #d32f2f;
+  }
+  
+  .retry-button {
+    background-color: #f44336;
+    color: white;
+    border: none;
+    padding: 0.5rem 1rem;
+    border-radius: 4px;
+    margin-top: 1rem;
+    cursor: pointer;
+    font-weight: 500;
+  }
+  
+  .retry-button:hover {
+    background-color: #d32f2f;
+  }
+  
+  /* Booking tabs */
+  .booking-tabs {
+    display: flex;
+    overflow-x: auto;
+    margin-bottom: 1.5rem;
+    border-bottom: 1px solid #eaeaea;
+  }
+  
+  .booking-tab {
+    padding: 0.75rem 1.25rem;
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-weight: 500;
+    color: #666;
+    position: relative;
+    white-space: nowrap;
+  }
+  
+  .booking-tab.active {
+    color: #3498db;
+  }
+  
+  .booking-tab.active::after {
+    content: '';
+    position: absolute;
+    bottom: -1px;
+    left: 0;
+    width: 100%;
+    height: 2px;
+    background-color: #3498db;
+  }
+  
+  /* Booking details */
+  .booking-header {
+    margin-bottom: 1.5rem;
+  }
+  
+  .booking-header-info {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+  }
+  
+  .booking-room-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin: 0 0 0.5rem 0;
+    color: #333;
+  }
+  
+  .booking-dates {
+    color: #666;
+    margin: 0;
+    font-size: 0.9rem;
+  }
+  
+  .booking-status {
+    padding: 0.3rem 0.75rem;
+    border-radius: 50px;
+    font-size: 0.75rem;
+    font-weight: 500;
+    text-transform: uppercase;
+    display: inline-block;
+  }
+  
+  .booking-status.checked-in {
+    background-color: #e3f2fd;
+    color: #1976d2;
+  }
+  
+  .booking-status.checked-out {
+    background-color: #e8f5e9;
+    color: #2e7d32;
+  }
+  
+  .booking-status.confirmed {
+    background-color: #fff8e1;
+    color: #f57f17;
+  }
+  
+  .booking-status.cancelled {
+    background-color: #ffebee;
+    color: #c62828;
+  }
+  
+  /* Tabs navigation */
+  .tab-nav {
+    display: flex;
+    margin-bottom: 1.25rem;
+    border-bottom: 1px solid #eaeaea;
+  }
+  
+  .tab-button {
+    padding: 0.75rem 1.25rem;
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-weight: 500;
+    color: #666;
+    position: relative;
+  }
+  
+  .tab-button.active {
+    color: #3498db;
+  }
+  
+  .tab-button.active::after {
+    content: '';
+    position: absolute;
+    bottom: -1px;
+    left: 0;
+    width: 100%;
+    height: 2px;
+    background-color: #3498db;
+  }
+  
+  /* Tab content */
+  .tab-content {
+    padding: 1rem 0;
+  }
+  
+  .charges-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+  }
+  
+  .charges-title {
+    font-size: 1.15rem;
+    font-weight: 600;
+    margin: 0;
+    color: #333;
+  }
+  
+  .payment-status {
+    padding: 0.3rem 0.75rem;
+    border-radius: 50px;
+    font-size: 0.75rem;
+    font-weight: 500;
+    text-transform: uppercase;
+  }
+  
+  .payment-status.outstanding {
+    background-color: #fff8e1;
+    color: #f57f17;
+  }
+  
+  .payment-status.paid {
+    background-color: #e8f5e9;
+    color: #2e7d32;
+  }
+  
+  /* Charges details */
+  .charges-details {
+    background-color: #f8f9fb;
+    border-radius: 6px;
+    padding: 1rem;
+    margin-bottom: 1rem;
+  }
+  
+  .charge-item {
+    display: flex;
+    justify-content: space-between;
+    padding: 0.75rem 0;
+    border-bottom: 1px solid #eaeaea;
+  }
+  
+  .charge-item:last-child {
+    border-bottom: none;
+  }
+  
+  .charge-total {
+    display: flex;
+    justify-content: space-between;
+    padding: 0.75rem 0;
+    margin-top: 0.5rem;
+    border-top: 1px solid #ddd;
+    font-weight: 600;
+    font-size: 1.1rem;
+    color: #333;
+  }
+  
+  /* Payment instructions */
+  .payment-instructions {
+    background-color: #e3f2fd;
+    border-radius: 6px;
+    padding: 1rem;
+    margin: 1.5rem 0;
+    border-left: 4px solid #1976d2;
+  }
+  
+  .payment-instructions h4 {
+    color: #1976d2;
+    margin: 0 0 0.5rem 0;
+    font-size: 1rem;
+    font-weight: 600;
+  }
+  
+  .payment-instructions p {
+    margin: 0.5rem 0;
+    color: #333;
+    font-size: 0.9rem;
+  }
+  
+  /* Food orders table */
+  .table-container {
+    overflow-x: auto;
+    margin: 1rem 0;
+  }
+  
+  .food-orders-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.9rem;
+  }
+  
+  .food-orders-table th,
+  .food-orders-table td {
+    text-align: left;
+    padding: 0.75rem;
+    border-bottom: 1px solid #eaeaea;
+  }
+  
+  .food-orders-table th {
+    font-weight: 600;
+    color: #555;
+    background-color: #f8f9fb;
+  }
+  
+  .food-orders-table .total-row {
+    font-weight: 600;
+  }
+  
+  .food-orders-table .total-row td {
+    border-top: 2px solid #ddd;
+    border-bottom: none;
+  }
+  
+  /* Empty states */
+  .empty-food-orders,
+  .no-bookings {
+    text-align: center;
+    padding: 2rem;
+    background-color: #f8f9fb;
+    border-radius: 6px;
+    color: #666;
+  }
+  
+  .no-bookings h3 {
+    margin: 0 0 1rem 0;
+    color: #333;
+    font-weight: 600;
+  }
+  
+  /* Buttons */
+  .btn {
+    padding: 0.6rem 1.25rem;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    font-weight: 500;
+    transition: all 0.2s ease;
+    border: none;
+  }
+  
+  .btn-primary {
+    background-color: #3498db;
+    color: white;
+  }
+  
+  .btn-primary:hover {
+    background-color: #2980b9;
+  }
+  
+  .btn-outline {
+    background-color: transparent;
+    border: 1px solid #3498db;
+    color: #3498db;
+  }
+  
+  .btn-outline:hover {
+    background-color: #f0f7fc;
+  }
+  
+  .user-actions {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 1.5rem;
+  }
+  
+  .user-actions button {
+    margin-left: 0.75rem;
+  }
+  
+  /* Responsive design */
+  @media (max-width: 768px) {
+    .guest-bills-container {
+      padding: 1rem;
+    }
+    
+    .booking-header-info {
+      flex-direction: column;
+    }
+    
+    .booking-status {
+      margin-top: 0.75rem;
+    }
+    
+    .tab-nav {
+      overflow-x: auto;
+    }
+    
+    .charges-header {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+    
+    .payment-status {
+      margin-top: 0.5rem;
+    }
+  }

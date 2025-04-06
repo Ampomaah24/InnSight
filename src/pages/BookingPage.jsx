@@ -353,16 +353,28 @@ const completeBooking = async () => {
         originalPrice - (originalPrice * applicableDiscount / 100) : 
         originalPrice;
 
-      // Add booking record
+      // Check if this is a deposit payment
+      const isDeposit = formData.paymentOption === "Deposit for Reservation";
+      const depositRate = 0.2; // 20% deposit
+      const amountPaid = isDeposit ? discountedPrice * depositRate : discountedPrice;
+      const remainderDue = isDeposit ? discountedPrice - amountPaid : 0;
+
+      // Add booking record with proper deposit info
       await addDoc(collection(db, roomCategory === "conference" ? "conferenceBookings" : "bookings"), {
         userId: auth.currentUser?.uid || "guest",
+        email: formData.email,
         roomType: room.t_room || room.type,
         roomName: room.name || "Unnamed",
+        
         roomNumber: dbRoomId,
         originalPrice: originalPrice,
         discountApplied: applicableDiscount,
         discountType: actualDiscountName,
         finalPrice: discountedPrice,
+        amountPaid: amountPaid,
+        remainderDue: remainderDue,
+        depositRate: isDeposit ? depositRate : null, // Store the deposit rate for reference
+        paymentStatus: isDeposit ? "Partial Payment" : "Paid in Full",
         numberOfGuests: guestCount,
         checkIn: formData.checkIn,
         checkOut: formData.checkOut,
@@ -397,19 +409,54 @@ const completeBooking = async () => {
     currency: "GHS",
   };
 
-  const onSuccess = async (reference) => {
+  // Replace the current onSuccess function with this improved version
+// that properly passes booking information to the confirmation page
+// This is the onSuccess function from BookingPage.js that needs to be updated
+// to properly handle deposits versus full payments
+
+const onSuccess = async (reference) => {
+  try {
+    // Calculate how much was actually paid in this transaction
+    const amountPaid = paymentAmount;
+    
+    // Determine if this is a deposit or full payment
+    const isDeposit = formData.paymentOption === "Deposit for Reservation";
+    
+    // First add the transaction
     await addDoc(collection(db, "transactions"), {
       type: "income",
-      amount: paymentAmount,
+      amount: amountPaid,
       category: "Room Booking",
-      description: `Payment for ${selectedRooms.map(r => r.name || r.t_room).join(", ")}`,
+      description: `${isDeposit ? "Deposit" : "Full payment"} for ${selectedRooms.map(r => r.name || r.t_room).join(", ")}`,
       date: new Date(),
       reference: reference.reference,
       createdBy: auth.currentUser?.uid || "guest",
       paymentOption: formData.paymentOption,
+      isDeposit: isDeposit,
+      totalAmount: totalAmount, // Store the total amount for reference
+      remainderDue: isDeposit ? (totalAmount - amountPaid) : 0 // Calculate remainder due for deposits
     });
 
+    // Complete booking
     await completeBooking();
+    
+    // Prepare booking object for confirmation page
+    const bookingDetails = {
+      firstName: formData.firstName,
+      lastName: formData.lastName,
+      email: formData.email,
+      checkIn: formData.checkIn,
+      checkOut: formData.checkOut,
+      roomName: selectedRooms.map(r => r.name || r.t_room).join(", "),
+      roomType: selectedRooms.map(r => r.t_room || r.type).join(", "),
+      numberOfGuests: totalGuests,
+      paymentOption: formData.paymentOption,
+      amount: amountPaid,
+      totalAmount: totalAmount, // Include total amount
+      remainderDue: isDeposit ? (totalAmount - amountPaid) : 0, // Include remainder for deposits
+      specialRequests: formData.specialRequests,
+      airportPickup: formData.airportPickup === "Yes"
+    };
 
     if (roomCategory === "conference" && formData.alsoBookingStay === "Yes") {
       const query = new URLSearchParams({
@@ -419,9 +466,19 @@ const completeBooking = async () => {
       }).toString();
       navigate(`/room-booking?${query}`);
     } else {
-      navigate("/booking-confirmation", { state: { totalGuests } });
+      navigate("/booking-confirmation", { 
+        state: { 
+          booking: bookingDetails,
+          totalGuests,
+          isDeposit // Pass deposit flag to confirmation page
+        } 
+      });
     }
-  };
+  } catch (error) {
+    console.error("Error in payment processing:", error);
+    alert("There was an error processing your payment. Please try again.");
+  }
+};
 
   if (loading) {
     return (
@@ -440,6 +497,10 @@ const completeBooking = async () => {
       <div className="nav-container" style={{ backgroundColor: "transparent", boxShadow: "none" }}>
         <NavMenu menuOpen={menuOpen} setMenuOpen={setMenuOpen} />
       </div>
+
+ 
+
+
 
       <div className="booking-page-wrapper">
         <div className="booking-illustration">
@@ -594,7 +655,7 @@ const completeBooking = async () => {
                 Back to Home
               </button> */}
               
-              <button
+{/*               <button
   type="button"
   onClick={() =>
     navigate(
@@ -604,7 +665,7 @@ const completeBooking = async () => {
 >
   Back to Rooms
 </button>
-
+ */}
             </div>
 
             {/* Pay Button */}
