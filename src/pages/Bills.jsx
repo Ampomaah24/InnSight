@@ -18,9 +18,10 @@ import {
   FaCreditCard, 
   FaExclamationCircle,
   FaArrowLeft,
-  FaInfoCircle
+  FaInfoCircle,
+  FaMoneyBillWave
 } from 'react-icons/fa';
-import "../assets/styles/Bills.css"; // You'll need to create this CSS file
+import "../assets/styles/Bills.css";
 
 const Bills = () => {
   const navigate = useNavigate();
@@ -28,6 +29,7 @@ const Bills = () => {
   const [menuOpen, setMenuOpen] = useState(false);
   const [bills, setBills] = useState([]);
   const [totalOutstanding, setTotalOutstanding] = useState(0);
+  const [totalRemainder, setTotalRemainder] = useState(0);
   const [userProfile, setUserProfile] = useState({
     isHotelGuest: false,
     roomNumber: "",
@@ -69,18 +71,18 @@ const Bills = () => {
           });
         }
         
-        // Get all orders charged to tab for this user
+        // Get all orders charged to tab or with partial payments for this user
         const ordersQuery = query(
           collection(db, "orders"),
           where("userId", "==", currentUser.uid),
-          where("paymentMethod", "==", "Tab"),
-          where("status", "in", ["On Hotel Tab", "Pending Payment"]),
+          where("status", "in", ["On Hotel Tab", "Pending Payment", "Partial Payment"]),
           orderBy("timestamp", "desc")
         );
         
         const querySnapshot = await getDocs(ordersQuery);
         const billsData = [];
         let outstandingTotal = 0;
+        let remainderTotal = 0;
         
         querySnapshot.forEach((doc) => {
           const billData = {
@@ -89,12 +91,23 @@ const Bills = () => {
             timestamp: doc.data().timestamp?.toDate() || new Date()
           };
           
+          // Calculate remainder amount for partial payments
+          if (billData.status === "Partial Payment") {
+            billData.depositAmount = billData.depositAmount || 0;
+            billData.remainderAmount = billData.total - billData.depositAmount;
+            remainderTotal += billData.remainderAmount;
+          } else {
+            billData.remainderAmount = billData.total;
+            remainderTotal += billData.total;
+          }
+          
           billsData.push(billData);
           outstandingTotal += billData.total || 0;
         });
         
         setBills(billsData);
         setTotalOutstanding(outstandingTotal);
+        setTotalRemainder(remainderTotal);
       } catch (error) {
         console.error("Error fetching bills:", error);
       } finally {
@@ -198,9 +211,21 @@ const Bills = () => {
                 <h2>Total Outstanding Balance</h2>
                 <div className="summary-amount">GHS {totalOutstanding.toFixed(2)}</div>
               </div>
+              
+              {/* New section for remainder balance after deposits */}
+              <div className="summary-header remainder-section">
+                <h2>Remainder Due</h2>
+                <div className="summary-amount remainder-amount">GHS {totalRemainder.toFixed(2)}</div>
+              </div>
+              
               {bills.length > 0 ? (
                 <p className="summary-info">
-                  You have {bills.length} outstanding {bills.length === 1 ? "bill" : "bills"} charged to your room tab.
+                  You have {bills.length} outstanding {bills.length === 1 ? "bill" : "bills"}.
+                  {bills.some(bill => bill.status === "Partial Payment") && (
+                    <span className="deposit-info">
+                      Some bills have partial payments (deposits).
+                    </span>
+                  )}
                   {userProfile.isHotelGuest && userProfile.checkoutDate && getDaysUntilCheckout() <= 1 && (
                     <span className="checkout-warning">
                       <FaExclamationCircle /> Your checkout is approaching. Please settle all bills before departure.
@@ -262,10 +287,26 @@ const Bills = () => {
                       <strong>Total</strong>
                       <strong>GHS {bill.total.toFixed(2)}</strong>
                     </div>
+                    
+                    {/* Payment status for partial payments */}
+                    {bill.status === "Partial Payment" && (
+                      <>
+                        <div className="bill-payment-status">
+                          <div className="payment-status-line">
+                            <span><FaMoneyBillWave /> Deposit Paid</span>
+                            <span className="deposit-amount">GHS {bill.depositAmount.toFixed(2)}</span>
+                          </div>
+                          <div className="payment-status-line remainder">
+                            <span>Remainder Due</span>
+                            <span className="remainder-amount">GHS {bill.remainderAmount.toFixed(2)}</span>
+                          </div>
+                        </div>
+                      </>
+                    )}
                   </div>
                   
                   <div className="bill-status">
-                    <span className={`status-badge ${bill.status === "Pending Payment" ? "pending" : "charged"}`}>
+                    <span className={`status-badge ${bill.status === "Partial Payment" ? "partial" : bill.status === "Pending Payment" ? "pending" : "charged"}`}>
                       {bill.status}
                     </span>
                     
@@ -287,19 +328,29 @@ const Bills = () => {
             </div>
           )}
           
-          {bills.length > 0 && userProfile.isHotelGuest && (
+          {bills.length > 0 && (
             <div className="payment-info">
               <h3>Payment Information</h3>
-              <p>
-                All outstanding bills will be charged to your room ({userProfile.roomNumber}) and 
-                must be settled before checkout. For any questions regarding your bill, 
-                please contact the front desk.
-              </p>
+              {userProfile.isHotelGuest ? (
+                <p>
+                  All outstanding bills will be charged to your room ({userProfile.roomNumber}) and 
+                  must be settled before checkout. For any questions regarding your bill, 
+                  please contact the front desk.
+                </p>
+              ) : (
+                <p>
+                  All outstanding bills must be paid in full. If you have made a partial payment (deposit),
+                  please settle the remainder amount before your next visit. For any questions regarding your bill,
+                  please contact our staff.
+                </p>
+              )}
               <div className="payment-actions">
                 <button className="payment-btn" onClick={() => navigate("/restaurant/menu")}>
                   <FaArrowLeft /> Return to Menu
                 </button>
-                {/* Could add additional payment options here if needed */}
+                <button className="payment-btn pay-now" onClick={() => navigate("/payment")}>
+                  <FaCreditCard /> Pay Now
+                </button>
               </div>
             </div>
           )}

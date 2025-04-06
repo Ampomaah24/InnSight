@@ -273,82 +273,121 @@ const handleChange = (e) => {
     isValidPhoneNumber(formData.phone || "") &&
     isAirportPickupValid;
 
-  const completeBooking = async () => {
-    try {
-      for (const room of selectedRooms) {
-        const roomId = room.id || room.t_room;
-        const guestCount = Number(guestCounts[roomId]) || 1;
+  // This is the fixed version of the completeBooking function that properly checks for room availability
+// to prevent overlapping bookings
 
-        const roomQuery = query(
-          collection(db, roomCategory === "conference" ? "conference_rooms" : "rooms"),
-          where(roomCategory === "conference" ? "type" : "t_room", "==", roomCategory === "conference" ? room.type : room.t_room),
-          where("availability", "==", true)
-        );
+const completeBooking = async () => {
+  try {
+    for (const room of selectedRooms) {
+      const roomId = room.id || room.t_room;
+      const guestCount = Number(guestCounts[roomId]) || 1;
 
-        const roomSnapshot = await getDocs(roomQuery);
-        if (roomSnapshot.empty) {
-          alert(`No available rooms of type: ${room.t_room || room.type}`);
-          continue;
-        }
+      // Format dates for comparison
+      const formatDateWithNoon = (dateStr) => {
+        const date = new Date(dateStr);
+        date.setHours(12, 0, 0, 0);
+        return date.toISOString();
+      };
+      
+      const checkInFormatted = formatDateWithNoon(formData.checkIn);
+      const checkOutFormatted = formatDateWithNoon(formData.checkOut);
 
-        const assignedRoom = roomSnapshot.docs[0];
-        const dbRoomId = assignedRoom.id;
-        const roomData = assignedRoom.data();
-        const roomRef = doc(db, roomCategory === "conference" ? "conference_rooms" : "rooms", dbRoomId);
+      // Query rooms by type
+      const roomQuery = query(
+        collection(db, roomCategory === "conference" ? "conference_rooms" : "rooms"),
+        where(roomCategory === "conference" ? "type" : "t_room", "==", roomCategory === "conference" ? room.type : room.t_room),
+        where("availability", "==", true)
+      );
 
-        const formatDateWithNoon = (dateStr) => {
-          const date = new Date(dateStr);
-          date.setHours(12, 0, 0, 0);
-          return date.toISOString();
-        };
-
-        await updateDoc(roomRef, {
-          bookings: [...(roomData.bookings || []), {
-            checkIn: formatDateWithNoon(formData.checkIn),
-            checkOut: formatDateWithNoon(formData.checkOut),
-          }]
-        });
-
-        // Calculate prices with discount
-        const originalPrice = Number(room.price || 0) * numberOfDays;
-        const discountedPrice = applicableDiscount ? 
-          originalPrice - (originalPrice * applicableDiscount / 100) : 
-          originalPrice;
-
-        await addDoc(collection(db, roomCategory === "conference" ? "conferenceBookings" : "bookings"), {
-          userId: auth.currentUser?.uid || "guest",
-          roomType: room.t_room || room.type,
-          roomName: room.name || "Unnamed",
-          roomNumber: dbRoomId,
-          originalPrice: originalPrice,
-          discountApplied: applicableDiscount,
-          discountType: actualDiscountName,
-          finalPrice: discountedPrice,
-          numberOfGuests: guestCount,
-          checkIn: formData.checkIn,
-          checkOut: formData.checkOut,
-          firstName: formData.firstName,
-          lastName: formData.lastName,
-          email: formData.email,
-          phone: formData.phone,
-          airportPickup: formData.airportPickup,
-          pickupDetails: (formData.airportPickup === "Yes" && formData.alsoBookingStay === "No") ? {
-            pickupDate: formData.pickupDate,
-            pickupTime: formData.pickupTime,
-            flightNumber: formData.flightNumber,
-            airportLocation: "Kotoka International Airport"
-          } : null,
-          paymentOption: formData.paymentOption,
-          specialRequests: formData.specialRequests,
-          roomCategory,
-          status: "Confirmed",
-          createdAt: serverTimestamp(),
-        });
+      const roomSnapshot = await getDocs(roomQuery);
+      if (roomSnapshot.empty) {
+        alert(`No available rooms of type: ${room.t_room || room.type}`);
+        continue;
       }
-    } catch (err) {
-      alert("Booking failed: " + err.message);
+
+      // Find a room without date conflicts
+      let availableRoom = null;
+      
+      for (const roomDoc of roomSnapshot.docs) {
+        const roomData = roomDoc.data();
+        const existingBookings = roomData.bookings || [];
+        
+        // Check if there's any overlap with existing bookings
+        const hasOverlap = existingBookings.some(booking => {
+          const existingCheckIn = new Date(booking.checkIn);
+          const existingCheckOut = new Date(booking.checkOut);
+          const newCheckIn = new Date(checkInFormatted);
+          const newCheckOut = new Date(checkOutFormatted);
+          
+          // Overlap occurs if:
+          // (new check-in is before existing check-out) AND (new check-out is after existing check-in)
+          return (newCheckIn < existingCheckOut && newCheckOut > existingCheckIn);
+        });
+        
+        if (!hasOverlap) {
+          availableRoom = roomDoc;
+          break;
+        }
+      }
+
+      if (!availableRoom) {
+        alert(`No available rooms of type: ${room.t_room || room.type} for the selected dates.`);
+        continue;
+      }
+
+      const dbRoomId = availableRoom.id;
+      const roomData = availableRoom.data();
+      const roomRef = doc(db, roomCategory === "conference" ? "conference_rooms" : "rooms", dbRoomId);
+
+      // Update room with new booking
+      await updateDoc(roomRef, {
+        bookings: [...(roomData.bookings || []), {
+          checkIn: checkInFormatted,
+          checkOut: checkOutFormatted,
+        }]
+      });
+
+      // Calculate prices with discount
+      const originalPrice = Number(room.price || 0) * numberOfDays;
+      const discountedPrice = applicableDiscount ? 
+        originalPrice - (originalPrice * applicableDiscount / 100) : 
+        originalPrice;
+
+      // Add booking record
+      await addDoc(collection(db, roomCategory === "conference" ? "conferenceBookings" : "bookings"), {
+        userId: auth.currentUser?.uid || "guest",
+        roomType: room.t_room || room.type,
+        roomName: room.name || "Unnamed",
+        roomNumber: dbRoomId,
+        originalPrice: originalPrice,
+        discountApplied: applicableDiscount,
+        discountType: actualDiscountName,
+        finalPrice: discountedPrice,
+        numberOfGuests: guestCount,
+        checkIn: formData.checkIn,
+        checkOut: formData.checkOut,
+        firstName: formData.firstName,
+        lastName: formData.lastName,
+        email: formData.email,
+        phone: formData.phone,
+        airportPickup: formData.airportPickup,
+        pickupDetails: (formData.airportPickup === "Yes" && formData.alsoBookingStay === "No") ? {
+          pickupDate: formData.pickupDate,
+          pickupTime: formData.pickupTime,
+          flightNumber: formData.flightNumber,
+          airportLocation: "Kotoka International Airport"
+        } : null,
+        paymentOption: formData.paymentOption,
+        specialRequests: formData.specialRequests,
+        roomCategory,
+        status: "Confirmed",
+        createdAt: serverTimestamp(),
+      });
     }
-  };
+  } catch (err) {
+    alert("Booking failed: " + err.message);
+  }
+};
 
   const config = {
     reference: new Date().getTime().toString(),

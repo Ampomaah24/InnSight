@@ -1,5 +1,4 @@
 /* Finance.css */
-
 /* Page layout */
 .expense-page {
   padding: 20px 40px;
@@ -102,9 +101,11 @@
   color: #aaa;
 }
 
-/* Input with icon (for currency) */
+/* COMPLETE FIX for Input with Currency Symbol */
 .input-with-icon {
   position: relative;
+  display: flex;
+  align-items: center;
 }
 
 .currency-symbol {
@@ -114,10 +115,16 @@
   transform: translateY(-50%);
   color: #666;
   font-weight: 500;
+  pointer-events: none;
+  z-index: 1;
+  width: 15px; /* Fixed width for the symbol */
+  text-align: center;
 }
 
 .input-with-icon input {
-  padding-left: 30px;
+  padding-left: 40px; /* Significantly increased padding to ensure text starts after the symbol */
+  text-indent: 0; /* Prevent additional indentation */
+  text-align: left; /* Ensure left alignment */
 }
 
 /* Save Button */
@@ -173,16 +180,15 @@
   margin: 0;
 }
 
+
 /* Responsive Design */
 @media (max-width: 768px) {
   .expense-form-container {
     padding: 20px;
   }
-  
   .expense-page {
     padding: 15px;
   }
-  
   .page-title {
     font-size: 24px;
   }

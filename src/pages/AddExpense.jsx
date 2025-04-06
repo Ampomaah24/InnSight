@@ -102,23 +102,24 @@ const AddExpense = () => {
             )}
             
             <form onSubmit={submitExpense}>
-              <div className="form-group">
-                <label htmlFor="amount">Amount (GHS)</label>
-                <div className="input-with-icon">
-                  <span className="currency-symbol">₵</span>
-                  <input
-                    id="amount"
-                    type="number"
-                    name="amount"
-                    required
-                    value={expense.amount}
-                    onChange={handleChange}
-                    placeholder="0.00"
-                    step="0.01"
-                    min="0"
-                  />
-                </div>
-              </div>
+            <div className="form-group">
+  <label htmlFor="amount">Amount (GHS)</label>
+  <div className="amount-input-container">
+    <div className="currency-prefix">₵</div>
+    <input
+      id="amount"
+      type="number"
+      name="amount"
+      required
+      value={expense.amount}
+      onChange={handleChange}
+      placeholder="0.00"
+      step="0.01"
+      min="0"
+    />
+  </div>
+</div>
+
 
               <div className="form-group">
                 <label htmlFor="category">Category</label>
