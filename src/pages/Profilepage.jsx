@@ -1,7 +1,6 @@
 import React, { useEffect, useState, useRef, useCallback } from "react";
 import { auth, db } from "../config/firebase";
 import { doc, getDoc, updateDoc } from "firebase/firestore";
-import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { useNavigate } from "react-router-dom";
 import { 
   FaArrowLeft, 
@@ -19,6 +18,108 @@ import "react-phone-number-input/style.css";
 import "../assets/styles/ProfilePage.css";
 
 const ProfilePage = () => {
+  // Add auth prompt styles dynamically
+  useEffect(() => {
+    const styleElement = document.createElement('style');
+    styleElement.innerHTML = `
+      .auth-prompt-container {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 80vh;
+        padding: 2rem;
+      }
+      
+      .auth-prompt {
+        background-color: white;
+        border-radius: 1rem;
+        padding: 2.5rem;
+        text-align: center;
+        box-shadow: 0 0.5rem 2rem rgba(0, 0, 0, 0.15);
+        max-width: 32rem;
+        width: 100%;
+      }
+      
+      .auth-icon {
+        font-size: 3rem;
+        color: var(--primary);
+        margin-bottom: 1.5rem;
+        background-color: rgba(224, 82, 6, 0.1);
+        padding: 1rem;
+        border-radius: 50%;
+      }
+      
+      .auth-prompt h2 {
+        font-size: 1.75rem;
+        margin-bottom: 1rem;
+        color: var(--dark);
+      }
+      
+      .auth-prompt p {
+        font-size: 1rem;
+        margin-bottom: 2rem;
+        color: var(--gray);
+        line-height: 1.6;
+      }
+      
+      .auth-buttons {
+        display: flex;
+        gap: 1rem;
+        justify-content: center;
+      }
+      
+      .login-button, .register-button {
+        padding: 0.75rem 1.5rem;
+        border-radius: 0.5rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        font-size: 1rem;
+      }
+      
+      .login-button {
+        background-color: var(--primary);
+        color: white;
+        border: none;
+      }
+      
+      .login-button:hover {
+        background-color: var(--primary-dark);
+        transform: translateY(-3px);
+        box-shadow: 0 4px 10px rgba(224, 82, 6, 0.3);
+      }
+      
+      .register-button {
+        background-color: white;
+        color: var(--primary);
+        border: 2px solid var(--primary);
+      }
+      
+      .register-button:hover {
+        background-color: rgba(224, 82, 6, 0.05);
+        transform: translateY(-3px);
+        box-shadow: 0 4px 10px rgba(224, 82, 6, 0.2);
+      }
+      
+      @media (max-width: 40rem) {
+        .auth-buttons {
+          flex-direction: column;
+        }
+        .auth-prompt {
+          padding: 2rem 1.5rem;
+        }
+      }
+    `;
+    document.head.appendChild(styleElement);
+    
+    // Clean up function
+    return () => {
+      if (document.head.contains(styleElement)) {
+        document.head.removeChild(styleElement);
+      }
+    };
+  }, []);
+  
   const [userData, setUserData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
@@ -37,16 +138,36 @@ const ProfilePage = () => {
 
   // Normalize user data from different sources
   const normalizeUserData = useCallback((user, data) => {
+    // Extract first name and last name from fullName if available
+    let firstName = "";
+    let lastName = "";
+    
+    if (data.fullName) {
+      const nameParts = data.fullName.split(' ');
+      firstName = nameParts[0] || "";
+      lastName = nameParts.slice(1).join(' ') || "";
+    } else if (data.fname && data.lname) {
+      // Handle old format if it exists
+      firstName = data.fname;
+      lastName = data.lname;
+    } else if (user.displayName) {
+      const nameParts = user.displayName.split(' ');
+      firstName = nameParts[0] || "";
+      lastName = nameParts.slice(1).join(' ') || "";
+    }
+    
     return {
       id: user.uid,
-      fname: data.fname || data.firstName || user.displayName?.split(' ')[0] || "",
-      lname: data.lname || data.lastName || user.displayName?.split(' ').slice(1).join(' ') || "",
+      fname: firstName,
+      lname: lastName,
+      fullName: data.fullName || `${firstName} ${lastName}`.trim(),
       phone: data.phone || "",
       address: data.address || "",
       dateOfBirth: data.dateOfBirth || "",
       bio: data.bio || "",
       email: user.email, // Always use auth email
       photoURL: data.photoURL || user.photoURL || null,
+      avatar: data.avatar || null, // For base64 image
       createdAt: data.createdAt || new Date().toISOString(),
       updatedAt: data.updatedAt || new Date().toISOString()
     };
@@ -61,6 +182,7 @@ const ProfilePage = () => {
       const userDoc = await getDoc(userDocRef);
       
       if (userDoc.exists()) {
+        console.log("Fetched user data:", userDoc.data()); // Debug log
         return userDoc.data();
       }
       return null;
@@ -83,6 +205,7 @@ const ProfilePage = () => {
           
           if (data) {
             const normalizedData = normalizeUserData(user, data);
+            console.log("Normalized user data:", normalizedData); // Debug log
             setUserData(normalizedData);
             setFormData({
               phone: normalizedData.phone,
@@ -106,7 +229,7 @@ const ProfilePage = () => {
         // User is logged out
         setUserData(null);
         sessionStorage.removeItem('currentUser');
-        navigate('/login');
+        setLoading(false); // Set loading to false to show the auth prompt
       }
     });
     
@@ -132,18 +255,34 @@ const ProfilePage = () => {
     setPhoneError(value ? !isValidPhoneNumber(value) : false);
   };
 
-  // Handle profile photo click to open file dialog
+  // Handle profile photo click
   const handlePhotoClick = () => {
     fileInputRef.current.click();
   };
 
-  // Handle file upload for profile photo
+  // Convert image to base64
+  const convertToBase64 = (file) => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = () => resolve(reader.result);
+      reader.onerror = (error) => reject(error);
+    });
+  };
+
+  // Handle file upload for profile photo using base64
   const handleFileChange = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
   
     if (!file.type.startsWith("image/")) {
       setError("Please select an image file");
+      return;
+    }
+  
+    // Check file size (limit to 500KB for Firestore storage)
+    if (file.size > 500 * 1024) {
+      setError("Image size is too large. Please select an image under 500KB.");
       return;
     }
   
@@ -157,33 +296,27 @@ const ProfilePage = () => {
         return;
       }
   
-      const storage = getStorage();
-      const storageRef = ref(storage, `profilePictures/${currentUser.uid}`);
+      // Convert image to base64
+      const base64Image = await convertToBase64(file);
   
-      // Upload image to Firebase Storage
-      await uploadBytes(storageRef, file);
-  
-      // Get the download URL
-      const downloadURL = await getDownloadURL(storageRef);
-  
-      // Update Firestore with the photoURL
+      // Update Firestore with the base64 string
       const userDocRef = doc(db, "users", currentUser.uid);
       await updateDoc(userDocRef, {
-        photoURL: downloadURL,
+        avatar: base64Image,
         updatedAt: new Date().toISOString()
       });
   
       // Update local state
       setUserData(prev => ({
         ...prev,
-        photoURL: downloadURL,
+        avatar: base64Image,
         updatedAt: new Date().toISOString()
       }));
       
       // Update sessionStorage
       const updatedUser = {
         ...userData,
-        photoURL: downloadURL,
+        avatar: base64Image,
         updatedAt: new Date().toISOString()
       };
       sessionStorage.setItem('currentUser', JSON.stringify(updatedUser));
@@ -282,15 +415,62 @@ const ProfilePage = () => {
       </div>
     );
   }
+  
+  // Not logged in state - Show auth prompt
+  if (!loading && !userData) {
+    return (
+      <div className="profile-page">
+        <div className="back-button" onClick={handleGoBack}>
+          <FaArrowLeft size={16} /> Back
+        </div>
+        
+        <div className="auth-prompt-container">
+          <div className="auth-prompt">
+            <FaUser className="auth-icon" />
+            <h2>Sign in Required</h2>
+            <p>You need to sign in or create an account to view your profile.</p>
+            <div className="auth-buttons">
+              <button 
+                className="login-button"
+                onClick={() => navigate('/login')}
+              >
+                Sign In
+              </button>
+              <button 
+                className="register-button"
+                onClick={() => navigate('/register')}
+              >
+                Create Account
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   // Get initials for avatar
   const getInitials = () => {
     return `${userData?.fname?.charAt(0) || ''}${userData?.lname?.charAt(0) || ''}`;
   };
 
-  // Get display name
+  // Get display name - Updated to prioritize fullName from database
   const getDisplayName = () => {
+    if (userData?.fullName) {
+      return userData.fullName;
+    }
     return `${userData?.fname || ''} ${userData?.lname || ''}`.trim() || 'User Profile';
+  };
+
+  // Get avatar source - prioritize base64 avatar over photoURL
+  const getAvatarSource = () => {
+    if (userData?.avatar) {
+      return userData.avatar; // Use base64 image if available
+    }
+    if (userData?.photoURL) {
+      return userData.photoURL; // Fallback to photoURL if available
+    }
+    return null;
   };
 
   return (
@@ -322,9 +502,9 @@ const ProfilePage = () => {
             onClick={handlePhotoClick}
             title="Click to change profile photo"
           >
-            {userData?.photoURL ? (
+            {getAvatarSource() ? (
               <img 
-                src={userData.photoURL} 
+                src={getAvatarSource()} 
                 alt="Profile" 
                 onError={(e) => {
                   e.target.onerror = null;
@@ -538,18 +718,6 @@ const ProfilePage = () => {
               <div className="info-section">
                 <h2>About Me</h2>
                 <div className="bio-content">{userData.bio}</div>
-              </div>
-            )}
-            
-            {!userData?.phone && !userData?.dateOfBirth && !userData?.address && !userData?.bio && (
-              <div className="empty-profile">
-                <p>Your profile is empty. Click "Edit Profile" to add your information.</p>
-                <button 
-                  className="edit-button"
-                  onClick={() => setEditing(true)}
-                >
-                  <FaEdit /> Edit Profile
-                </button>
               </div>
             )}
           </div>

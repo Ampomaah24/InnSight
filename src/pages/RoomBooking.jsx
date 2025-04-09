@@ -2,21 +2,24 @@ import React, { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { db } from "../config/firebase";
 import { collection, getDocs, query, where, doc, getDoc } from "firebase/firestore";
+import { getAuth, onAuthStateChanged } from "firebase/auth"; // Add auth import
 import NavMenu from "../components/NavMenu";
 import "../assets/styles/RoomBooking.css";
 
 const RoomBooking = () => {
   const navigate = useNavigate();
   const location = useLocation();
+  const auth = getAuth(); // Initialize auth
 
-   // App state variables
+  // App state variables
   const [rooms, setRooms] = useState([]);
   const [menuOpen, setMenuOpen] = useState(false);
   const [loading, setLoading] = useState(true);
   const [roomIndexes, setRoomIndexes] = useState({});
   const [selectedRooms, setSelectedRooms] = useState([]);
+  const [isLoggedIn, setIsLoggedIn] = useState(false); // Track login state
 
-   // Discount configuration pulled from Firestore
+  // Discount configuration pulled from Firestore
   const [discounts, setDiscounts] = useState({
     conferenceAttendeeDiscount: 0,
     corporateDiscount: 0,
@@ -24,17 +27,31 @@ const RoomBooking = () => {
     groupDiscountRate: 0,
     longStayDiscount: 0,
     longStayMinNights: 0,
-    weekdayDiscount: 0
+    // weekdayDiscount: 0
   });
 
-    // Extract query parameters from the URL
+  // Extract query parameters from the URL
   const params = new URLSearchParams(location.search);
   const checkIn = params.get("checkIn") ? decodeURIComponent(params.get("checkIn")) : null;
   const checkOut = params.get("checkOut") ? decodeURIComponent(params.get("checkOut")) : null;
   const fromConference = params.get("fromConference") === "true";
 
-  // Fetch discounts from Firestore
+  // Check authentication state
   useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      setIsLoggedIn(!!user);
+    });
+    
+    return () => unsubscribe();
+  }, [auth]);
+
+  // Fetch discounts from Firestore ONLY if user is logged in
+  useEffect(() => {
+    if (!isLoggedIn) {
+      console.log("User not logged in, skipping discount fetch");
+      return;
+    }
+    
     const fetchDiscounts = async () => {
       try {
         const discountsRef = doc(db, "settings", "discounts");
@@ -51,7 +68,7 @@ const RoomBooking = () => {
             groupDiscountRate: discountData.groupDiscountRate || 0,
             longStayDiscount: discountData.longStayDiscount || 0,
             longStayMinNights: discountData.longStayMinNights || 0,
-            weekdayDiscount: discountData.weekdayDiscount || 0
+            // weekdayDiscount: discountData.weekdayDiscount || 0
           });
         } else {
           console.warn("Discounts document doesn't exist");
@@ -62,7 +79,7 @@ const RoomBooking = () => {
     };
 
     fetchDiscounts();
-  }, []);
+  }, [isLoggedIn]); // Only run when isLoggedIn changes
 
   // Fix for scrolling issues
   useEffect(() => {
@@ -207,8 +224,13 @@ const RoomBooking = () => {
 
   const nights = calculateNights();
   
-  // Determine which discount to apply
+  // Determine which discount to apply - only if user is logged in
   const getApplicableDiscount = () => {
+    // No discounts for logged-out users
+    if (!isLoggedIn) {
+      return 0;
+    }
+    
     // Priority of discounts
     if (fromConference) {
       return discounts.conferenceAttendeeDiscount; // Conference attendee discount
@@ -224,22 +246,16 @@ const RoomBooking = () => {
       return discounts.groupDiscountRate;
     }
     
-    // Weekday discount if check-in is on weekday (Monday-Thursday)
-    const checkInDay = checkIn ? new Date(checkIn).getDay() : -1;
-    if (checkInDay >= 1 && checkInDay <= 4) { // Monday=1, Thursday=4
-      return discounts.weekdayDiscount;
-    }
-    
     return 0; // No discount applies
   };
 
   // Get discount name for display
   const getDiscountName = () => {
+    if (!isLoggedIn) return '';
+    
     if (fromConference) return 'Conference Attendee';
     if (nights >= discounts.longStayMinNights) return 'Long Stay';
     if (selectedRooms.length >= discounts.groupDiscountMinRooms) return 'Group Booking';
-    const checkInDay = checkIn ? new Date(checkIn).getDay() : -1;
-    if (checkInDay >= 1 && checkInDay <= 4) return 'Weekday';
     return '';
   };
 
@@ -249,6 +265,12 @@ const RoomBooking = () => {
   // Function to return to home page
   const goToHome = () => {
     navigate('/');
+  };
+
+  // Function to go to login page
+  const goToLogin = () => {
+    // Save current selection in session storage if needed
+    navigate('/login', { state: { returnPath: location.pathname + location.search } });
   };
 
   if (loading) {
@@ -269,8 +291,6 @@ const RoomBooking = () => {
         <div className="no-rooms-content">
           <h2>No Available Rooms</h2>
           <p>We couldn't find any available rooms for your selected dates.</p>
-       
-       
         </div>
       </div>
     );
@@ -278,20 +298,20 @@ const RoomBooking = () => {
 
   return (
     <div className="room-booking-container">
- 
       <div className="nav-container" style={{ backgroundColor: "transparent", boxShadow: "none" }}>
         <NavMenu menuOpen={menuOpen} setMenuOpen={setMenuOpen} />
       </div>
          
-           <div className="back-button-container">
-
+      <div className="back-button-container">
+        <h2 className="available-rooms-heading">Available Rooms</h2>
+      </div>
       
-      <h2 className="available-rooms-heading">Available Rooms</h2>
-
- 
-
-</div>
-
+      {!isLoggedIn && (
+        <div className="login-prompt">
+          <p>Sign in to access exclusive discounts!</p>
+          
+        </div>
+      )}
 
       <div className="rooms-list">
         {checkIn && checkOut && (
@@ -396,7 +416,6 @@ const RoomBooking = () => {
               roomCategory: "regular"
             }).toString();
             
-
             navigate(`/book-room?${query}`);
           }}
         >

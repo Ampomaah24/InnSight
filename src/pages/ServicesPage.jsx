@@ -3,9 +3,13 @@ import { useNavigate } from "react-router-dom";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { db, auth } from "../config/firebase";
-import { collection, addDoc, doc, getDoc } from "firebase/firestore";
+import { collection, addDoc, doc, getDoc, serverTimestamp  } from "firebase/firestore";
 import NavMenu from "../components/NavMenu";
 import "../assets/styles/ServicesPage.css";
+
+// Import images directly if using webpack/vite
+import roomImage from "../assets/images/IMG_0111.JPG"; // Update with your actual image name
+import conferenceImage from "../assets/images/pixelcut-export.jpeg"; // Update with your actual image name
 
 const ServicesPage = () => {
   const navigate = useNavigate();
@@ -50,12 +54,13 @@ const ServicesPage = () => {
           if (userDoc.exists()) {
             const userData = userDoc.data();
 
-            // Create user object
+            // Create user object with support for base64 avatar
             const userObj = {
               id: currentUser.uid,
               fname: userData.firstName || userData.fname || "User",
               lname: userData.lastName || userData.lname || "",
               photoURL: userData.photoURL || currentUser.photoURL || "/images/profile-placeholder.png",
+              avatar: userData.avatar || null, // Add support for base64 avatar
               email: userData.email || currentUser.email
             };
 
@@ -120,6 +125,17 @@ const ServicesPage = () => {
     };
   }, []);
 
+  // Get avatar source - prioritize base64 avatar over photoURL
+  const getAvatarSource = () => {
+    if (user?.avatar) {
+      return user.avatar; // Use base64 image if available
+    }
+    if (user?.photoURL) {
+      return user.photoURL; // Fallback to photoURL if available
+    }
+    return "/images/profile-placeholder.png"; // Default fallback
+  };
+
   const toggleDropdown = (service) => {
     // Close other dropdowns when opening a new one
     setSelectedService(selectedService === service ? null : service);
@@ -159,11 +175,13 @@ const ServicesPage = () => {
     }
 
     try {
+      const isLoggedIn = !!auth.currentUser;
       const docRef = await addDoc(collection(db, "roomBookings"), {
         checkIn: checkIn.toISOString(),
         checkOut: checkOut.toISOString(),
-        createdAt: new Date().toISOString(),
+        createdAt: serverTimestamp(),
         userId: user?.id || auth.currentUser?.uid || "guest",
+        isGuest: !isLoggedIn
       });
 
       navigate(
@@ -178,20 +196,22 @@ const ServicesPage = () => {
   // ✅ Handles Conference Booking Submission
   const handleConferenceBooking = async () => {
     const { startDate, endDate } = conferenceBookingDetails;
-
+  
     if (!startDate || !endDate) {
       alert("Please select a start date and end date!");
       return;
     }
-
+  
     try {
+      const isLoggedIn = !!auth.currentUser;
       const docRef = await addDoc(collection(db, "conferenceBookings"), {
         startDate: startDate.toISOString(),
         endDate: endDate.toISOString(),
-        createdAt: new Date().toISOString(),
+        createdAt: serverTimestamp(),
         userId: user?.id || auth.currentUser?.uid || "guest",
+        isGuest: !isLoggedIn // Add this field
       });
-
+  
       navigate(
         `/conference-booking?startDate=${startDate.toISOString()}&endDate=${endDate.toISOString()}`
       );
@@ -201,26 +221,6 @@ const ServicesPage = () => {
     }
   };
 
-  // Check for profile photo updates every 5 seconds
-  useEffect(() => {
-    const checkProfileUpdates = () => {
-      const sessionUser = sessionStorage.getItem('currentUser');
-      if (sessionUser) {
-        const parsedUser = JSON.parse(sessionUser);
-        // Only update if there's a difference (prevents unnecessary re-renders)
-        if (parsedUser.photoURL !== user?.photoURL ||
-          parsedUser.fname !== user?.fname ||
-          parsedUser.lname !== user?.lname) {
-          setUser(parsedUser);
-        }
-      }
-    };
-
-    const intervalId = setInterval(checkProfileUpdates, 5000);
-
-    return () => clearInterval(intervalId);
-  }, [user]);
-
   // Function to handle profile click
   const handleProfileClick = () => {
     navigate("/profile");
@@ -228,9 +228,9 @@ const ServicesPage = () => {
 
   return (
     <>
-      {/* Top Navigation Bar - Moved outside and detached from services-page */}
+      {/* Top Navigation Bar - Fixed positioning */}
       <div className="nav-container" style={{ backgroundColor: "transparent", boxShadow: "none" }}>
-      <NavMenu menuOpen={menuOpen} setMenuOpen={setMenuOpen} />
+        <NavMenu menuOpen={menuOpen} setMenuOpen={setMenuOpen} />
         <h1 className="booking-services-heading">Booking Services</h1>
 
         {/* Top-right profile section */}
@@ -238,7 +238,7 @@ const ServicesPage = () => {
           <div className="profile-bar" onClick={handleProfileClick}>
             <div className="profile-info">
               <img
-                src={user.photoURL || "/images/profile-placeholder.png"}
+                src={getAvatarSource()}
                 alt="Profile"
                 className="profile-pic"
                 onError={(e) => {
@@ -254,16 +254,20 @@ const ServicesPage = () => {
         )}
       </div>
 
-      {/* Services Page Content - Separated from nav */}
+      {/* Services Page Content */}
       <div className="services-page">
         {/* Booking Options */}
         <div className="services-grid">
           {/* ✅ Room Booking */}
           <div className="service-item" onClick={() => toggleDropdown("room")}>
             <img
-              src="/src/assets/images/IMG_0111.JPG"
+              src={roomImage || "/images/room-default.jpg"} 
               alt="Room Booking"
               className="service-image"
+              onError={(e) => {
+                e.target.onerror = null; 
+                e.target.src = "/images/room-placeholder.jpg";
+              }}
             />
             <p className="service-title">Room Booking</p>
             <div
@@ -299,14 +303,17 @@ const ServicesPage = () => {
           {/* ✅ Conference Booking */}
           <div className="service-item" onClick={() => toggleDropdown("conference")}>
             <img
-              src="/src/assets/images/pixelcut-export.jpeg"
+              src={conferenceImage || "/images/conference-default.jpg"}
               alt="Conference Booking"
               className="service-image"
+              onError={(e) => {
+                e.target.onerror = null;
+                e.target.src = "/images/conference-placeholder.jpg";
+              }}
             />
             <p className="service-title">Conference Booking</p>
             <div
-              className={`dropdown ${selectedService === "conference" ? "active" : ""
-                }`}
+              className={`dropdown ${selectedService === "conference" ? "active" : ""}`}
               onClick={(e) => e.stopPropagation()}
             >
               <label>Start Date:</label>

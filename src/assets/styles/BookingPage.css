@@ -1,7 +1,7 @@
 /* NavMenu Container */
 .nav-container {
   display: flex;
-  justify-content: flex-start;
+  justify-content: flex-end;
   padding: 1rem 2rem;
   width: 100%;
   position: absolute;
@@ -9,6 +9,7 @@
   left: 0;
   z-index: 100;
   margin-top: 4rem;
+  margin-right:25rem;
 }
 
 /* Main Booking Wrapper */
@@ -23,7 +24,28 @@
   font-family: "Poppins", sans-serif;
   position: relative;
 }
+/* Add this to your BookingPage.css file */
 
+/* Styling for read-only fields */
+input.readonly-field {
+  background-color: #f9f9f9;
+  cursor: not-allowed;
+  border: 1px solid #ddd;
+  color: #666;
+}
+
+/* Helper text styling */
+.booking-form small {
+  font-size: 0.75rem;
+  margin-top: 0.25rem;
+  display: block;
+}
+
+/* Error state for inputs */
+input.error {
+  border: 1px solid #e74c3c;
+  background-color: #ffeeee;
+}
 /* Visual section */
 .booking-illustration {
   flex: 1;

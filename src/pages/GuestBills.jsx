@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { collection, query, where, getDocs, getFirestore, doc, getDoc } from 'firebase/firestore';
+import { collection, query, where, getDocs, getFirestore, doc, getDoc, orderBy } from 'firebase/firestore';
 import { getAuth } from 'firebase/auth';
 import "../assets/styles/GuestBills.css";
 
@@ -14,6 +14,10 @@ const GuestBills = () => {
   // Format date helper function
   const formatDate = (dateString) => {
     try {
+      if (dateString instanceof Date) {
+        return dateString.toLocaleDateString();
+      }
+      
       if (dateString && typeof dateString === 'string') {
         const date = new Date(dateString);
         return date instanceof Date && !isNaN(date) 
@@ -74,31 +78,99 @@ const GuestBills = () => {
           roomCategory: data.roomCategory || "",
           numberOfGuests: data.numberOfGuests || 1,
           specialRequests: data.specialRequests || "",
-          foodOrders: [] // We'll fetch these separately if needed
+          foodOrders: [] // We'll fetch these separately
         });
       });
       
-      // TODO: Fetch user's food orders
-      // For now, this is just an example of how to fetch food orders
-      if (bookingData.length > 0) {
-        // This would be replaced by actual food order fetching logic
-        for (let i = 0; i < bookingData.length; i++) {
-          if (bookingData[i].status === "Checked in") {
-            // Example food order data - in a real app, you'd fetch this from Firestore
-            bookingData[i].foodOrders = [
-              /* In a real application, these would be fetched from a separate collection */
-              /* {
-                id: "food1",
-                date: "2025-04-05",
-                description: "Room Service - Breakfast",
-                amount: 24.99
-              } */
-            ];
+      // Fetch restaurant orders for each booking with "Checked in" status
+      for (let booking of bookingData) {
+        if (booking.status === "Checked in") {
+          try {
+            // First query for orders put on room tab
+            const tabOrdersQuery = query(
+              collection(db, "orders"),
+              where("roomNumber", "==", booking.room),
+              where("paymentMethod", "==", "Tab")
+            );
+            
+            const tabOrdersSnapshot = await getDocs(tabOrdersQuery);
+            
+            // Then query for room service orders
+            const roomServiceQuery = query(
+              collection(db, "orders"),
+              where("roomNumber", "==", booking.room),
+              where("deliveryMethod", "==", "roomService")
+            );
+            
+            const roomServiceSnapshot = await getDocs(roomServiceQuery);
+            
+            const foodOrders = [];
+            
+            // Process tab orders
+            tabOrdersSnapshot.forEach((doc) => {
+              const orderData = doc.data();
+              
+              // Format cart items for description
+              let itemsDescription = "";
+              if (orderData.cartItems && orderData.cartItems.length > 0) {
+                itemsDescription = orderData.cartItems
+                  .map(item => `${item.quantity}x ${item.name}`)
+                  .join(", ");
+              }
+              
+              foodOrders.push({
+                id: doc.id,
+                date: orderData.timestamp?.toDate() || new Date(),
+                description: `Restaurant Order - Tab (${itemsDescription})`,
+                amount: orderData.total || 0
+              });
+            });
+            
+            // Process room service orders
+            roomServiceSnapshot.forEach((doc) => {
+              const orderData = doc.data();
+              
+              // Skip if this order was already added (could be both room service and on tab)
+              if (foodOrders.some(order => order.id === doc.id)) {
+                return;
+              }
+              
+              // Format cart items for description
+              let itemsDescription = "";
+              if (orderData.cartItems && orderData.cartItems.length > 0) {
+                itemsDescription = orderData.cartItems
+                  .map(item => `${item.quantity}x ${item.name}`)
+                  .join(", ");
+              }
+              
+              foodOrders.push({
+                id: doc.id,
+                date: orderData.timestamp?.toDate() || new Date(),
+                description: `Room Service (${itemsDescription})`,
+                amount: orderData.total || 0
+              });
+            });
+            
+            // Sort orders by date (newest first)
+            foodOrders.sort((a, b) => b.date - a.date);
+            
+            booking.foodOrders = foodOrders;
+          } catch (err) {
+            console.error("Error fetching food orders for room", booking.room, err);
           }
         }
       }
       
       setBookings(bookingData);
+      
+      // Set the selected booking to the current checked-in booking if available
+      const currentBooking = bookingData.find(b => b.status === "Checked in");
+      if (currentBooking) {
+        setSelectedBooking(currentBooking);
+      } else if (bookingData.length > 0) {
+        setSelectedBooking(bookingData[0]);
+      }
+      
       setLoading(false);
     } catch (err) {
       console.error("Error fetching bookings:", err);
@@ -145,6 +217,7 @@ const GuestBills = () => {
   }
 
   const currentBooking = getCurrentBooking();
+  const activeBooking = selectedBooking || currentBooking || bookings[0];
 
   return (
     <div className="guest-bills-container">
@@ -172,24 +245,24 @@ const GuestBills = () => {
                 </div>
               )}
               
-              {/* Display active booking or first booking if none selected */}
-              {(selectedBooking || currentBooking || bookings[0]) && (
+              {/* Display active booking */}
+              {activeBooking && (
                 <div className="booking-details">
                   {/* Booking header with room info */}
                   <div className="booking-header">
                     <div className="booking-header-info">
                       <div>
                         <h3 className="booking-room-title">
-                          Room {(selectedBooking || currentBooking || bookings[0]).room}
-                          {(selectedBooking || currentBooking || bookings[0]).roomName && ` (${(selectedBooking || currentBooking || bookings[0]).roomName})`}
+                          Room {activeBooking.room}
+                          {activeBooking.roomName && ` (${activeBooking.roomName})`}
                         </h3>
                         <p className="booking-dates">
-                          Check-in: {formatDate((selectedBooking || currentBooking || bookings[0]).checkInDate)}
-                          {(selectedBooking || currentBooking || bookings[0]).checkOutDate && ` | Check-out: ${formatDate((selectedBooking || currentBooking || bookings[0]).checkOutDate)}`}
+                          Check-in: {formatDate(activeBooking.checkInDate)}
+                          {activeBooking.checkOutDate && ` | Check-out: ${formatDate(activeBooking.checkOutDate)}`}
                         </p>
                       </div>
-                      <span className={`booking-status ${(selectedBooking || currentBooking || bookings[0]).status.toLowerCase().replace(' ', '-')}`}>
-                        {(selectedBooking || currentBooking || bookings[0]).status}
+                      <span className={`booking-status ${activeBooking.status.toLowerCase().replace(' ', '-')}`}>
+                        {activeBooking.status}
                       </span>
                     </div>
                   </div>
@@ -215,43 +288,43 @@ const GuestBills = () => {
                     <div className="tab-content">
                       <div className="charges-header">
                         <h3 className="charges-title">Room Charges</h3>
-                        <span className={`payment-status ${(selectedBooking || currentBooking || bookings[0]).accommodationBalance > 0 ? 'outstanding' : 'paid'}`}>
-                          {(selectedBooking || currentBooking || bookings[0]).paymentStatus || 
-                            ((selectedBooking || currentBooking || bookings[0]).accommodationBalance > 0 ? "Outstanding" : "Paid")}
+                        <span className={`payment-status ${activeBooking.accommodationBalance > 0 ? 'outstanding' : 'paid'}`}>
+                          {activeBooking.paymentStatus || 
+                            (activeBooking.accommodationBalance > 0 ? "Outstanding" : "Paid")}
                         </span>
                       </div>
                       
                       <div className="charges-details">
                         <div className="charge-item">
                           <span>Room Type</span>
-                          <span>{(selectedBooking || currentBooking || bookings[0]).roomType}</span>
+                          <span>{activeBooking.roomType}</span>
                         </div>
                         <div className="charge-item">
                           <span>Room Category</span>
-                          <span>{(selectedBooking || currentBooking || bookings[0]).roomCategory}</span>
+                          <span>{activeBooking.roomCategory}</span>
                         </div>
                         <div className="charge-item">
                           <span>Number of Guests</span>
-                          <span>{(selectedBooking || currentBooking || bookings[0]).numberOfGuests}</span>
+                          <span>{activeBooking.numberOfGuests}</span>
                         </div>
                         <div className="charge-item">
                           <span>Payment Method</span>
-                          <span>{(selectedBooking || currentBooking || bookings[0]).paymentOption || "Not specified"}</span>
+                          <span>{activeBooking.paymentOption || "Not specified"}</span>
                         </div>
                         <div className="charge-item">
                           <span>Original Price</span>
-                          <span>${Number((selectedBooking || currentBooking || bookings[0]).originalPrice).toFixed(2)}</span>
+                          <span>${Number(activeBooking.originalPrice).toFixed(2)}</span>
                         </div>
-                        {(selectedBooking || currentBooking || bookings[0]).accommodationBalance > 0 && (
+                        {activeBooking.accommodationBalance > 0 && (
                           <div className="charge-total">
                             <span>Balance Due</span>
-                            <span>${Number((selectedBooking || currentBooking || bookings[0]).accommodationBalance).toFixed(2)}</span>
+                            <span>${Number(activeBooking.accommodationBalance).toFixed(2)}</span>
                           </div>
                         )}
                       </div>
                       
                       {/* Display payment instructions if balance due */}
-                      {(selectedBooking || currentBooking || bookings[0]).accommodationBalance > 0 && (
+                      {activeBooking.accommodationBalance > 0 && (
                         <div className="payment-instructions">
                           <h4>Payment Instructions</h4>
                           <p>Please visit the front desk to settle your room balance.</p>
@@ -273,12 +346,12 @@ const GuestBills = () => {
                     <div className="tab-content">
                       <div className="charges-header">
                         <h3 className="charges-title">Food & Beverage Charges</h3>
-                        <span className={`payment-status ${(selectedBooking || currentBooking || bookings[0]).foodOrders.length > 0 ? 'outstanding' : 'paid'}`}>
-                          {(selectedBooking || currentBooking || bookings[0]).foodOrders.length > 0 ? "Outstanding" : "No Charges"}
+                        <span className={`payment-status ${activeBooking.foodOrders.length > 0 ? 'outstanding' : 'paid'}`}>
+                          {activeBooking.foodOrders.length > 0 ? "Outstanding" : "No Charges"}
                         </span>
                       </div>
                       
-                      {(selectedBooking || currentBooking || bookings[0]).foodOrders.length > 0 ? (
+                      {activeBooking.foodOrders.length > 0 ? (
                         <div className="table-container">
                           <table className="food-orders-table">
                             <thead>
@@ -289,16 +362,16 @@ const GuestBills = () => {
                               </tr>
                             </thead>
                             <tbody>
-                              {(selectedBooking || currentBooking || bookings[0]).foodOrders.map(order => (
+                              {activeBooking.foodOrders.map(order => (
                                 <tr key={order.id}>
                                   <td>{formatDate(order.date)}</td>
                                   <td>{order.description}</td>
-                                  <td>${order.amount.toFixed(2)}</td>
+                                  <td>GHS {order.amount.toFixed(2)}</td>
                                 </tr>
                               ))}
                               <tr className="total-row">
                                 <td colSpan={2}>Total</td>
-                                <td>${calculateFoodTotal((selectedBooking || currentBooking || bookings[0]).foodOrders).toFixed(2)}</td>
+                                <td>GHS {calculateFoodTotal(activeBooking.foodOrders).toFixed(2)}</td>
                               </tr>
                             </tbody>
                           </table>
@@ -306,14 +379,14 @@ const GuestBills = () => {
                       ) : (
                         <div className="empty-food-orders">
                           <p>You currently have no food or beverage charges.</p>
-                          {(selectedBooking || currentBooking || bookings[0]).status === "Checked in" && (
+                          {activeBooking.status === "Checked in" && (
                             <p>Any room service or restaurant charges during your stay will appear here.</p>
                           )}
                         </div>
                       )}
                       
                       {/* Show download receipt button if there are charges */}
-                      {(selectedBooking || currentBooking || bookings[0]).foodOrders.length > 0 && (
+                      {activeBooking.foodOrders.length > 0 && (
                         <div className="user-actions">
                           <button className="btn btn-outline">Download Receipt</button>
                         </div>

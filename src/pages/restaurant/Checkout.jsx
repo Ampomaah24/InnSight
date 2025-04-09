@@ -25,9 +25,14 @@ import {
   FaListAlt, 
   FaArrowLeft,
   FaQuestionCircle,
-  FaExclamationCircle
+  FaExclamationCircle,
+  FaBed,
+  FaUtensils
 } from 'react-icons/fa';
 import "./Checkout.css";
+
+// Phone number validation regex
+const PHONE_REGEX = /^(\+\d{1,3})?[0-9]{9,12}$/;
 
 let persistentUserId;
 const getOrCreateUserId = () => {
@@ -77,6 +82,12 @@ const Checkout = () => {
     notes: "",
     paymentMethod: "",
     roomNumber: "",
+    deliveryMethod: "pickup", // Default to pickup
+  });
+
+  // Form validation
+  const [formErrors, setFormErrors] = useState({
+    phone: ""
   });
 
   // User profile and verification states
@@ -97,6 +108,63 @@ const Checkout = () => {
   const [orderReference, setOrderReference] = useState("");
   const [isLoading, setIsLoading] = useState(true);
 
+  const checkRoomServiceEligibility = async (roomNumber) => {
+    if (!roomNumber || !roomNumber.trim()) {
+      return false;
+    }
+    
+    try {
+      const userId = getOrCreateUserId();
+      const auth = getAuth();
+      const isAuthenticated = !!auth.currentUser;
+      
+      // Query for bookings with the given room number and 'Checked in' status
+      const guestsQuery = query(
+        collection(db, "bookings"),
+        where("roomNumber", "==", roomNumber),
+        where("status", "==", "Checked in")
+      );
+  
+      const querySnapshot = await getDocs(guestsQuery);
+  
+      if (querySnapshot.empty) {
+        return false;
+      }
+  
+      // If user is authenticated, verify they are assigned to this room
+      if (isAuthenticated) {
+        // Check if any booking for this room belongs to the current user
+        const userMatch = querySnapshot.docs.some(doc => {
+          const bookingData = doc.data();
+          return bookingData.userId === auth.currentUser.uid;
+        });
+  
+        if (!userMatch) {
+          return false;
+        }
+      } else {
+        // For guest users, we'll require verification through verifyRoomNumber
+        // instead of automatically enabling room service
+        return false;
+      }
+  
+      // All verifications passed
+      setUserProfile(prev => ({
+        ...prev,
+        isHotelGuest: true,
+        roomNumber: roomNumber,
+        isVerified: true
+      }));
+      
+      // Also set verification success
+      setVerificationSuccess(true);
+      return true;
+    } catch (error) {
+      console.error("Error checking room service eligibility:", error);
+      return false;
+    }
+  };
+
   // Calculate order totals whenever cart items or tax rates change
   useEffect(() => {
     const subtotal = cartItems.reduce(
@@ -108,16 +176,32 @@ const Checkout = () => {
     const nhil = subtotal * (taxRates.nhilRate / 100);
     const serviceTax = subtotal * (taxRates.serviceTaxRate / 100);
     
-    const total = subtotal + vat + nhil + serviceTax;
+    // Add delivery fee for room service
+    let total = subtotal + vat + nhil + serviceTax;
+    
+    // Add room service fee if applicable
+    if (formData.deliveryMethod === "roomService") {
+      // Add a 10% service charge for room delivery
+      const roomServiceFee = subtotal * 0.1;
+      total += roomServiceFee;
+    }
     
     setOrderTotals({
       subtotal,
       vat,
       nhil,
       serviceTax,
+      roomServiceFee: formData.deliveryMethod === "roomService" ? subtotal * 0.1 : 0,
       total
     });
-  }, [cartItems, taxRates]);
+  }, [cartItems, taxRates, formData.deliveryMethod]);
+
+  // Check room service eligibility when room number changes
+  useEffect(() => {
+    if (formData.roomNumber.trim()) {
+      checkRoomServiceEligibility(formData.roomNumber);
+    }
+  }, [formData.roomNumber]);
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -128,8 +212,27 @@ const Checkout = () => {
         // Prefill name and phone if user is authenticated
         const auth = getAuth();
         if (auth.currentUser) {
-          // Prefill name if available
-          if (auth.currentUser.displayName) {
+          // Check if user has a profile in Firestore
+          const userDocRef = doc(db, "users", auth.currentUser.uid);
+          const userDoc = await getDoc(userDocRef);
+          
+          if (userDoc.exists()) {
+            const userData = userDoc.data();
+            
+            // Prefill form with user data
+            setFormData(prev => ({
+              ...prev,
+              name: userData.fullName || `${userData.fname || ''} ${userData.lname || ''}`.trim() || auth.currentUser.displayName || '',
+              phone: userData.phone || '',
+              roomNumber: userData.roomNumber || ''
+            }));
+            
+            // Check room service eligibility if room number exists
+            if (userData.roomNumber) {
+              await checkRoomServiceEligibility(userData.roomNumber);
+            }
+          } else if (auth.currentUser.displayName) {
+            // Fallback to auth data if no Firestore profile
             setFormData(prev => ({
               ...prev,
               name: auth.currentUser.displayName
@@ -153,7 +256,7 @@ const Checkout = () => {
   const checkHotelGuestStatus = async (userId) => {
     try {
       // Get user profile from the database
-      const userProfileRef = doc(db, "userProfiles", userId);
+      const userProfileRef = doc(db, "users", userId);
       const userProfileSnap = await getDoc(userProfileRef);
       
       if (userProfileSnap.exists()) {
@@ -175,15 +278,26 @@ const Checkout = () => {
           if (isActive) {
             setFormData(prev => ({
               ...prev,
-              roomNumber: profileData.roomNumber
+              roomNumber: profileData.roomNumber,
+              // Enable room service option
+              deliveryMethod: "pickup" // Still default to pickup, let user choose
             }));
             setVerificationSuccess(true);
+            
+            // Also check room service eligibility
+            await checkRoomServiceEligibility(profileData.roomNumber);
           }
         }
       }
     } catch (error) {
       console.error("Error checking hotel guest status:", error);
     }
+  };
+
+  const validatePhone = (phone) => {
+    if (!phone) return "Phone number is required";
+    if (!PHONE_REGEX.test(phone)) return "Please enter a valid phone number";
+    return "";
   };
 
   const handleChange = (e) => {
@@ -200,6 +314,12 @@ const Checkout = () => {
       }
     }
     
+    // Validate phone number
+    if (name === "phone") {
+      const phoneError = validatePhone(value);
+      setFormErrors(prev => ({ ...prev, phone: phoneError }));
+    }
+    
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
@@ -213,6 +333,10 @@ const Checkout = () => {
     setVerificationError("");
   
     try {
+      const userId = getOrCreateUserId();
+      const auth = getAuth();
+      const isAuthenticated = !!auth.currentUser;
+  
       // Query for bookings with the given room number and 'Checked in' status
       const guestsQuery = query(
         collection(db, "bookings"),
@@ -222,14 +346,54 @@ const Checkout = () => {
   
       const querySnapshot = await getDocs(guestsQuery);
   
-      if (!querySnapshot.empty) {
-        // At least one checked-in guest found
-        setVerificationSuccess(true);
-        setVerificationError("");
-      } else {
+      if (querySnapshot.empty) {
         setVerificationError("No active guest found for this room number");
         setVerificationSuccess(false);
+        setUserProfile(prev => ({
+          ...prev,
+          isHotelGuest: false,
+          isVerified: false
+        }));
+        return;
       }
+  
+      // If user is authenticated, verify they are assigned to this room
+      if (isAuthenticated) {
+        // Check if any booking for this room belongs to the current user
+        const userMatch = querySnapshot.docs.some(doc => {
+          const bookingData = doc.data();
+          return bookingData.userId === auth.currentUser.uid;
+        });
+  
+        if (!userMatch) {
+          setVerificationError("This room is not assigned to your account");
+          setVerificationSuccess(false);
+          return;
+        }
+      } else {
+        // For guest users, require additional verification (phone number match)
+        // This is a basic example - a more secure approach would be needed in production
+        const bookingData = querySnapshot.docs[0].data();
+        
+        if (!formData.phone || !bookingData.phone || !bookingData.phone.includes(formData.phone.slice(-4))) {
+          setVerificationError("Please verify with the front desk to charge to this room");
+          setVerificationSuccess(false);
+          return;
+        }
+      }
+  
+      // All verifications passed
+      setVerificationSuccess(true);
+      setVerificationError("");
+      
+      // Update user profile
+      setUserProfile(prev => ({
+        ...prev,
+        isHotelGuest: true,
+        roomNumber: formData.roomNumber,
+        isVerified: true
+      }));
+  
     } catch (error) {
       console.error("Error verifying room:", error);
       setVerificationError("An error occurred while verifying the room");
@@ -239,7 +403,6 @@ const Checkout = () => {
     }
   };
   
-
   // Clear cart items after order is placed
   const clearCart = async () => {
     const userId = getOrCreateUserId();
@@ -273,6 +436,7 @@ const Checkout = () => {
         vat: orderTotals.vat,
         nhil: orderTotals.nhil,
         serviceTax: orderTotals.serviceTax,
+        roomServiceFee: orderTotals.roomServiceFee || 0,
         total: orderTotals.total,
         taxRates,
         status,
@@ -292,10 +456,26 @@ const Checkout = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     
+    // Validate form
+    const phoneError = validatePhone(formData.phone);
+    if (phoneError) {
+      setFormErrors(prev => ({ ...prev, phone: phoneError }));
+      return;
+    }
+    
     // Prevent submission if Tab is selected but not verified (unless user is already verified)
     if (formData.paymentMethod === "Tab" && !verificationSuccess) {
       alert("Please verify your room number first");
       return;
+    }
+    
+    // If Room Service is selected but room hasn't been verified yet, verify it now
+    if (formData.deliveryMethod === "roomService" && !userProfile.isHotelGuest) {
+      const isHotelGuest = await checkRoomServiceEligibility(formData.roomNumber);
+      if (!isHotelGuest) {
+        alert("Room service is only available for hotel guests with active rooms. Please verify your room number.");
+        return;
+      }
     }
     
     if (formData.paymentMethod === "MoMo") {
@@ -306,12 +486,17 @@ const Checkout = () => {
     try {
       setIsSubmitting(true);
       
-      // Set different status based on payment method
+      // Set different status based on payment method and delivery method
       let status = "Pending";
       if (formData.paymentMethod === "Tab") {
         status = "On Hotel Tab";
       } else if (formData.paymentMethod === "Cash") {
         status = "Awaiting Pickup";
+      }
+      
+      // Adjust status for room service
+      if (formData.deliveryMethod === "roomService") {
+        status = status === "Awaiting Pickup" ? "Room Service Pending" : `Room Service - ${status}`;
       }
       
       const orderId = await saveOrder(status);
@@ -329,8 +514,13 @@ const Checkout = () => {
     try {
       setIsSubmitting(true);
   
+      // Set status based on delivery method
+      const status = formData.deliveryMethod === "roomService" 
+        ? "Room Service - Paid" 
+        : "Paid";
+        
       // Save order to 'orders' collection
-      const orderId = await saveOrder("Paid", reference.reference);
+      const orderId = await saveOrder(status, reference.reference);
   
       // ✅ Save transaction to 'transactions' collection
       await addDoc(collection(db, "transactions"), {
@@ -354,7 +544,6 @@ const Checkout = () => {
     }
   };
   
-
   const paystackConfig = {
     reference: new Date().getTime().toString(),
     email: formData.phone
@@ -374,7 +563,7 @@ const Checkout = () => {
   };
 
   const goToMenu = () => {
-    navigate("/restaurant/menu");
+    navigate("/restaurant");
   };
 
   if (isLoading) {
@@ -402,7 +591,9 @@ const Checkout = () => {
               <h2 className="success-title">Order Confirmed!</h2>
               <p className="success-message">
                 Thank you for your order! Your order reference is <strong>{orderReference}</strong>. 
-                {formData.paymentMethod === "Cash" 
+                {formData.deliveryMethod === "roomService" 
+                  ? ` Your order will be delivered to Room ${formData.roomNumber} shortly.` 
+                  : formData.paymentMethod === "Cash" 
                   ? " Please present this reference when you come to pick up your order." 
                   : formData.paymentMethod === "Tab"
                   ? " Your order has been charged to your room tab."
@@ -470,6 +661,12 @@ const Checkout = () => {
                     <span>GHS {orderTotals.serviceTax.toFixed(2)}</span>
                   </div>
                 )}
+                {formData.deliveryMethod === "roomService" && (
+                  <div className="checkout-line">
+                    <span>Room Service Fee (10%)</span>
+                    <span>GHS {orderTotals.roomServiceFee.toFixed(2)}</span>
+                  </div>
+                )}
                 <hr />
                 <div className="checkout-total">
                   <strong>Total</strong>
@@ -480,7 +677,7 @@ const Checkout = () => {
 
             {/* Customer Details */}
             <div className="checkout-right">
-              <h2 className="section-heading">Pickup Details</h2>
+              <h2 className="section-heading">Order Details</h2>
               <form onSubmit={handleSubmit} className="checkout-form">
                 <label>
                   Full Name
@@ -502,47 +699,144 @@ const Checkout = () => {
                     onChange={handleChange}
                     required
                     placeholder="Enter your phone number"
+                    className={formErrors.phone ? "error" : ""}
                   />
+                  {formErrors.phone && <span className="error-message">{formErrors.phone}</span>}
                 </label>
-                <label>
-                  Pickup Notes (Optional)
-                  <textarea
-                    name="notes"
-                    value={formData.notes}
-                    onChange={handleChange}
-                    placeholder="e.g. I'll be there by 2 PM"
-                    rows="3"
-                  ></textarea>
-                </label>
-
-                {/* Payment Method Selection */}
+                
+                {/* Room Number input to enable room service eligibility checking */}
+                {/* {!userProfile.isHotelGuest && (
+                  <label>
+                    <div className="field-tooltip">
+                      Room Number
+                      <span className="tooltip-icon">
+                        <FaQuestionCircle />
+                        <span className="tooltip-text">
+                          Enter your room number to enable room service option.
+                        </span>
+                      </span>
+                    </div>
+                    <input
+                      type="text"
+                      name="roomNumber"
+                      value={formData.roomNumber}
+                      onChange={handleChange}
+                      placeholder="Enter your room number to enable room service"
+                    />
+                  </label>
+                )} */}
+                
+                {/* Delivery Method Selection */}
                 <label>
                   <div className="field-tooltip">
-                    Payment Method
+                    Delivery Method
                     <span className="tooltip-icon">
                       <FaQuestionCircle />
                       <span className="tooltip-text">
                         {userProfile.isHotelGuest 
-                          ? "As a hotel guest, you can charge to your room, or pay with Mobile Money or cash at pickup."
-                          : "Hotel guests can charge to their room, or you can pay with Mobile Money or cash at pickup."}
+                          ? "As a hotel guest, you can have your order delivered to your room, or pick it up yourself."
+                          : "Choose pickup to collect your order from the restaurant."}
                       </span>
                     </span>
                   </div>
-                  <select
-                    name="paymentMethod"
-                    value={formData.paymentMethod}
-                    onChange={handleChange}
-                    required
-                  >
-                    <option value="">-- Select Payment Method --</option>
-                    <option value="Tab">Put on Hotel Tab</option>
-                    <option value="MoMo">Mobile Money</option>
-                    <option value="Cash">Cash on Pickup</option>
-                  </select>
+                  <div className="delivery-method-options">
+                    <div 
+                      className={`delivery-option ${formData.deliveryMethod === "pickup" ? "selected" : ""}`}
+                      onClick={() => handleChange({ target: { name: "deliveryMethod", value: "pickup" } })}
+                    >
+                      <FaUtensils className="delivery-icon" />
+                      <div className="delivery-option-text">
+                        <span className="delivery-option-title">Pickup</span>
+                        <span className="delivery-option-desc">Collect from restaurant</span>
+                      </div>
+                    </div>
+                    
+                    <div 
+                      className={`delivery-option ${formData.deliveryMethod === "roomService" ? "selected" : ""}`}
+                      onClick={() => {
+                        // Always allow selection, but verify when submitting
+                        handleChange({ target: { name: "deliveryMethod", value: "roomService" } });
+                        // If room service is selected, automatically set payment method to Tab
+                        handleChange({ target: { name: "paymentMethod", value: "Tab" } });
+                      }}
+                    >
+                      <FaBed className="delivery-icon" />
+                      <div className="delivery-option-text">
+                        <span className="delivery-option-title">Room Service</span>
+                        <span className="delivery-option-desc">
+                          {userProfile.isHotelGuest 
+                            ? "Deliver to your room" 
+                            : "Hotel guests only"}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
                 </label>
                 
-                {/* Room Number field and verification (only if Hotel Tab is selected) */}
-                {formData.paymentMethod === "Tab" && (
+                {formData.deliveryMethod === "pickup" && (
+                  <label>
+                    Pickup Notes (Optional)
+                    <textarea
+                      name="notes"
+                      value={formData.notes}
+                      onChange={handleChange}
+                      placeholder="e.g. I'll be there by 2 PM"
+                      rows="3"
+                    ></textarea>
+                  </label>
+                )}
+                
+                {formData.deliveryMethod === "roomService" && (
+                  <label>
+                    Special Instructions (Optional)
+                    <textarea
+                      name="notes"
+                      value={formData.notes}
+                      onChange={handleChange}
+                      placeholder="e.g. Please knock loudly, I might be in the shower"
+                      rows="3"
+                    ></textarea>
+                  </label>
+                )}
+
+                {/* Payment Method Selection - Only show if delivery method is pickup */}
+                {formData.deliveryMethod === "pickup" && (
+                  <label>
+                    <div className="field-tooltip">
+                      Payment Method
+                      <span className="tooltip-icon">
+                        <FaQuestionCircle />
+                        <span className="tooltip-text">
+                          {userProfile.isHotelGuest 
+                            ? "As a hotel guest, you can charge to your room, or pay with Mobile Money or cash at pickup."
+                            : "Hotel guests can charge to their room, or you can pay with Mobile Money or cash at pickup."}
+                        </span>
+                      </span>
+                    </div>
+                    <select
+                      name="paymentMethod"
+                      value={formData.paymentMethod}
+                      onChange={handleChange}
+                      required
+                    >
+                      <option value="">-- Select Payment Method --</option>
+                      <option value="Tab">Put on Hotel Tab</option>
+                      <option value="MoMo">Mobile Money</option>
+                      <option value="Cash">Cash on Pickup</option>
+                    </select>
+                  </label>
+                )}
+                
+                {/* For room service, payment is always on hotel tab */}
+                {formData.deliveryMethod === "roomService" && (
+                  <div className="room-service-payment-note">
+                    <FaHotel style={{ marginRight: '8px' }} />
+                    <span>Room service will be charged to your hotel room tab</span>
+                  </div>
+                )}
+                
+                {/* Room Number field and verification (for Hotel Tab or Room Service) */}
+                {(formData.paymentMethod === "Tab" || formData.deliveryMethod === "roomService") && (
                   <div className="room-number-field">
                     <label>
                       <div className="field-tooltip">
@@ -604,7 +898,8 @@ const Checkout = () => {
                 {formData.paymentMethod === "MoMo" &&
                 formData.phone &&
                 formData.name &&
-                orderTotals.total > 0 ? (
+                orderTotals.total > 0 &&
+                !formErrors.phone ? (
                   <>
                     <PaystackButton
                       className="confirm-btn"
@@ -626,13 +921,18 @@ const Checkout = () => {
                       isSubmitting || 
                       !formData.name || 
                       !formData.phone || 
-                      !formData.paymentMethod || 
-                      (formData.paymentMethod === "Tab" && !verificationSuccess)
+                      formErrors.phone ||
+                      (formData.deliveryMethod === "pickup" && !formData.paymentMethod) || 
+                      ((formData.paymentMethod === "Tab" || formData.deliveryMethod === "roomService") && !verificationSuccess)
                     }
                   >
                     {isSubmitting ? (
                       <>
                         <div className="spinner" style={{ width: '1.5rem', height: '1.5rem' }} /> Processing...
+                      </>
+                    ) : formData.deliveryMethod === "roomService" ? (
+                      <>
+                        <FaBed /> Order Room Service
                       </>
                     ) : formData.paymentMethod === "Tab" ? (
                       <>

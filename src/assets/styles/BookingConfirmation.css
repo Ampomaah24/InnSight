@@ -77,6 +77,11 @@
   color: #555;
 }
 
+.booking-details .deposit-info {
+  color: #e67e22;
+  font-weight: 500;
+}
+
 .loading-spinner {
   width: 40px;
   height: 40px;
@@ -93,6 +98,13 @@
   }
 }
 
+.action-buttons {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
 button {
   background-color: #e67e22;
   color: white;
@@ -102,11 +114,12 @@ button {
   font-size: 1rem;
   cursor: pointer;
   transition: background-color 0.3s;
-  margin: 0 0.5rem;
+  flex: 1;
+  max-width: 200px;
 }
 
 button:hover {
-  background-color: #e49046;
+  background-color: #d35400;
 }
 
 button:focus {
@@ -120,8 +133,56 @@ button:focus {
     width: 95%;
   }
   
+  .action-buttons {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  
   button {
     width: 100%;
-    margin: 0.5rem 0;
+    max-width: none;
   }
+}
+
+/* Payment processing overlay and modal - add to BookingPage.css */
+.payment-processing-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.6);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.payment-processing-modal {
+  background-color: white;
+  padding: 2rem;
+  border-radius: 8px;
+  text-align: center;
+  max-width: 90%;
+  width: 400px;
+}
+
+.payment-processing-modal .spinner {
+  margin: 0 auto 1rem;
+  width: 40px;
+  height: 40px;
+  border: 4px solid rgba(0, 0, 0, 0.1);
+  border-radius: 50%;
+  border-left-color: #e67e22;
+  animation: spin 1s linear infinite;
+}
+
+.payment-processing-modal p {
+  margin-bottom: 0.5rem;
+  color: #333;
+}
+
+.payment-processing-modal .small {
+  font-size: 0.8rem;
+  color: #666;
 }

@@ -13,132 +13,69 @@ import { useNavigate } from "react-router-dom";
 import "../assets/styles/LoginPage.css";
 
 const LoginPage = () => {
-  // State variables for form inputs and UI feedback
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
-  const [rememberMe, setRememberMe] = useState(false);
   const [error, setError] = useState("");
   const [message, setMessage] = useState("");
   const [showResetPrompt, setShowResetPrompt] = useState(false);
   const [resetEmail, setResetEmail] = useState("");
   const [confirmResetEmail, setConfirmResetEmail] = useState("");
   const [emailsMismatch, setEmailsMismatch] = useState(false);
-  const [sessionTimeout, setSessionTimeout] = useState(null);
-  const [lastActivity, setLastActivity] = useState(Date.now());
-  const TIMEOUT_DURATION = 20 * 60 * 1000; // 20 minutes in milliseconds
+  const [rememberMe, setRememberMe] = useState(false);
+  const [timeoutOccurred, setTimeoutOccurred] = useState(false);
 
   const navigate = useNavigate();
 
-  // Reset the inactivity timer on user interaction
   useEffect(() => {
-    const resetInactivityTimer = () => {
-      setLastActivity(Date.now());
-    };
-
-    // Add event listeners for user activity
-    window.addEventListener("mousemove", resetInactivityTimer);
-    window.addEventListener("keydown", resetInactivityTimer);
-    window.addEventListener("click", resetInactivityTimer);
-    window.addEventListener("scroll", resetInactivityTimer);
-
-    return () => {
-      // Clean up event listeners
-      window.removeEventListener("mousemove", resetInactivityTimer);
-      window.removeEventListener("keydown", resetInactivityTimer);
-      window.removeEventListener("click", resetInactivityTimer);
-      window.removeEventListener("scroll", resetInactivityTimer);
-    };
+    // Check if the user was redirected due to session timeout
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('timeout') === 'true') {
+      setTimeoutOccurred(true);
+      // Remove the parameter to prevent showing the message on refresh
+      window.history.replaceState({}, document.title, window.location.pathname);
+    }
   }, []);
 
-  // Check for session timeout
-  useEffect(() => {
-    const checkSessionTimeout = () => {
-      const currentTime = Date.now();
-      const timeElapsed = currentTime - lastActivity;
-
-      if (timeElapsed >= TIMEOUT_DURATION && auth.currentUser) {
-        // Log out the user if they've been inactive
-        auth.signOut();
-        setError("Your session has expired due to inactivity.");
-        clearTimeout(sessionTimeout);
-      } else {
-        // Schedule next check
-        const timeoutId = setTimeout(checkSessionTimeout, 10000); // Check every 10 seconds
-        setSessionTimeout(timeoutId);
-      }
-    };
-
-    const timeoutId = setTimeout(checkSessionTimeout, 10000);
-    setSessionTimeout(timeoutId);
-
-    return () => {
-      clearTimeout(sessionTimeout);
-    };
-  }, [lastActivity]);
-
-  // Input sanitization function
+  // ✨ Helper functions
   const sanitizeInput = (input) => {
     if (!input) return "";
-    
-    // Remove potentially dangerous characters and trim whitespace
-    return input
-      .trim()
-      .replace(/[<>]/g, "") // Remove < and > to prevent HTML injection
-      .replace(/javascript:/gi, "") // Remove javascript: to prevent JavaScript injection
-      .replace(/on\w+=/gi, ""); // Remove event handlers like onclick=
+    return input.trim().replace(/[<>]/g, "").replace(/javascript:/gi, "").replace(/on\w+=/gi, "");
   };
 
-  // Email validation function
-  const isValidEmail = (email) => {
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return emailRegex.test(email);
-  };
+  const isValidEmail = (email) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 
-  // Handles login with Firebase Auth and route redirection based on user role
   const handleLogin = async (e) => {
     e.preventDefault();
     setError("");
     setMessage("");
 
-    // Sanitize inputs
     const sanitizedEmail = sanitizeInput(email);
-    
-    // Validate email format
     if (!isValidEmail(sanitizedEmail)) {
       setError("Please enter a valid email address.");
       return;
     }
 
     try {
-      // Set persistence type based on "Remember Me" selection
-      const persistenceType = rememberMe
-        ? browserLocalPersistence
-        : browserSessionPersistence;
-
+      const persistenceType = rememberMe ? browserLocalPersistence : browserSessionPersistence;
       await setPersistence(auth, persistenceType);
-
-      // Attempt to sign in with sanitized email and password
       const userCredential = await signInWithEmailAndPassword(auth, sanitizedEmail, password);
       const user = userCredential.user;
-
-      // Retrieve user document from Firestore to check role
       const userDoc = await getDoc(doc(db, "users", user.uid));
 
       if (userDoc.exists()) {
         const userData = userDoc.data();
-
-        // Reset inactivity timer on successful login
-        setLastActivity(Date.now());
-
-        // Navigate to appropriate dashboard based on user role
-        if (userData.role === "admin" || userData.role === "superadmin") {
-          navigate("/admin-dashboard");
+        
+        // Check for stored redirect path from session timeout
+        const redirectPath = localStorage.getItem('redirectAfterLogin');
+        if (redirectPath) {
+          localStorage.removeItem('redirectAfterLogin');
+          navigate(redirectPath);
         } else {
-          navigate("/services");
+          // Use standard navigation
+          navigate(userData.role === "admin" || userData.role === "superadmin" ? "/admin-dashboard" : "/services");
         }
       } else {
-        console.log("No user role found.");
         setError("User role not found. Please contact support.");
       }
     } catch (err) {
@@ -147,7 +84,6 @@ const LoginPage = () => {
     }
   };
 
-  // Sends password reset email using Firebase Auth with double confirmation
   const handleResetPassword = async () => {
     setError("");
     setMessage("");
@@ -156,20 +92,14 @@ const LoginPage = () => {
     const sanitizedEmail = sanitizeInput(resetEmail);
     const sanitizedConfirmEmail = sanitizeInput(confirmResetEmail);
 
-    if (!sanitizedEmail) {
-      setError("Please enter your email address to reset your password.");
-      return;
-    }
-
-    if (!isValidEmail(sanitizedEmail)) {
+    if (!sanitizedEmail || !isValidEmail(sanitizedEmail)) {
       setError("Please enter a valid email address.");
       return;
     }
 
-    // Check if emails match for double confirmation
     if (sanitizedEmail !== sanitizedConfirmEmail) {
       setEmailsMismatch(true);
-      setError("Email addresses do not match. Please verify and try again.");
+      setError("Email addresses do not match.");
       return;
     }
 
@@ -181,35 +111,7 @@ const LoginPage = () => {
       setConfirmResetEmail("");
     } catch (err) {
       console.error("Reset error:", err.message);
-      setError("Failed to send reset email. Make sure the email is correct.");
-    }
-  };
-
-  // Handle email input change with sanitization
-  const handleEmailChange = (e) => {
-    const value = e.target.value;
-    setEmail(value);
-  };
-
-  // Handle reset email input change with sanitization
-  const handleResetEmailChange = (e) => {
-    const value = e.target.value;
-    setResetEmail(value);
-    
-    // Clear mismatch error when user types
-    if (emailsMismatch) {
-      setEmailsMismatch(false);
-    }
-  };
-
-  // Handle confirm reset email input change with sanitization
-  const handleConfirmResetEmailChange = (e) => {
-    const value = e.target.value;
-    setConfirmResetEmail(value);
-    
-    // Clear mismatch error when user types
-    if (emailsMismatch) {
-      setEmailsMismatch(false);
+      setError("Failed to send reset email.");
     }
   };
 
@@ -237,6 +139,13 @@ const LoginPage = () => {
           <div className="login-box">
             <div className="corner-bl"></div>
 
+            {timeoutOccurred && (
+              <div className="timeout-message">
+                <FaExclamationTriangle className="error-icon" />
+                <p>Your session expired due to inactivity. Please log in again.</p>
+              </div>
+            )}
+
             <form onSubmit={handleLogin}>
               {error && (
                 <div className="error-message">
@@ -252,9 +161,8 @@ const LoginPage = () => {
                   type="email"
                   placeholder="Email"
                   value={email}
-                  onChange={handleEmailChange}
+                  onChange={(e) => setEmail(e.target.value)}
                   required
-                  aria-label="Email"
                 />
               </div>
 
@@ -266,96 +174,78 @@ const LoginPage = () => {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
-                  aria-label="Password"
                   autoComplete="current-password"
                 />
                 <span
                   className="toggle-password"
                   onClick={() => setShowPassword(!showPassword)}
-                  role="button"
-                  aria-label={showPassword ? "Hide password" : "Show password"}
-                  tabIndex="0"
                 >
                   {showPassword ? <FaEyeSlash /> : <FaEye />}
                 </span>
               </div>
 
               <div className="options">
-{/*                 <div className="remember-me">
+                <label className="remember-me">
                   <input
                     type="checkbox"
-                    id="remember-me"
                     checked={rememberMe}
-                    onChange={() => setRememberMe(!rememberMe)}
+                    onChange={(e) => setRememberMe(e.target.checked)}
                   />
-                  <label htmlFor="remember-me">Remember me</label>
-                </div> */}
+                  Remember me
+                </label>
                 <span
                   className="forgot-password"
                   onClick={() => setShowResetPrompt(true)}
-                  role="button"
-                  tabIndex="0"
                 >
                   Forgot Password?
                 </span>
               </div>
 
-              <button type="submit" className="login-button">
-                Sign In
-              </button>
+              <button type="submit" className="login-button">Sign In</button>
             </form>
 
             {showResetPrompt && (
               <div className="reset-dialog">
                 <h3>Reset Password</h3>
-                {error && emailsMismatch && (
+                {emailsMismatch && (
                   <div className="error-message">
                     <FaExclamationTriangle className="error-icon" />
                     <p>{error}</p>
                   </div>
                 )}
-
                 <div className="input-group">
                   <span className="input-icon"><FaUser /></span>
                   <input
                     type="email"
                     placeholder="Enter your email"
                     value={resetEmail}
-                    onChange={handleResetEmailChange}
+                    onChange={(e) => {
+                      setResetEmail(e.target.value);
+                      setEmailsMismatch(false);
+                    }}
                     required
-                    aria-label="Reset email"
                   />
                 </div>
-
                 <div className="input-group">
                   <span className="input-icon"><FaUser /></span>
                   <input
                     type="email"
                     placeholder="Confirm your email"
                     value={confirmResetEmail}
-                    onChange={handleConfirmResetEmailChange}
+                    onChange={(e) => {
+                      setConfirmResetEmail(e.target.value);
+                      setEmailsMismatch(false);
+                    }}
                     required
-                    aria-label="Confirm reset email"
                     className={emailsMismatch ? "input-error" : ""}
                   />
                 </div>
 
                 <div className="reset-actions">
-                  <button
-                    className="cancel"
-                    onClick={() => {
-                      setShowResetPrompt(false);
-                      setResetEmail("");
-                      setConfirmResetEmail("");
-                      setEmailsMismatch(false);
-                    }}
-                  >
+                  <button className="cancel" onClick={() => setShowResetPrompt(false)}>
                     Cancel
                   </button>
-                  <button
-                    className="submit"
-                    onClick={handleResetPassword}
-                  >
+                  <button className="submit" onClick={handleResetPassword}>
                     Reset
                   </button>
                 </div>

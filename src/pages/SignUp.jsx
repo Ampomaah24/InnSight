@@ -183,15 +183,30 @@ export default function SignUp() {
   return (
     <div className="signup-container">
       <div className="signup-image"></div>
+                 {/* Success message display */}
+  {successMessage && (
+    <p className="success-message" role="status">
+      {successMessage}
+    </p>
+  )}
+
+  {/* Error message display */}
+  {error && (
+    <p className="error-message" role="alert">
+      {error}
+    </p>
+  )}
       <div className="signup-form-container">
         <div className="signup-form">
+ 
+
           <h2 className="signup-title">Sign Up</h2>
           
           {/* Error message display */}
           {error && <p className="error-message" role="alert">{error}</p>}
           
           {/* Success message display */}
-          {successMessage && <p className="success-message" role="status">{successMessage}</p>}
+          {/* {successMessage && <p className="success-message" role="status">{successMessage}</p>} */}
           
           <form onSubmit={handleSubmit} className="signup-form-fields" noValidate>
             <div>
