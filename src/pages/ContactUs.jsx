@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { db } from "../config/firebase";
-import { collection, addDoc, serverTimestamp } from "firebase/firestore";
+import { collection, addDoc, serverTimestamp, updateDoc, doc } from "firebase/firestore";
+import emailjs from '@emailjs/browser';
 import NavMenu from "../components/NavMenu";
 import "../assets/styles/ContactUs.css";
 
@@ -73,17 +74,46 @@ const ContactUs = () => {
     setSubmitError("");
     
     try {
-      // Add the message to Firestore
-      await addDoc(collection(db, "contactMessages"), {
+      // 1. Add the message to Firestore
+      const docRef = await addDoc(collection(db, "contactMessages"), {
         ...formData,
         status: "New",
         createdAt: serverTimestamp(),
       });
       
-      // Show success message
+      // 2. Prepare data for EmailJS
+      const templateParams = {
+        from_name: formData.name,
+        from_email: formData.email,
+        from_phone: formData.phone || "Not provided",
+        subject: formData.subject,
+        message: formData.message,
+        reply_to: formData.email,
+        reference_id: docRef.id
+      };
+      
+      // 3. Send email using EmailJS
+      const response = await emailjs.send(
+        'service_pgx5uqi', // Your EmailJS service ID
+        'template_hj63f35', // Your EmailJS template ID
+        templateParams,
+        'OQbDGwLva7RM5VxU5' // Your EmailJS public key
+      );
+      
+      if (response.status !== 200) {
+        throw new Error("Email service failed to send the notification");
+      }
+      
+      // 4. Update Firestore document to mark email as sent
+      await updateDoc(doc(db, "contactMessages", docRef.id), {
+        emailSent: true,
+        emailSentAt: serverTimestamp()
+      });
+      
+      // 5. Show success message
       setSubmitSuccess(true);
       
-      // Reset form
+      // 6. Reset form
       setFormData({
         name: "",
         email: "",
@@ -92,19 +122,27 @@ const ContactUs = () => {
         message: "",
       });
       
-      // Hide success message after 5 seconds
+      // 7. Hide success message after 5 seconds
       setTimeout(() => {
         setSubmitSuccess(false);
       }, 5000);
       
     } catch (error) {
       console.error("Error submitting contact form:", error);
-      setSubmitError("There was an error submitting your message. Please try again later.");
+      
+      // More specific error messages based on error type
+      if (error.code && error.code.includes("permission-denied")) {
+        setSubmitError("Sorry, we're experiencing permission issues with our database. Our team has been notified.");
+      } else if (error.message && error.message.includes("email")) {
+        setSubmitError("There was an error sending the notification email. Please try again later.");
+      } else {
+        setSubmitError("There was an error submitting your message. Please try again later.");
+      }
+      
     } finally {
       setIsSubmitting(false);
     }
   };
-
   return (
     <div className="contact-page">
       {/* NavMenu in top left */}
@@ -148,7 +186,7 @@ const ContactUs = () => {
               <div className="contact-icon">✉️</div>
               <div className="contact-text">
                 <h3>Email</h3>
-                <p>info@yourhotelemailaddress.com</p>
+                <p>juniorantwi95@gmail.com</p>
               </div>
             </div>
             
@@ -256,30 +294,29 @@ const ContactUs = () => {
       <div className="map-container">
         <h2>Find Us</h2>
         <div className="map-wrapper">
-      
-<iframe
-  src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3970.4999696256787!2d-0.14757002406741038!3d5.640550394340682!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0xfdf84aea294a0b9%3A0x6b7445b9a4c59f14!2sAmpomaah%20Tourist%20Hotel!5e0!3m2!1sen!2sgh!4v1743924434929!5m2!1sen!2sgh"
-  width="100%"
-  height="450"
-  style={{ border: 0 }}
-  allowFullScreen=""
-  loading="lazy"
-  referrerPolicy="no-referrer-when-downgrade"
-  title="Hotel Location"
-></iframe>
+          <iframe
+            src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3970.4999696256787!2d-0.14757002406741038!3d5.640550394340682!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0xfdf84aea294a0b9%3A0x6b7445b9a4c59f14!2sAmpomaah%20Tourist%20Hotel!5e0!3m2!1sen!2sgh!4v1743924434929!5m2!1sen!2sgh"
+            width="100%"
+            height="450"
+            style={{ border: 0 }}
+            allowFullScreen=""
+            loading="lazy"
+            referrerPolicy="no-referrer-when-downgrade"
+            title="Hotel Location"
+          ></iframe>
         </div>
       </div>
 
       <div className="map-actions">
-  <a 
-    href={`https://maps.app.goo.gl/TQzqwQv3tusbQG3B9`} 
-    target="_blank" 
-    rel="noopener noreferrer"
-    className="directions-link"
-  >
-    Get Directions →
-  </a>
-</div>
+        <a 
+          href={`https://maps.app.goo.gl/TQzqwQv3tusbQG3B9`} 
+          target="_blank" 
+          rel="noopener noreferrer"
+          className="directions-link"
+        >
+          Get Directions →
+        </a>
+      </div>
     </div>
   );
 };

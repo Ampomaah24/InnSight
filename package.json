@@ -20,6 +20,7 @@
     "firebase-admin": "^13.2.0",
     "jspdf": "^3.0.1",
     "jspdf-autotable": "^5.0.2",
+    "nodemailer": "^6.10.0",
     "react": "^18.3.1",
     "react-apexcharts": "^1.7.0",
     "react-datepicker": "^8.0.0",

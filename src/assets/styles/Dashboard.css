@@ -12,7 +12,7 @@
   width: 250px;
   height: 100vh;
   background: white;
-  padding: 1.5rem 1rem;
+  padding: 1.5rem 0;
   display: flex;
   flex-direction: column;
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.05);
@@ -21,115 +21,74 @@
   top: 0;
   overflow-y: auto;
   z-index: 100;
+  transform: translateX(0);
+  transition: transform 0.3s ease;
 }
 
 .sidebar-logo {
-  font-size: 1.5rem;
+  padding: 0 1.5rem 1.5rem;
+  margin-bottom: 1rem;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.sidebar-logo h2 {
+  color: #DB6C24;
+  font-size: 1.75rem;
   font-weight: 700;
-  color: #DB6C24; /* Ampomaah orange color */
-  margin-bottom: 2rem;
-  text-align: center;
+  margin: 0;
 }
 
 .sidebar-menu {
   list-style: none;
-  padding: 0;
+  padding: 0 1rem;
   margin: 0;
+  flex: 1;
 }
 
 .sidebar-item {
+  margin-bottom: 0.5rem;
+  border-radius: 0.5rem;
+}
+
+.sidebar-item a {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
-  padding: 0.8rem 1rem;
-  font-size: 0.95rem;
+  padding: 0.85rem 1rem;
   color: #555;
+  text-decoration: none;
   font-weight: 500;
   border-radius: 0.5rem;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  margin-bottom: 0.5rem;
+  transition: background-color 0.2s ease, color 0.2s ease;
 }
 
-.sidebar-item:hover {
-  background: #f8f0ec; /* Light orange background on hover */
-  color: #DB6C24; /* Orange text on hover */
+.sidebar-item:hover a {
+  background: #f8f0ec;
+  color: #DB6C24;
 }
 
-.sidebar-item.active {
+.sidebar-item.active a {
   background: #f8f0ec;
   color: #DB6C24;
   font-weight: 600;
 }
 
 .sidebar-icon {
-  color: #777;
-  font-size: 1.2rem;
-}
-
-.sidebar-item:hover .sidebar-icon,
-.sidebar-item.active .sidebar-icon {
-  color: #DB6C24;
+  margin-right: 0.75rem;
+  font-size: 1.1rem;
+  width: 1.5rem;
 }
 
 /* ======= Main Content Area ======= */
 .main-content {
   flex: 1;
   margin-left: 250px;
-  padding: 1.5rem;
+  padding: 1.25rem 1.5rem;
   max-width: 1400px;
-}
-
-/* ======= Navbar Styling ======= */
-.navbar {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  background: white;
-  padding: 0.75rem 1.5rem;
-  width: calc(100% - 250px);
-  position: fixed;
-  top: 0;
-  right: 0;
-  height: 60px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.04);
-  z-index: 50;
-}
-
-.navbar-left {
-  font-weight: 600;
-  color: #333;
-}
-
-.navbar-right {
-  display: flex;
-  gap: 1rem;
-  align-items: center;
-}
-
-.user-profile {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  cursor: pointer;
-}
-
-.profile-avatar {
-  width: 36px;
-  height: 36px;
-  border-radius: 50%;
-  background: #DB6C24;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: white;
-  font-weight: 600;
-  font-size: 0.85rem;
+  width: 100%;
 }
 
 /* ======= Dashboard Header ======= */
 .dashboard-header {
-  margin-top: 70px;
   margin-bottom: 1.5rem;
 }
 
@@ -137,73 +96,144 @@
   font-size: 1.75rem;
   font-weight: 700;
   color: #333;
-  margin-bottom: 0.5rem;
+  margin-bottom: 0.25rem;
+  position: relative;
+  display: inline-block;
+}
+
+.dashboard-title::after {
+  content: '';
+  position: absolute;
+  bottom: -6px;
+  left: 0;
+  width: 40px;
+  height: 3px;
+  background: #DB6C24;
+  border-radius: 2px;
 }
 
 .dashboard-subtitle {
   font-size: 1rem;
   color: #666;
+  margin-top: 1rem;
   margin-bottom: 1.5rem;
 }
 
 /* ======= Summary Cards ======= */
 .summary-cards {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-  gap: 1.5rem;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
   margin-bottom: 2rem;
 }
 
 .card {
   background: white;
-  padding: 1.5rem;
-  border-radius: 0.75rem;
+  padding: 1.25rem;
+  border-radius: 0.5rem;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
   text-align: center;
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
   cursor: pointer;
-  border-top: 4px solid #DB6C24; /* Orange accent border */
+  border-top: 3px solid #DB6C24;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  transition: transform 0.2s ease;
+  will-change: transform;
 }
 
 .card:hover {
   transform: translateY(-5px);
-  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
 }
 
 .card-title {
   font-size: 0.9rem;
   color: #666;
-  margin-bottom: 0.75rem;
+  margin-bottom: 1rem;
 }
 
 .card-value {
-  font-size: 2rem;
+  font-size: 2.25rem;
   font-weight: 700;
   color: #333;
   margin: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 45px; /* Ensure consistent height during loading */
+}
+
+/* ======= Loading State Styling ======= */
+.loading-dots {
+  display: inline-block;
+}
+
+.loading-dots span {
+  animation: loadingDots 1.4s infinite;
+  display: inline-block;
+  opacity: 0;
+  font-size: 2rem;
+  line-height: 1;
+  margin: 0 2px;
+}
+
+.loading-dots span:nth-child(2) {
+  animation-delay: 0.2s;
+}
+
+.loading-dots span:nth-child(3) {
+  animation-delay: 0.4s;
+}
+
+@keyframes loadingDots {
+  0% { opacity: 0; }
+  50% { opacity: 1; }
+  100% { opacity: 0; }
+}
+
+/* ======= Occupancy Bar ======= */
+.occupancy-bar {
+  height: 6px;
+  background-color: #f1f1f1;
+  border-radius: 4px;
+  margin-top: 0.5rem;
+  overflow: hidden;
+}
+
+.occupancy-fill {
+  height: 100%;
+  background-color: #DB6C24;
+  border-radius: 4px;
+  transition: width 0.5s ease;
+  min-width: 1%; /* Ensures the bar is always visible when value > 0 */
 }
 
 /* ======= Table Styling ======= */
 .table-container {
   background: white;
   padding: 1.5rem;
-  border-radius: 0.75rem;
+  border-radius: 0.5rem;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
   overflow: hidden;
+  margin-top: 1.5rem;
 }
 
 .table-title {
   font-size: 1.25rem;
   font-weight: 600;
   color: #333;
-  margin-bottom: 1.5rem;
+  margin-bottom: 1rem;
   padding-bottom: 0.75rem;
-  border-bottom: 1px solid #eee;
+  text-align: center;
+  position: relative;
+}
+
+.table-title::after {
+  display: none;
 }
 
 .table-responsive {
   overflow-x: auto;
-  margin: 0 -1px;
 }
 
 .reservations-table {
@@ -213,17 +243,20 @@
 }
 
 .reservations-table th {
-  background: #f5f7fa;
-  font-weight: 600;
+  background: #f8f9fa;
+  font-weight: 500;
   color: #555;
   text-align: left;
-  padding: 1rem;
+  padding: 0.85rem 1rem;
   border-bottom: 1px solid #eee;
   font-size: 0.9rem;
+  position: sticky;
+  top: 0;
+  z-index: 10;
 }
 
 .reservations-table td {
-  padding: 1rem;
+  padding: 0.75rem 1rem;
   border-bottom: 1px solid #eee;
   color: #444;
   font-size: 0.95rem;
@@ -245,8 +278,8 @@
 /* Status Badges */
 .status {
   display: inline-block;
-  padding: 0.4rem 0.8rem;
-  border-radius: 2rem;
+  padding: 0.35rem 0.7rem;
+  border-radius: 1.25rem;
   font-size: 0.8rem;
   font-weight: 600;
   text-align: center;
@@ -291,7 +324,7 @@
   border-radius: 0.5rem;
   font-weight: 600;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: background-color 0.2s ease, color 0.2s ease;
 }
 
 .view-more-btn:hover {
@@ -312,111 +345,47 @@
   color: #666;
   font-style: italic;
 }
-/* Add these styles to your Dashboard.css file */
 
-/* Sidebar Container */
-.sidebar {
-  width: 250px;
-  height: 100vh;
-  background: white;
-  padding: 1.5rem 0;
-  display: flex;
-  flex-direction: column;
-  box-shadow: 0 0 15px rgba(0, 0, 0, 0.05);
-  position: fixed;
-  left: 0;
-  top: 0;
-  overflow-y: auto;
-  z-index: 100;
-  transition: all 0.3s ease;
+/* ======= Mobile Responsiveness ======= */
+@media (max-width: 992px) {
+  .sidebar {
+    width: 220px;
+  }
+  
+  .main-content {
+    margin-left: 220px;
+  }
+  
+  .summary-cards {
+    grid-template-columns: repeat(3, 1fr);
+  }
 }
 
-/* Sidebar Logo */
-.sidebar-logo {
-  padding: 0 1.5rem 1.5rem;
-  margin-bottom: 1rem;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+@media (max-width: 768px) {
+  .sidebar {
+    transform: translateX(-100%);
+  }
+  
+  .sidebar.open {
+    transform: translateX(0);
+  }
+  
+  .main-content {
+    margin-left: 0;
+  }
+  
+  .summary-cards {
+    grid-template-columns: 1fr;
+  }
 }
 
-.sidebar-logo h2 {
-  color: #DB6C24;
-  font-size: 1.75rem;
-  font-weight: 700;
-  margin: 0;
-  letter-spacing: 0.5px;
+@media (min-width: 769px) and (max-width: 1200px) {
+  .summary-cards {
+    grid-template-columns: repeat(3, 1fr);
+  }
 }
 
-/* Sidebar Menu */
-.sidebar-menu {
-  list-style: none;
-  padding: 0 1rem;
-  margin: 0;
-  flex: 1;
-}
-
-.sidebar-item {
-  margin-bottom: 0.5rem;
-  border-radius: 0.5rem;
-  transition: all 0.2s ease;
-}
-
-.sidebar-item a {
-  display: flex;
-  align-items: center;
-  padding: 0.85rem 1rem;
-  color: #555;
-  text-decoration: none;
-  font-weight: 500;
-  border-radius: 0.5rem;
-  transition: all 0.2s ease;
-}
-
-.sidebar-item:hover a {
-  background: #f8f0ec;
-  color: #DB6C24;
-}
-
-.sidebar-item.active a {
-  background: #f8f0ec;
-  color: #DB6C24;
-  font-weight: 600;
-}
-
-.sidebar-icon {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin-right: 0.75rem;
-  font-size: 1.1rem;
-  width: 1.5rem;
-  color: inherit;
-  opacity: 0.9;
-}
-
-.sidebar-text {
-  font-size: 0.95rem;
-}
-
-/* Sidebar Footer */
-.sidebar-footer {
-  padding: 1.5rem;
-  text-align: center;
-  font-size: 0.8rem;
-  color: #888;
-  border-top: 1px solid rgba(0, 0, 0, 0.05);
-  margin-top: auto;
-}
-
-.sidebar-footer p {
-  margin: 0;
-}
-
-.version {
-  font-size: 0.7rem;
-  margin-top: 0.25rem;
-}
-
-/* Mobile Toggle Button */
+/* Fix for sidebar toggle button */
 .sidebar-toggle {
   position: fixed;
   top: 1rem;
@@ -428,130 +397,20 @@
   border-radius: 50%;
   width: 2.5rem;
   height: 2.5rem;
-  display: flex;
+  display: none;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-  transition: all 0.2s ease;
-  display: none;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  transition: background-color 0.2s ease;
 }
 
 .sidebar-toggle:hover {
   background: #c45c1c;
 }
 
-/* Mobile Responsiveness */
 @media (max-width: 768px) {
   .sidebar-toggle {
     display: flex;
-  }
-  
-  .sidebar {
-    transform: translateX(0);
-    transition: transform 0.3s ease, width 0.3s ease;
-  }
-  
-  .sidebar.closed {
-    transform: translateX(-100%);
-    width: 0;
-  }
-  
-  .sidebar.open {
-    transform: translateX(0);
-    width: 250px;
-  }
-  
-  .main-content {
-    margin-left: 0 !important;
-    width: 100% !important;
-  }
-}
-
-/* Add this to your Dashboard.css file */
-
-/* Occupancy bar styling */
-.occupancy-bar {
-  height: 8px;
-  background-color: #f1f1f1;
-  border-radius: 4px;
-  margin-top: 10px;
-  overflow: hidden;
-}
-
-.occupancy-fill {
-  height: 100%;
-  background-color: #DB6C24;
-  border-radius: 4px;
-  transition: width 0.3s ease;
-}
-
-/* Update card value for rooms occupied */
-.card-value {
-  font-size: 2rem;
-  font-weight: 700;
-  color: #333;
-  margin: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-/* Add this to your existing CSS to enhance the rooms card */
-.card {
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-}
-
-.card-title {
-  margin-bottom: 1rem;
-}
-
-/* Make sure there's enough space for the occupancy bar */
-.card:nth-child(3) {
-  padding-bottom: 1.75rem;
-}
-/* Responsive adjustments */
-@media (max-width: 992px) {
-  .sidebar {
-    width: 220px;
-  }
-  
-  .main-content {
-    margin-left: 220px;
-  }
-  
-  .navbar {
-    width: calc(100% - 220px);
-  }
-  
-  .summary-cards {
-    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-  }
-}
-
-@media (max-width: 768px) {
-  .sidebar {
-    width: 0;
-    transform: translateX(-100%);
-    transition: transform 0.3s ease;
-  }
-  
-  .sidebar.open {
-    width: 250px;
-    transform: translateX(0);
-  }
-  
-  .main-content {
-    margin-left: 0;
-  }
-  
-  .navbar {
-    width: 100%;
-  }
-  
-  .summary-cards {
-    grid-template-columns: 1fr;
   }
 }

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { collection, query, where, getDocs, getFirestore, doc, getDoc, orderBy } from 'firebase/firestore';
-import { getAuth } from 'firebase/auth';
+import { getAuth, onAuthStateChanged } from 'firebase/auth';
 import "../assets/styles/GuestBills.css";
 
 const GuestBills = () => {
@@ -10,6 +10,7 @@ const GuestBills = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [user, setUser] = useState(null);
+  const [authChecked, setAuthChecked] = useState(false);
   
   // Format date helper function
   const formatDate = (dateString) => {
@@ -34,20 +35,61 @@ const GuestBills = () => {
 
   useEffect(() => {
     const auth = getAuth();
-    const currentUser = auth.currentUser;
     
-    if (currentUser) {
-      setUser(currentUser);
-      fetchUserBookings(currentUser.uid);
-    } else {
-      // Handle not logged in state
-      setError("Please log in to view your bills");
-      setLoading(false);
-    }
+    // Use onAuthStateChanged instead of directly checking currentUser
+    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+      console.log("Auth state changed. User:", currentUser ? currentUser.email : "No user");
+      setAuthChecked(true);
+      
+      if (currentUser) {
+        setUser(currentUser);
+        fetchUserBookings(currentUser.uid);
+      } else {
+        // Handle not logged in state
+        setError("Please log in to view your bills");
+        setLoading(false);
+      }
+    });
+    
+    // Check if user is available in session storage as fallback
+    const checkSessionUser = () => {
+      const sessionUser = sessionStorage.getItem('currentUser');
+      if (sessionUser && !user) {
+        try {
+          const parsedUser = JSON.parse(sessionUser);
+          console.log("Using session storage user:", parsedUser.email);
+          if (parsedUser && parsedUser.id) {
+            setUser(parsedUser);
+            fetchUserBookings(parsedUser.id);
+            return true;
+          }
+        } catch (e) {
+          console.error("Failed to parse session user:", e);
+        }
+      }
+      return false;
+    };
+    
+    // Try session user if auth isn't resolved quickly
+    const timeoutId = setTimeout(() => {
+      if (!authChecked) {
+        const foundSessionUser = checkSessionUser();
+        if (!foundSessionUser) {
+          console.log("Auth state taking too long, checking session storage...");
+        }
+      }
+    }, 1000);
+    
+    // Clean up
+    return () => {
+      unsubscribe();
+      clearTimeout(timeoutId);
+    };
   }, []);
 
   const fetchUserBookings = async (userId) => {
     try {
+      console.log("Fetching bookings for user:", userId);
       setLoading(true);
       const db = getFirestore();
       
@@ -60,6 +102,8 @@ const GuestBills = () => {
       const querySnapshot = await getDocs(q);
       const bookingData = [];
       
+      console.log(`Found ${querySnapshot.size} bookings for user`);
+      
       querySnapshot.forEach((doc) => {
         const data = doc.data();
         bookingData.push({
@@ -71,93 +115,124 @@ const GuestBills = () => {
           checkOutDate: data.checkOut || "",
           status: data.status || "",
           accommodationBalance: data.remainderDue || 0,
-          originalPrice: data.originalPrice || 0,
+          originalPrice: data.originalPrice || 0, 
           paymentStatus: data.paymentStatus || "",
           paymentOption: data.paymentOption || "",
           roomType: data.roomType || "",
           roomCategory: data.roomCategory || "",
           numberOfGuests: data.numberOfGuests || 1,
           specialRequests: data.specialRequests || "",
+          extensionCharges: data.extensionCharges || [], // Get extension charges
           foodOrders: [] // We'll fetch these separately
         });
       });
       
-      // Fetch restaurant orders for each booking with "Checked in" status
+      // Fetch restaurant orders for each booking
       for (let booking of bookingData) {
-        if (booking.status === "Checked in") {
-          try {
-            // First query for orders put on room tab
-            const tabOrdersQuery = query(
-              collection(db, "orders"),
-              where("roomNumber", "==", booking.room),
-              where("paymentMethod", "==", "Tab")
-            );
+        try {
+          // First query for orders put on room tab
+          const tabOrdersQuery = query(
+            collection(db, "orders"),
+            where("roomNumber", "==", booking.room),
+            where("paymentMethod", "==", "Tab")
+          );
+          
+          const tabOrdersSnapshot = await getDocs(tabOrdersQuery);
+          
+          // Then query for room service orders
+          const roomServiceQuery = query(
+            collection(db, "orders"),
+            where("roomNumber", "==", booking.room),
+            where("deliveryMethod", "==", "roomService")
+          );
+          
+          const roomServiceSnapshot = await getDocs(roomServiceQuery);
+          
+          const foodOrders = [];
+          
+          // Process tab orders
+          tabOrdersSnapshot.forEach((doc) => {
+            const orderData = doc.data();
             
-            const tabOrdersSnapshot = await getDocs(tabOrdersQuery);
+            // Format cart items for description
+            let itemsDescription = "";
+            if (orderData.cartItems && orderData.cartItems.length > 0) {
+              itemsDescription = orderData.cartItems
+                .map(item => `${item.quantity}x ${item.name}`)
+                .join(", ");
+            }
             
-            // Then query for room service orders
-            const roomServiceQuery = query(
-              collection(db, "orders"),
-              where("roomNumber", "==", booking.room),
-              where("deliveryMethod", "==", "roomService")
-            );
+            // Check if this is actually an extension charge disguised as a tab order
+            const isExtension = itemsDescription.toLowerCase().includes("extension") || 
+                              (orderData.description && orderData.description.toLowerCase().includes("extension")) ||
+                              (orderData.notes && orderData.notes.toLowerCase().includes("extension"));
             
-            const roomServiceSnapshot = await getDocs(roomServiceQuery);
-            
-            const foodOrders = [];
-            
-            // Process tab orders
-            tabOrdersSnapshot.forEach((doc) => {
-              const orderData = doc.data();
-              
-              // Format cart items for description
-              let itemsDescription = "";
-              if (orderData.cartItems && orderData.cartItems.length > 0) {
-                itemsDescription = orderData.cartItems
-                  .map(item => `${item.quantity}x ${item.name}`)
-                  .join(", ");
-              }
-              
-              foodOrders.push({
-                id: doc.id,
-                date: orderData.timestamp?.toDate() || new Date(),
-                description: `Restaurant Order - Tab (${itemsDescription})`,
-                amount: orderData.total || 0
-              });
+            foodOrders.push({
+              id: doc.id,
+              date: orderData.timestamp?.toDate() || new Date(),
+              description: `Restaurant Order - Tab (${itemsDescription})`,
+              amount: orderData.total || 0,
+              type: isExtension ? "extension" : "food", // Set type based on our determination
+              notes: orderData.notes || ""
             });
+          });
+          
+          // Process room service orders
+          roomServiceSnapshot.forEach((doc) => {
+            const orderData = doc.data();
             
-            // Process room service orders
-            roomServiceSnapshot.forEach((doc) => {
-              const orderData = doc.data();
-              
-              // Skip if this order was already added (could be both room service and on tab)
-              if (foodOrders.some(order => order.id === doc.id)) {
-                return;
-              }
-              
-              // Format cart items for description
-              let itemsDescription = "";
-              if (orderData.cartItems && orderData.cartItems.length > 0) {
-                itemsDescription = orderData.cartItems
-                  .map(item => `${item.quantity}x ${item.name}`)
-                  .join(", ");
-              }
-              
-              foodOrders.push({
-                id: doc.id,
-                date: orderData.timestamp?.toDate() || new Date(),
-                description: `Room Service (${itemsDescription})`,
-                amount: orderData.total || 0
-              });
+            // Skip if this order was already added (could be both room service and on tab)
+            if (foodOrders.some(order => order.id === doc.id)) {
+              return;
+            }
+            
+            // Format cart items for description
+            let itemsDescription = "";
+            if (orderData.cartItems && orderData.cartItems.length > 0) {
+              itemsDescription = orderData.cartItems
+                .map(item => `${item.quantity}x ${item.name}`)
+                .join(", ");
+            }
+            
+            // Check if this is actually an extension charge
+            const isExtension = itemsDescription.toLowerCase().includes("extension") || 
+                              (orderData.description && orderData.description.toLowerCase().includes("extension")) ||
+                              (orderData.notes && orderData.notes.toLowerCase().includes("extension"));
+            
+            foodOrders.push({
+              id: doc.id,
+              date: orderData.timestamp?.toDate() || new Date(),
+              description: `Room Service (${itemsDescription})`,
+              amount: orderData.total || 0,
+              type: isExtension ? "extension" : "food", // Mark as extension if detected
+              notes: orderData.notes || ""
             });
-            
-            // Sort orders by date (newest first)
-            foodOrders.sort((a, b) => b.date - a.date);
-            
-            booking.foodOrders = foodOrders;
-          } catch (err) {
-            console.error("Error fetching food orders for room", booking.room, err);
+          });
+          
+          // Add extension charges from booking if they exist and aren't already in food orders
+          if (booking.extensionCharges && booking.extensionCharges.length > 0) {
+            console.log("Processing extension charges:", booking.extensionCharges);
+            booking.extensionCharges.forEach(charge => {
+              // Check if this extension charge is already in food orders
+              if (!foodOrders.some(order => order.id === charge.id)) {
+                foodOrders.push({
+                  id: charge.id || `ext-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+                  date: charge.date?.toDate() || new Date(),
+                  description: charge.description || "Stay Extension",
+                  amount: charge.finalPrice || charge.amount || 0, // Use finalPrice first, then amount
+                  type: "extension",
+                  notes: charge.notes || ""
+                });
+              }
+            });
           }
+          
+          // Sort orders by date (newest first)
+          foodOrders.sort((a, b) => b.date - a.date);
+          
+          booking.foodOrders = foodOrders;
+        } catch (err) {
+          console.error("Error fetching orders for room", booking.room, err);
         }
       }
       
@@ -181,7 +256,21 @@ const GuestBills = () => {
 
   // Calculate total food orders
   const calculateFoodTotal = (orders) => {
-    return orders.reduce((total, order) => total + order.amount, 0);
+    return orders.filter(order => 
+      order.type === "food" && 
+      !(order.description && order.description.toLowerCase().includes("extension"))
+    ).reduce((total, order) => total + order.amount, 0);
+  };
+  
+  // Get total extension charges
+  const calculateExtensionTotal = (orders) => {
+    const extensionOrders = orders.filter(order => 
+      order.type === "extension" || 
+      (order.description && order.description.toLowerCase().includes("extension"))
+    );
+    const total = extensionOrders.reduce((total, order) => total + order.amount, 0);
+    console.log("Extension total calculated:", total, "from orders:", extensionOrders);
+    return total;
   };
 
   // Handle booking selection
@@ -192,6 +281,39 @@ const GuestBills = () => {
   // Get current/active booking
   const getCurrentBooking = () => {
     return bookings.find(booking => booking.status === "Checked in") || null;
+  };
+
+  // Handle retry if authentication failed
+  const handleRetry = () => {
+    setLoading(true);
+    setError(null);
+    
+    // Try to get user from session storage
+    const sessionUser = sessionStorage.getItem('currentUser');
+    if (sessionUser) {
+      try {
+        const parsedUser = JSON.parse(sessionUser);
+        if (parsedUser && parsedUser.id) {
+          setUser(parsedUser);
+          fetchUserBookings(parsedUser.id);
+          return;
+        }
+      } catch (e) {
+        console.error("Failed to parse session user during retry:", e);
+      }
+    }
+    
+    // If no session user, check auth again
+    const auth = getAuth();
+    const currentUser = auth.currentUser;
+    
+    if (currentUser) {
+      setUser(currentUser);
+      fetchUserBookings(currentUser.uid);
+    } else {
+      setError("Please log in to view your bills");
+      setLoading(false);
+    }
   };
 
   if (loading) {
@@ -209,7 +331,7 @@ const GuestBills = () => {
     return (
       <div className="error-container">
         <p>{error}</p>
-        <button className="retry-button" onClick={() => window.location.reload()}>
+        <button className="retry-button" onClick={handleRetry}>
           Retry
         </button>
       </div>
@@ -218,6 +340,23 @@ const GuestBills = () => {
 
   const currentBooking = getCurrentBooking();
   const activeBooking = selectedBooking || currentBooking || bookings[0];
+
+  // Get food orders vs extension charges
+  const getFoodOnlyOrders = (orders) => {
+    return orders.filter(order => 
+      order.type === "food" && 
+      !(order.description && order.description.toLowerCase().includes("extension"))
+    );
+  };
+  
+  const getExtensionOrders = (orders) => {
+    const extensionOrders = orders.filter(order => 
+      order.type === "extension" || 
+      (order.description && order.description.toLowerCase().includes("extension"))
+    );
+    console.log("Extension orders:", extensionOrders);
+    return extensionOrders;
+  };
 
   return (
     <div className="guest-bills-container">
@@ -281,6 +420,14 @@ const GuestBills = () => {
                     >
                       Food & Beverage
                     </button>
+                    {getExtensionOrders(activeBooking.foodOrders).length > 0 && (
+                      <button 
+                        onClick={() => setActiveTab('extensions')} 
+                        className={`tab-button ${activeTab === 'extensions' ? 'active' : ''}`}
+                      >
+                        Stay Extensions
+                      </button>
+                    )}
                   </div>
                   
                   {/* Accommodation charges */}
@@ -288,9 +435,9 @@ const GuestBills = () => {
                     <div className="tab-content">
                       <div className="charges-header">
                         <h3 className="charges-title">Room Charges</h3>
-                        <span className={`payment-status ${activeBooking.accommodationBalance > 0 ? 'outstanding' : 'paid'}`}>
+                        <span className={`payment-status ${(activeBooking.accommodationBalance + calculateExtensionTotal(activeBooking.foodOrders)) > 0 ? 'outstanding' : 'paid'}`}>
                           {activeBooking.paymentStatus || 
-                            (activeBooking.accommodationBalance > 0 ? "Outstanding" : "Paid")}
+                            ((activeBooking.accommodationBalance + calculateExtensionTotal(activeBooking.foodOrders)) > 0 ? "PARTIAL PAYMENT" : "Paid")}
                         </span>
                       </div>
                       
@@ -315,16 +462,26 @@ const GuestBills = () => {
                           <span>Original Price</span>
                           <span>${Number(activeBooking.originalPrice).toFixed(2)}</span>
                         </div>
-                        {activeBooking.accommodationBalance > 0 && (
+                        {getExtensionOrders(activeBooking.foodOrders).length > 0 && (
+                          <div className="charge-item extension-charge">
+                            <span>Extension Charges</span>
+                            <span>${calculateExtensionTotal(activeBooking.foodOrders).toFixed(2)}</span>
+                          </div>
+                        )}
+                        <div className="charge-item">
+                          <span>Total Room Charges</span>
+                          <span>${(Number(activeBooking.originalPrice) + calculateExtensionTotal(activeBooking.foodOrders)).toFixed(2)}</span>
+                        </div>
+                        {(activeBooking.accommodationBalance + calculateExtensionTotal(activeBooking.foodOrders)) > 0 && (
                           <div className="charge-total">
                             <span>Balance Due</span>
-                            <span>${Number(activeBooking.accommodationBalance).toFixed(2)}</span>
+                            <span>${(Number(activeBooking.accommodationBalance) + calculateExtensionTotal(activeBooking.foodOrders)).toFixed(2)}</span>
                           </div>
                         )}
                       </div>
                       
                       {/* Display payment instructions if balance due */}
-                      {activeBooking.accommodationBalance > 0 && (
+                      {(activeBooking.accommodationBalance + calculateExtensionTotal(activeBooking.foodOrders)) > 0 && (
                         <div className="payment-instructions">
                           <h4>Payment Instructions</h4>
                           <p>Please visit the front desk to settle your room balance.</p>
@@ -346,12 +503,12 @@ const GuestBills = () => {
                     <div className="tab-content">
                       <div className="charges-header">
                         <h3 className="charges-title">Food & Beverage Charges</h3>
-                        <span className={`payment-status ${activeBooking.foodOrders.length > 0 ? 'outstanding' : 'paid'}`}>
-                          {activeBooking.foodOrders.length > 0 ? "Outstanding" : "No Charges"}
+                        <span className={`payment-status ${getFoodOnlyOrders(activeBooking.foodOrders).length > 0 ? 'outstanding' : 'paid'}`}>
+                          {getFoodOnlyOrders(activeBooking.foodOrders).length > 0 ? "Outstanding" : "No Charges"}
                         </span>
                       </div>
                       
-                      {activeBooking.foodOrders.length > 0 ? (
+                      {getFoodOnlyOrders(activeBooking.foodOrders).length > 0 ? (
                         <div className="table-container">
                           <table className="food-orders-table">
                             <thead>
@@ -362,16 +519,16 @@ const GuestBills = () => {
                               </tr>
                             </thead>
                             <tbody>
-                              {activeBooking.foodOrders.map(order => (
+                              {getFoodOnlyOrders(activeBooking.foodOrders).map(order => (
                                 <tr key={order.id}>
                                   <td>{formatDate(order.date)}</td>
                                   <td>{order.description}</td>
-                                  <td>GHS {order.amount.toFixed(2)}</td>
+                                  <td>$ {order.amount.toFixed(2)}</td>
                                 </tr>
                               ))}
                               <tr className="total-row">
                                 <td colSpan={2}>Total</td>
-                                <td>GHS {calculateFoodTotal(activeBooking.foodOrders).toFixed(2)}</td>
+                                <td>$ {calculateFoodTotal(activeBooking.foodOrders).toFixed(2)}</td>
                               </tr>
                             </tbody>
                           </table>
@@ -386,7 +543,60 @@ const GuestBills = () => {
                       )}
                       
                       {/* Show download receipt button if there are charges */}
-                      {activeBooking.foodOrders.length > 0 && (
+                      {getFoodOnlyOrders(activeBooking.foodOrders).length > 0 && (
+                        <div className="user-actions">
+                          <button className="btn btn-outline">Download Receipt</button>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                  
+                  {/* Stay Extension charges */}
+                  {activeTab === 'extensions' && (
+                    <div className="tab-content">
+                      <div className="charges-header">
+                        <h3 className="charges-title">Stay Extension Charges</h3>
+                        <span className={`payment-status outstanding`}>
+                          Outstanding
+                        </span>
+                      </div>
+                      
+                      {getExtensionOrders(activeBooking.foodOrders).length > 0 ? (
+                        <div className="table-container">
+                          <table className="food-orders-table">
+                            <thead>
+                              <tr>
+                                <th>Date</th>
+                                <th>Description</th>
+                                <th>Amount</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {getExtensionOrders(activeBooking.foodOrders).map(order => (
+                                <tr key={order.id} className="extension-row">
+                                  <td>{formatDate(order.date)}</td>
+                                  <td>
+                                    {order.description}
+                                    {order.notes && <div className="order-notes">{order.notes}</div>}
+                                  </td>
+                                  <td>$ {order.amount.toFixed(2)}</td>
+                                </tr>
+                              ))}
+                              <tr className="total-row">
+                                <td colSpan={2}>Total Extensions</td>
+                                <td>$ {calculateExtensionTotal(activeBooking.foodOrders).toFixed(2)}</td>
+                              </tr>
+                            </tbody>
+                          </table>
+                        </div>
+                      ) : (
+                        <div className="empty-food-orders">
+                          <p>You have no stay extension charges.</p>
+                        </div>
+                      )}
+                      
+                      {/* Show download receipt button if there are charges */}
+                      {getExtensionOrders(activeBooking.foodOrders).length > 0 && (
                         <div className="user-actions">
                           <button className="btn btn-outline">Download Receipt</button>
                         </div>

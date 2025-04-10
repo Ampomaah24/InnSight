@@ -81,7 +81,7 @@ body, html {
   background-color: white;
   box-shadow: var(--shadow-md);
 }
-
+ 
 /* Booking Services Heading */
 .booking-services-heading {
   font-size: 1.6rem;

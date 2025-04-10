@@ -233,23 +233,18 @@ const ServicesPage = () => {
         <NavMenu menuOpen={menuOpen} setMenuOpen={setMenuOpen} />
         <h1 className="booking-services-heading">Booking Services</h1>
 
-        {/* Top-right profile section */}
+        {/* Top-right profile section - now with only the profile image */}
         {!loading && user && (
-          <div className="profile-bar" onClick={handleProfileClick}>
-            <div className="profile-info">
-              <img
-                src={getAvatarSource()}
-                alt="Profile"
-                className="profile-pic"
-                onError={(e) => {
-                  e.target.onerror = null;
-                  e.target.src = "/images/profile-placeholder.png";
-                }}
-              />
-              <span className="profile-name">
-                {user.fname} {user.lname}
-              </span>
-            </div>
+          <div className="profile-avatar" onClick={handleProfileClick}>
+            <img
+              src={getAvatarSource()}
+              alt="Profile"
+              className="profile-pic"
+              onError={(e) => {
+                e.target.onerror = null;
+                e.target.src = "/images/profile-placeholder.png";
+              }}
+            />
           </div>
         )}
       </div>

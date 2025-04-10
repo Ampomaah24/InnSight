@@ -374,7 +374,69 @@
   .btn-outline:hover {
     background-color: #f0f7fc;
   }
-  
+  /* Add these styles to your existing GuestBills.css file */
+
+/* Extension tab styling */
+.extension-charge {
+  font-weight: 600;
+  color: #DB6C24;
+}
+
+.extension-row {
+  background-color: #fdf2e9;
+}
+
+.extension-row td {
+  border-bottom: 1px solid #f8e0cc;
+}
+
+.order-notes {
+  font-size: 0.85rem;
+  font-style: italic;
+  color: #666;
+  margin-top: 4px;
+}
+
+/* Style the third tab */
+.tab-nav .tab-button:nth-child(3) {
+  background-color: #fdf2e9;
+  color: #DB6C24;
+}
+
+.tab-nav .tab-button:nth-child(3).active {
+  background-color: #DB6C24;
+  color: white;
+}
+
+/* Improve table styling */
+.food-orders-table th,
+.food-orders-table td {
+  padding: 12px 16px;
+}
+
+.food-orders-table th {
+  background-color: #f5f7fa;
+  font-weight: 600;
+  color: #555;
+}
+
+.food-orders-table tr:hover {
+  background-color: #f9f9f9;
+}
+
+.food-orders-table .extension-row:hover {
+  background-color: #fce8d9;
+}
+
+/* Total styling */
+.total-row {
+  font-weight: 700;
+  border-top: 2px solid #eee;
+}
+
+.total-row td {
+  padding-top: 16px;
+}
   .user-actions {
     display: flex;
     justify-content: flex-end;

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { collection, getDocs, doc, updateDoc, Timestamp } from "firebase/firestore";
+import { collection, getDocs, doc, updateDoc, Timestamp, addDoc } from "firebase/firestore";
 import { db } from "../config/firebase";
 import Sidebar from "../components/Sidebar";
 import "../assets/styles/Reservations.css";
@@ -189,7 +189,7 @@ const Reservations = () => {
     }
   };
 
-  // Function to extend a stay
+  // Function to extend a stay with billing
   const extendStay = async () => {
     if (!selectedReservation || !extendDays) return;
     
@@ -198,16 +198,75 @@ const Reservations = () => {
       const newCheckoutDate = new Date(selectedReservation.checkOutDate);
       newCheckoutDate.setDate(newCheckoutDate.getDate() + parseInt(extendDays));
       
+      // Calculate extension cost based on daily rate
+      const dailyRate = selectedReservation.originalPrice 
+        ? selectedReservation.originalPrice / selectedReservation.stayLength 
+        : 100; // Default daily rate if original price is not available
+      
+      const extensionDays = parseInt(extendDays);
+      const extensionCost = dailyRate * extensionDays;
+      
+      // Calculate new totals
+      const newTotal = (selectedReservation.originalPrice || 0) + extensionCost;
+      const newRemainder = (selectedReservation.remainderDue || 0) + extensionCost;
+      
+      // Format extension note with billing details
+      const extensionNote = notes 
+        ? `${new Date().toLocaleString()}: Extended stay by ${extensionDays} days. Additional charge: ${extensionCost.toFixed(2)}. ${notes}` 
+        : `${new Date().toLocaleString()}: Extended stay by ${extensionDays} days. Additional charge: ${extensionCost.toFixed(2)}.`;
+      
+      // Get current timestamp
+      const now = Timestamp.now();
+      
+      // Create extension charge record to be stored in the booking
+      const extensionCharge = {
+        id: `extension-${Date.now()}`,
+        date: now,
+        description: `Stay Extension (${extensionDays} days)`,
+        amount: extensionCost,
+        type: "extension",
+        notes: notes || ""
+      };
+      
       // Update the reservation in Firestore
       const collectionName = activeTab === "room" ? "bookings" : "conferenceBookings";
       const reservationRef = doc(db, collectionName, selectedReservation.id);
       
+      // Check if extensionCharges array exists and add to it
+      const extensionCharges = selectedReservation.extensionCharges 
+        ? [...selectedReservation.extensionCharges, extensionCharge] 
+        : [extensionCharge];
+      
       await updateDoc(reservationRef, {
         checkOut: Timestamp.fromDate(newCheckoutDate),
-        lastUpdated: Timestamp.now(),
-        notes: notes ? `${selectedReservation.notes || ''}\n${new Date().toLocaleString()}: Extended stay by ${extendDays} days. ${notes}` : 
-                      `${selectedReservation.notes || ''}\n${new Date().toLocaleString()}: Extended stay by ${extendDays} days.`
+        lastUpdated: now,
+        originalPrice: newTotal,
+        remainderDue: newRemainder,
+        extensionCharges: extensionCharges,
+        notes: selectedReservation.notes 
+          ? `${selectedReservation.notes}\n${extensionNote}`
+          : extensionNote
       });
+      
+      // REMOVED: Don't add to orders collection anymore - this was causing duplicated charges
+      
+      // Add transaction record
+      try {
+        await addDoc(collection(db, "transactions"), {
+          bookingId: selectedReservation.id,
+          guestName: selectedReservation.guestName || `${selectedReservation.firstName || ''} ${selectedReservation.lastName || ''}`,
+          roomNumber: selectedReservation.roomNumber || selectedReservation.room || "N/A",
+          type: "Extension",
+          amount: extensionCost,
+          date: now,
+          description: `Stay extension by ${extensionDays} days`,
+          paymentStatus: "Outstanding",
+          userId: selectedReservation.userId
+        });
+      } catch (err) {
+        console.error("Error adding transaction record:", err);
+        // Continue even if transaction record fails
+      }
       
       // Close modal and reset state
       setIsModalOpen(false);
@@ -216,7 +275,7 @@ const Reservations = () => {
       setNotes("");
       setDataChanged(true);
       
-      alert("Stay extended successfully!");
+      alert(`Stay extended successfully! Additional charge: $${extensionCost.toFixed(2)} has been added to the guest's bill.`);
     } catch (error) {
       console.error("Error extending stay:", error);
       alert("Failed to extend stay. Please try again.");
@@ -577,6 +636,17 @@ const Reservations = () => {
                   value={extendDays} 
                   onChange={(e) => setExtendDays(e.target.value)}
                 />
+              </div>
+              
+              {/* Add estimated cost display */}
+              <div className="form-group">
+                <label>Estimated Additional Cost:</label>
+                <div className="cost-estimate">
+                  ${ ((selectedReservation.originalPrice || 0) / (selectedReservation.stayLength || 1) * extendDays).toFixed(2) }
+                </div>
+                <div className="cost-note">
+                  (Based on current daily rate)
+                </div>
               </div>
               
               <div className="form-group">
