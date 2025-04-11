@@ -160,7 +160,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  min-height: 45px; /* Ensure consistent height during loading */
+  min-height: 45px; 
 }
 
 /* ======= Loading State Styling ======= */
@@ -359,6 +359,25 @@
   .summary-cards {
     grid-template-columns: repeat(3, 1fr);
   }
+}
+/* Add this CSS to your Dashboard.css file to remove the lines */
+
+/* Remove any lines after card values */
+.card-value::after {
+  display: none !important;
+  content: none !important;
+}
+
+/* If the lines are being created by an element after the value */
+.card-value + span,
+.card-value + div {
+  display: none !important;
+}
+
+/* If the lines are being styled similarly to the dashboard title */
+.summary-cards .card h2::after {
+  display: none !important;
+  content: none !important;
 }
 
 @media (max-width: 768px) {

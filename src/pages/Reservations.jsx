@@ -19,6 +19,24 @@ const Reservations = () => {
   const [notes, setNotes] = useState("");
   const [dataChanged, setDataChanged] = useState(false);
 
+  // Function to map venue IDs to human-readable names
+  const getVenueName = (venueId) => {
+    if (!venueId) return "N/A";
+    
+    // Map of venue IDs to readable names
+    const venueMap = {
+      "9lg3slvSNlNm9MmxGpmv": "Large Conference Room",
+      "smallconf123": "Small Meeting Room",
+      "boardroom456": "Executive Boardroom",
+      "training789": "Training Center",
+      // Add more mappings as needed for your specific venue IDs
+    };
+    
+    // If the venue ID exists in our map, return the readable name
+    // Otherwise return a formatted version of the original ID
+    return venueMap[venueId] || "Conference Room";
+  };
+
   useEffect(() => {
     const fetchReservations = async () => {
       try {
@@ -131,6 +149,10 @@ const Reservations = () => {
           const eventLengthMs = checkOutDate - checkInDate;
           const eventLengthHours = Math.ceil(eventLengthMs / (1000 * 60 * 60));
           
+          // Get a readable venue name from the venue ID
+          const venueId = data.room || data.venue;
+          const venueName = getVenueName(venueId);
+          
           return {
             id: doc.id,
             ...data,
@@ -142,7 +164,9 @@ const Reservations = () => {
             createdAt: createdAt,
             eventLength: eventLengthHours,
             month: checkInDate.getMonth() + 1, // 1-12 for Jan-Dec
-            year: checkInDate.getFullYear()
+            year: checkInDate.getFullYear(),
+            venue: venueName,              // Add readable venue name
+            venueId: venueId               // Keep original venue ID for reference
           };
         });
 
@@ -247,8 +271,6 @@ const Reservations = () => {
           ? `${selectedReservation.notes}\n${extensionNote}`
           : extensionNote
       });
-      
-      // REMOVED: Don't add to orders collection anymore - this was causing duplicated charges
       
       // Add transaction record
       try {
@@ -558,7 +580,11 @@ const Reservations = () => {
                           <td>{res.guestName || `${res.firstName || ''} ${res.lastName || ''}`}</td>
                           <td>{res.checkInFormatted}</td>
                           <td>{res.checkOutFormatted}</td>
-                          <td>{res.roomNumber || res.room || "N/A"}</td>
+                          <td>
+                            {activeTab === "room" 
+                              ? (res.roomNumber || res.room || "N/A") 
+                              : (res.venue || getVenueName(res.room || res.venueId))}
+                          </td>
                           <td>
                             {activeTab === "room" 
                               ? `${res.stayLength} night${res.stayLength !== 1 ? 's' : ''}` 

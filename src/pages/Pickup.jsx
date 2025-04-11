@@ -15,29 +15,66 @@ const AdminPickupTracker = () => {
     const fetchPickupBookings = async () => {
       try {
         setLoading(true);
+        
+        // Fetch from bookings collection
         const bookingsRef = collection(db, "bookings");
-        const q = query(
+        const bookingsQuery = query(
           bookingsRef, 
           where("airportPickup", "==", "Yes"),
           orderBy("pickupDetails.pickupDate", "asc")
         );
-        const snapshot = await getDocs(q);
+        const bookingsSnapshot = await getDocs(bookingsQuery);
         
-        const pickupBookings = [];
-        snapshot.forEach(doc => {
+        const bookingPickups = [];
+        bookingsSnapshot.forEach(doc => {
           const data = doc.data();
           if (data.pickupDetails) {
             // Add status calculation
             const status = getPickupStatus(data.pickupDetails.pickupDate, data.pickupDetails.pickupTime);
-            pickupBookings.push({ 
+            bookingPickups.push({ 
               id: doc.id, 
+              source: "booking",
               ...data, 
               status 
             });
           }
         });
         
-        setPickups(pickupBookings);
+        // Fetch from transactions collection
+        const transactionsRef = collection(db, "transactions");
+        const transactionsQuery = query(
+          transactionsRef, 
+          where("airportPickup", "==", "Yes"),
+          orderBy("pickupDetails.pickupDate", "asc")
+        );
+        const transactionsSnapshot = await getDocs(transactionsQuery);
+        
+        const transactionPickups = [];
+        transactionsSnapshot.forEach(doc => {
+          const data = doc.data();
+          if (data.pickupDetails) {
+            // Add status calculation
+            const status = getPickupStatus(data.pickupDetails.pickupDate, data.pickupDetails.pickupTime);
+            transactionPickups.push({ 
+              id: doc.id, 
+              source: "transaction",
+              ...data, 
+              status 
+            });
+          }
+        });
+        
+        // Combine both collections
+        const allPickups = [...bookingPickups, ...transactionPickups];
+        
+        // Sort by pickup date and time
+        allPickups.sort((a, b) => {
+          const dateA = new Date(`${a.pickupDetails.pickupDate}T${a.pickupDetails.pickupTime}`);
+          const dateB = new Date(`${b.pickupDetails.pickupDate}T${b.pickupDetails.pickupTime}`);
+          return dateA - dateB;
+        });
+        
+        setPickups(allPickups);
       } catch (error) {
         console.error("Error fetching airport pickups:", error);
       } finally {
@@ -182,12 +219,13 @@ const AdminPickupTracker = () => {
                   <th>Pickup Time</th>
                   <th>Flight Number</th>
                   <th>Location</th>
+                  <th>Source</th>
                   <th>Status</th>
                 </tr>
               </thead>
               <tbody>
                 {filteredPickups.map((pickup, idx) => {
-                  const { firstName, lastName, pickupDetails } = pickup;
+                  const { firstName, lastName, pickupDetails, source } = pickup;
                   const reminder = getReminderStatus(pickupDetails.pickupDate, pickupDetails.pickupTime);
                   return (
                     <tr key={idx} className={reminder === "past" ? "past-pickup" : ""}>
@@ -201,6 +239,7 @@ const AdminPickupTracker = () => {
                         <span className="flight-number">{pickupDetails.flightNumber || "N/A"}</span>
                       </td>
                       <td>{pickupDetails.airportLocation || "N/A"}</td>
+                      <td><span className={`source-badge ${source}`}>{source === "booking" ? "Booking" : "Transaction"}</span></td>
                       <td>
                         {reminder === "past" && <span className="reminder-badge gray">Completed</span>}
                         {reminder === "1hr" && <span className="reminder-badge red">Within 1 Hour</span>}

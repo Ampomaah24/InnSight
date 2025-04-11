@@ -140,7 +140,7 @@ const BookingPage = () => {
     pickupDate: "", 
     pickupTime: "", 
     flightNumber: "",
-    paymentOption: "Full Payment", 
+    paymentOption: roomCategory === "conference" ? "Full Payment" : "Full Payment", // Default to Full Payment for conference
     specialRequests: "",
     checkIn: checkInParam, 
     checkOut: checkOutParam,
@@ -300,9 +300,10 @@ const BookingPage = () => {
     return acc + (discountedPrice * numberOfDays);
   }, 0);
 
-  const paymentAmount = formData.paymentOption === "Deposit for Reservation"
-    ? totalAmount * 0.2
-    : totalAmount;
+  // Calculate payment amount based on payment option and booking type
+  const paymentAmount = (roomCategory === "conference" || formData.paymentOption === "Full Payment")
+    ? totalAmount  // For conference bookings or full payment option
+    : totalAmount * 0.2;  // 20% deposit for regular room bookings
 
   const totalGuests = Object.values(guestCounts).reduce((sum, val) => sum + Number(val), 0);
   const maxGuestsAllowed = selectedRooms.reduce((sum, room) => sum + getRoomCapacity(room.t_room || ""), 0);
@@ -382,162 +383,171 @@ const BookingPage = () => {
     isAirportPickupValid;
 
   // Use Firestore transaction for booking to prevent race conditions
-  const completeBooking = async () => {
-    try {
-      for (const room of selectedRooms) {
-        const roomId = room.id || room.t_room;
-        const guestCount = Number(guestCounts[roomId]) || 1;
+  // Use Firestore transaction for booking to prevent race conditions
+const completeBooking = async () => {
+  try {
+    const bookingPromises = [];
+    
+    for (const room of selectedRooms) {
+      const roomId = room.id || room.t_room;
+      const guestCount = Number(guestCounts[roomId]) || 1;
 
-        // Format dates for comparison
-        const formatDateWithNoon = (dateStr) => {
-          const date = new Date(dateStr);
-          date.setHours(12, 0, 0, 0);
-          return date.toISOString();
-        };
+      // Format dates for comparison
+      const formatDateWithNoon = (dateStr) => {
+        const date = new Date(dateStr);
+        date.setHours(12, 0, 0, 0);
+        return date.toISOString();
+      };
+      
+      const checkInFormatted = formatDateWithNoon(formData.checkIn);
+      const checkOutFormatted = formatDateWithNoon(formData.checkOut);
+
+      // Query rooms by type
+      const roomQuery = query(
+        collection(db, roomCategory === "conference" ? "conference_rooms" : "rooms"),
+        where(roomCategory === "conference" ? "type" : "t_room", "==", roomCategory === "conference" ? room.type : room.t_room),
+        where("availability", "==", true)
+      );
+
+      const roomSnapshot = await getDocs(roomQuery);
+      if (roomSnapshot.empty) {
+        throw new Error(`No available rooms of type: ${room.t_room || room.type}`);
+      }
+
+      // Find a room without date conflicts using transactions
+      let roomBooked = false;
+      
+      for (const roomDoc of roomSnapshot.docs) {
+        if (roomBooked) break;
         
-        const checkInFormatted = formatDateWithNoon(formData.checkIn);
-        const checkOutFormatted = formatDateWithNoon(formData.checkOut);
-
-        // Query rooms by type
-        const roomQuery = query(
-          collection(db, roomCategory === "conference" ? "conference_rooms" : "rooms"),
-          where(roomCategory === "conference" ? "type" : "t_room", "==", roomCategory === "conference" ? room.type : room.t_room),
-          where("availability", "==", true)
-        );
-
-        const roomSnapshot = await getDocs(roomQuery);
-        if (roomSnapshot.empty) {
-          throw new Error(`No available rooms of type: ${room.t_room || room.type}`);
-        }
-
-        // Find a room without date conflicts using transactions
-        let roomBooked = false;
+        const roomRef = roomDoc.ref;
         
-        for (const roomDoc of roomSnapshot.docs) {
-          if (roomBooked) break;
-          
-          const roomRef = roomDoc.ref;
-          
-          try {
-            // Use transaction to prevent race conditions
-            await runTransaction(db, async (transaction) => {
-              const roomData = (await transaction.get(roomRef)).data();
-              const existingBookings = roomData.bookings || [];
+        try {
+          // Use transaction to check and update room availability
+          await runTransaction(db, async (transaction) => {
+            const roomData = (await transaction.get(roomRef)).data();
+            const existingBookings = roomData.bookings || [];
+            
+            // Check if there's any overlap with existing bookings
+            const hasOverlap = existingBookings.some(booking => {
+              const existingCheckIn = new Date(booking.checkIn);
+              const existingCheckOut = new Date(booking.checkOut);
+              const newCheckIn = new Date(checkInFormatted);
+              const newCheckOut = new Date(checkOutFormatted);
               
-              // Check if there's any overlap with existing bookings
-              const hasOverlap = existingBookings.some(booking => {
-                const existingCheckIn = new Date(booking.checkIn);
-                const existingCheckOut = new Date(booking.checkOut);
-                const newCheckIn = new Date(checkInFormatted);
-                const newCheckOut = new Date(checkOutFormatted);
-                
-                // Overlap occurs if:
-                // (new check-in is before existing check-out) AND (new check-out is after existing check-in)
-                return (newCheckIn < existingCheckOut && newCheckOut > existingCheckIn);
-              });
-              
-              if (hasOverlap) {
-                // Skip this room and try the next one
-                throw new Error("Room unavailable for these dates");
-              }
-              
-              // Update room with new booking
-              transaction.update(roomRef, {
-                bookings: [...existingBookings, {
-                  checkIn: checkInFormatted,
-                  checkOut: checkOutFormatted,
-                }]
-              });
-              
-              // Calculate prices with discount
-              const originalPrice = Number(room.price || 0) * numberOfDays;
-              const discountedPrice = applicableDiscount ? 
-                originalPrice - (originalPrice * applicableDiscount / 100) : 
-                originalPrice;
-
-              // Check if this is a deposit payment
-              const isDeposit = formData.paymentOption === "Deposit for Reservation";
-              const depositRate = 0.2; // 20% deposit
-              const amountPaid = isDeposit ? discountedPrice * depositRate : discountedPrice;
-              const remainderDue = isDeposit ? discountedPrice - amountPaid : 0;
-              
-              // Create booking document
-              const bookingRef = collection(db, roomCategory === "conference" ? "conferenceBookings" : "bookings");
-              const newBooking = {
-                // User identification
-                userId: auth.currentUser?.uid || "guest",
-                email: formData.email,
-                firstName: formData.firstName,
-                lastName: formData.lastName,
-                phone: formData.phone,
-                
-                // Room details
-                roomType: room.t_room || room.type,
-                roomName: room.name || "Unnamed",
-                roomNumber: roomRef.id,
-                roomCategory,
-                numberOfGuests: guestCount,
-                
-                // Booking dates
-                checkIn: formData.checkIn,
-                checkOut: formData.checkOut,
-                
-                // Payment info
-                originalPrice: originalPrice,
-                discountApplied: applicableDiscount,
-                discountType: actualDiscountName,
-                finalPrice: discountedPrice,
-                amountPaid: amountPaid,
-                remainderDue: remainderDue,
-                depositRate: isDeposit ? depositRate : null,
-                paymentStatus: isDeposit ? "Partial Payment" : "Paid in Full",
-                paymentOption: formData.paymentOption,
-                
-                // Additional services
-                airportPickup: formData.airportPickup,
-                pickupDetails: (formData.airportPickup === "Yes") ? {
-                  pickupDate: formData.pickupDate,
-                  pickupTime: formData.pickupTime,
-                  flightNumber: formData.flightNumber,
-                  airportLocation: "Kotoka International Airport"
-                } : null,
-                
-                // For conference bookings
-                alsoBookingStay: roomCategory === "conference" ? formData.alsoBookingStay : null,
-                
-                // Security and verification
-                csrfToken: csrfToken,
-                
-                // Additional info
-                specialRequests: formData.specialRequests,
-                status: "Confirmed",
-                createdAt: serverTimestamp(),
-              };
-              
-              transaction.set(doc(bookingRef), newBooking);
-              roomBooked = true;
+              // Overlap occurs if:
+              // (new check-in is before existing check-out) AND (new check-out is after existing check-in)
+              return (newCheckIn < existingCheckOut && newCheckOut > existingCheckIn);
             });
             
-            // If we made it here, the transaction succeeded
-            break;
+            if (hasOverlap) {
+              // Skip this room and try the next one
+              throw new Error("Room unavailable for these dates");
+            }
             
-          } catch (error) {
-            // This specific room was unavailable - try the next one
-            console.log(`Room ${roomRef.id} unavailable:`, error.message);
-            continue;
-          }
-        }
-        
-        if (!roomBooked) {
-          throw new Error(`No available rooms of type: ${room.t_room || room.type} for the selected dates.`);
+            // Update room with new booking
+            transaction.update(roomRef, {
+              bookings: [...existingBookings, {
+                checkIn: checkInFormatted,
+                checkOut: checkOutFormatted,
+              }]
+            });
+          });
+          
+          // If transaction successful, room is available - proceed with booking creation
+          // IMPORTANT: Now create the booking outside the transaction
+          roomBooked = true;
+          
+          // Calculate prices with discount
+          const originalPrice = Number(room.price || 0) * numberOfDays;
+          const discountedPrice = applicableDiscount ? 
+            originalPrice - (originalPrice * applicableDiscount / 100) : 
+            originalPrice;
+
+          // Check if this is a deposit payment (never for conference bookings)
+          const isDeposit = roomCategory !== "conference" && formData.paymentOption === "Deposit for Reservation";
+          const depositRate = 0.2; // 20% deposit
+          const amountPaid = isDeposit ? discountedPrice * depositRate : discountedPrice;
+          const remainderDue = isDeposit ? discountedPrice - amountPaid : 0;
+          
+          // Create booking document
+          const newBooking = {
+            // User identification
+            userId: auth.currentUser?.uid || "guest",
+            email: formData.email,
+            firstName: formData.firstName,
+            lastName: formData.lastName,
+            phone: formData.phone,
+            
+            // Room details
+            roomType: room.t_room || room.type,
+            roomName: room.name || "Unnamed",
+            roomNumber: roomRef.id,
+            roomCategory,
+            numberOfGuests: guestCount,
+            
+            // Booking dates
+            checkIn: formData.checkIn,
+            checkOut: formData.checkOut,
+            
+            // Payment info
+            originalPrice: originalPrice,
+            discountApplied: applicableDiscount,
+            discountType: actualDiscountName,
+            finalPrice: discountedPrice,
+            amountPaid: amountPaid,
+            remainderDue: remainderDue,
+            depositRate: isDeposit ? depositRate : null,
+            paymentStatus: isDeposit ? "Partial Payment" : "Paid in Full",
+            paymentOption: roomCategory === "conference" ? "Full Payment" : formData.paymentOption,
+            
+            // Additional services
+            airportPickup: formData.airportPickup,
+            pickupDetails: (formData.airportPickup === "Yes") ? {
+              pickupDate: formData.pickupDate,
+              pickupTime: formData.pickupTime,
+              flightNumber: formData.flightNumber,
+              airportLocation: "Kotoka International Airport"
+            } : null,
+            
+            // For conference bookings
+            alsoBookingStay: roomCategory === "conference" ? formData.alsoBookingStay : null,
+            
+            // Security and verification
+            csrfToken: csrfToken,
+            
+            // Additional info
+            specialRequests: formData.specialRequests,
+            status: "Confirmed",
+            createdAt: serverTimestamp(),
+          };
+          
+          // Create the booking document and store the promise
+          const bookingRef = collection(db, roomCategory === "conference" ? "conferenceBookings" : "bookings");
+          bookingPromises.push(addDoc(bookingRef, newBooking));
+          
+          break; // Found and booked a room, move to next room in selection
+          
+        } catch (error) {
+          // This specific room was unavailable - try the next one
+          console.log(`Room ${roomRef.id} unavailable:`, error.message);
+          continue;
         }
       }
-      return true;
-    } catch (err) {
-      console.error("Booking failed:", err);
-      throw err;
+      
+      if (!roomBooked) {
+        throw new Error(`No available rooms of type: ${room.t_room || room.type} for the selected dates.`);
+      }
     }
-  };
+    
+    // Wait for all booking documents to be created
+    await Promise.all(bookingPromises);
+    return true;
+  } catch (err) {
+    console.error("Booking failed:", err);
+    throw err;
+  }
+};
 
   // Paystack configuration
   const config = {
@@ -570,8 +580,8 @@ const BookingPage = () => {
       // Calculate how much was actually paid in this transaction
       const amountPaid = paymentAmount;
       
-      // Determine if this is a deposit or full payment
-      const isDeposit = formData.paymentOption === "Deposit for Reservation";
+      // Determine if this is a deposit or full payment (never deposit for conference)
+      const isDeposit = roomCategory !== "conference" && formData.paymentOption === "Deposit for Reservation";
       
       // First add the transaction
       await addDoc(collection(db, "transactions"), {
@@ -589,7 +599,7 @@ const BookingPage = () => {
           email: formData.email,
           phone: formData.phone
         },
-        paymentOption: formData.paymentOption,
+        paymentOption: roomCategory === "conference" ? "Full Payment" : formData.paymentOption,
         isDeposit: isDeposit,
         totalAmount: totalAmount,
         remainderDue: isDeposit ? (totalAmount - amountPaid) : 0,
@@ -610,7 +620,7 @@ const BookingPage = () => {
         roomName: selectedRooms.map(r => r.name || r.t_room).join(", "),
         roomType: selectedRooms.map(r => r.t_room || r.type).join(", "),
         numberOfGuests: totalGuests,
-        paymentOption: formData.paymentOption,
+        paymentOption: roomCategory === "conference" ? "Full Payment" : formData.paymentOption,
         amount: amountPaid,
         totalAmount: totalAmount,
         remainderDue: isDeposit ? (totalAmount - amountPaid) : 0,
@@ -793,7 +803,7 @@ const BookingPage = () => {
                     <div className="half-width">
                       <label>Pickup Date (same as Check-In)</label>
                       <input 
-                        type="text" 
+                        type
                         readOnly 
                         className="readonly-field" 
                         value={new Date(formData.checkIn).toLocaleDateString(undefined, {weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'})}
@@ -827,10 +837,21 @@ const BookingPage = () => {
               {/* Payment and Requests */}
               <div className="full-width">
                 <label>Payment Option</label>
-                <select name="paymentOption" value={formData.paymentOption} onChange={handleChange}>
-                  <option>Full Payment</option>
-                  <option>Deposit for Reservation</option>
-                </select>
+                {roomCategory === "conference" ? (
+                  // For conference bookings, only show Full Payment option
+                  <select name="paymentOption" value="Full Payment" disabled>
+                    <option>Full Payment</option>
+                  </select>
+                ) : (
+                  // For regular room bookings, show all payment options
+                  <select name="paymentOption" value={formData.paymentOption} onChange={handleChange}>
+                    <option>Full Payment</option>
+                    <option>Deposit for Reservation</option>
+                  </select>
+                )}
+                {roomCategory === "conference" && (
+                  <small style={{ color: "gray" }}>Conference bookings require full payment</small>
+                )}
               </div>
 
               <div className="full-width">
@@ -851,7 +872,7 @@ const BookingPage = () => {
                 <p><strong>Check-Out:</strong> {new Date(formData.checkOut).toLocaleDateString()}</p>
                 <p><strong>Total:</strong> GHS {totalAmount.toFixed(2)}</p>
                 <p><strong>Paying:</strong> GHS {paymentAmount.toFixed(2)}</p>
-                {formData.paymentOption === "Deposit for Reservation" && (
+                {formData.paymentOption === "Deposit for Reservation" && roomCategory !== "conference" && (
                   <small style={{ color: "orange" }}>20% deposit applied. Remaining due at check-in.</small>
                 )}
                 {applicableDiscount > 0 && (
