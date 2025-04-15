@@ -146,6 +146,8 @@ body, html {
   letter-spacing: 0.5px;
 }
 
+
+
 /* Services Grid */
 .services-grid {
   display: flex;
@@ -261,7 +263,7 @@ body, html {
   opacity: 0;
   overflow: hidden;
   transform: translateY(1rem);
-  transition: max-height 0.5s ease, opacity 0.5s ease, padding 0.5s ease, transform 0.3s ease;
+  transition: max-height 0.5s ease-in-out, opacity 0.5s ease-in-out, padding 0.5s ease-in-out, transform 0.3s ease-in-out;
   position: absolute;
   left: 7.5%;
   z-index: 10;

@@ -5,6 +5,7 @@ import "react-datepicker/dist/react-datepicker.css";
 import { db, auth } from "../config/firebase";
 import { collection, addDoc, doc, getDoc, serverTimestamp  } from "firebase/firestore";
 import NavMenu from "../components/NavMenu";
+import ChatWidget from "../components/ChatWidget"; // Import the ChatWidget component
 import "../assets/styles/ServicesPage.css";
 
 // Import images directly if using webpack/vite
@@ -14,7 +15,8 @@ import conferenceImage from "../assets/images/pixelcut-export.jpeg"; // Update w
 const ServicesPage = () => {
   const navigate = useNavigate();
   const [menuOpen, setMenuOpen] = useState(false);
-  const [selectedService, setSelectedService] = useState(null);
+  const [roomDropdownOpen, setRoomDropdownOpen] = useState(false);
+  const [conferenceDropdownOpen, setConferenceDropdownOpen] = useState(false);
   const today = new Date();
 
   const [roomBookingDetails, setRoomBookingDetails] = useState({
@@ -136,34 +138,42 @@ const ServicesPage = () => {
     return "/images/profile-placeholder.png"; // Default fallback
   };
 
-  const toggleDropdown = (service) => {
-    // Close other dropdowns when opening a new one
-    setSelectedService(selectedService === service ? null : service);
+  const toggleRoomDropdown = (event) => {
+    event.stopPropagation(); // Stop the click from bubbling up to the document
+    setRoomDropdownOpen(!roomDropdownOpen);
+    if (conferenceDropdownOpen) setConferenceDropdownOpen(false);
+  };
+  
+  const toggleConferenceDropdown = (event) => {
+    event.stopPropagation(); // Stop the click from bubbling up to the document
+    setConferenceDropdownOpen(!conferenceDropdownOpen);
+    if (roomDropdownOpen) setRoomDropdownOpen(false);
   };
 
-  // Handle clicks outside dropdowns
   useEffect(() => {
     const handleClickOutside = (event) => {
       const dropdowns = document.querySelectorAll('.dropdown');
       let clickedOutside = true;
-
+  
       dropdowns.forEach(dropdown => {
         if (dropdown.contains(event.target) ||
           event.target.closest('.service-item') === dropdown.closest('.service-item')) {
           clickedOutside = false;
         }
       });
-
-      if (clickedOutside && selectedService) {
-        setSelectedService(null);
+  
+      if (clickedOutside) {
+        // Close dropdowns if they're open and the click was outside
+        if (roomDropdownOpen) setRoomDropdownOpen(false);
+        if (conferenceDropdownOpen) setConferenceDropdownOpen(false);
       }
     };
-
+  
     document.addEventListener('mousedown', handleClickOutside);
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
     };
-  }, [selectedService]);
+  }, [roomDropdownOpen, conferenceDropdownOpen]);
 
   // ✅ Handles Room Booking Submission
   const handleRoomBooking = async () => {
@@ -254,7 +264,7 @@ const ServicesPage = () => {
         {/* Booking Options */}
         <div className="services-grid">
           {/* ✅ Room Booking */}
-          <div className="service-item" onClick={() => toggleDropdown("room")}>
+          <div className="service-item" onClick={toggleRoomDropdown}>
             <img
               src={roomImage || "/images/room-default.jpg"} 
               alt="Room Booking"
@@ -266,7 +276,7 @@ const ServicesPage = () => {
             />
             <p className="service-title">Room Booking</p>
             <div
-              className={`dropdown ${selectedService === "room" ? "active" : ""}`}
+              className={`dropdown ${roomDropdownOpen ? "active" : ""}`}
               onClick={(e) => e.stopPropagation()}
             >
               <label>Check-in Date:</label>
@@ -296,7 +306,7 @@ const ServicesPage = () => {
           </div>
 
           {/* ✅ Conference Booking */}
-          <div className="service-item" onClick={() => toggleDropdown("conference")}>
+          <div className="service-item" onClick={toggleConferenceDropdown}>
             <img
               src={conferenceImage || "/images/conference-default.jpg"}
               alt="Conference Booking"
@@ -308,7 +318,7 @@ const ServicesPage = () => {
             />
             <p className="service-title">Conference Booking</p>
             <div
-              className={`dropdown ${selectedService === "conference" ? "active" : ""}`}
+              className={`dropdown ${conferenceDropdownOpen ? "active" : ""}`}
               onClick={(e) => e.stopPropagation()}
             >
               <label>Start Date:</label>
@@ -344,6 +354,9 @@ const ServicesPage = () => {
           </div>
         </div>
       </div>
+
+      {/* Include the ChatWidget component */}
+      <ChatWidget />
     </>
   );
 };
