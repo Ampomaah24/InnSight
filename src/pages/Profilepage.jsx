@@ -18,119 +18,21 @@ import "react-phone-number-input/style.css";
 import "../assets/styles/ProfilePage.css";
 
 const ProfilePage = () => {
-  // Add auth prompt styles dynamically
-  useEffect(() => {
-    const styleElement = document.createElement('style');
-    styleElement.innerHTML = `
-      .auth-prompt-container {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        min-height: 80vh;
-        padding: 2rem;
-      }
-      
-      .auth-prompt {
-        background-color: white;
-        border-radius: 1rem;
-        padding: 2.5rem;
-        text-align: center;
-        box-shadow: 0 0.5rem 2rem rgba(0, 0, 0, 0.15);
-        max-width: 32rem;
-        width: 100%;
-      }
-      
-      .auth-icon {
-        font-size: 3rem;
-        color: var(--primary);
-        margin-bottom: 1.5rem;
-        background-color: rgba(224, 82, 6, 0.1);
-        padding: 1rem;
-        border-radius: 50%;
-      }
-      
-      .auth-prompt h2 {
-        font-size: 1.75rem;
-        margin-bottom: 1rem;
-        color: var(--dark);
-      }
-      
-      .auth-prompt p {
-        font-size: 1rem;
-        margin-bottom: 2rem;
-        color: var(--gray);
-        line-height: 1.6;
-      }
-      
-      .auth-buttons {
-        display: flex;
-        gap: 1rem;
-        justify-content: center;
-      }
-      
-      .login-button, .register-button {
-        padding: 0.75rem 1.5rem;
-        border-radius: 0.5rem;
-        font-weight: 600;
-        cursor: pointer;
-        transition: all 0.3s ease;
-        font-size: 1rem;
-      }
-      
-      .login-button {
-        background-color: var(--primary);
-        color: white;
-        border: none;
-      }
-      
-      .login-button:hover {
-        background-color: var(--primary-dark);
-        transform: translateY(-3px);
-        box-shadow: 0 4px 10px rgba(224, 82, 6, 0.3);
-      }
-      
-      .register-button {
-        background-color: white;
-        color: var(--primary);
-        border: 2px solid var(--primary);
-      }
-      
-      .register-button:hover {
-        background-color: rgba(224, 82, 6, 0.05);
-        transform: translateY(-3px);
-        box-shadow: 0 4px 10px rgba(224, 82, 6, 0.2);
-      }
-      
-      @media (max-width: 40rem) {
-        .auth-buttons {
-          flex-direction: column;
-        }
-        .auth-prompt {
-          padding: 2rem 1.5rem;
-        }
-      }
-    `;
-    document.head.appendChild(styleElement);
-    
-    // Clean up function
-    return () => {
-      if (document.head.contains(styleElement)) {
-        document.head.removeChild(styleElement);
-      }
-    };
-  }, []);
-  
+  // State variables
   const [userData, setUserData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
   const [editing, setEditing] = useState(false);
   const [formData, setFormData] = useState({
+    fullName: "",  // Added for editing
+    email: "",     // Added for editing
     phone: "",
     address: "",
     dateOfBirth: "",
     bio: ""
   });
   const [phoneError, setPhoneError] = useState(false);
+  const [emailError, setEmailError] = useState(false);
   const [error, setError] = useState(null);
   const [updateSuccess, setUpdateSuccess] = useState(false);
   const fileInputRef = useRef(null);
@@ -165,7 +67,7 @@ const ProfilePage = () => {
       address: data.address || "",
       dateOfBirth: data.dateOfBirth || "",
       bio: data.bio || "",
-      email: user.email, // Always use auth email
+      email: data.email || user.email || "", // Use data.email if available
       photoURL: data.photoURL || user.photoURL || null,
       avatar: data.avatar || null, // For base64 image
       createdAt: data.createdAt || new Date().toISOString(),
@@ -182,7 +84,6 @@ const ProfilePage = () => {
       const userDoc = await getDoc(userDocRef);
       
       if (userDoc.exists()) {
-        console.log("Fetched user data:", userDoc.data()); // Debug log
         return userDoc.data();
       }
       return null;
@@ -205,13 +106,14 @@ const ProfilePage = () => {
           
           if (data) {
             const normalizedData = normalizeUserData(user, data);
-            console.log("Normalized user data:", normalizedData); // Debug log
             setUserData(normalizedData);
             setFormData({
-              phone: normalizedData.phone,
-              address: normalizedData.address,
-              dateOfBirth: normalizedData.dateOfBirth,
-              bio: normalizedData.bio
+              fullName: normalizedData.fullName || "",
+              email: normalizedData.email || "",
+              phone: normalizedData.phone || "",
+              address: normalizedData.address || "",
+              dateOfBirth: normalizedData.dateOfBirth || "",
+              bio: normalizedData.bio || ""
             });
             
             // Update sessionStorage with current user data
@@ -237,6 +139,132 @@ const ProfilePage = () => {
     return () => unsubscribe();
   }, [navigate, fetchUserData, normalizeUserData]);
 
+  // Add auth prompt styles dynamically
+  useEffect(() => {
+    const styleElement = document.createElement('style');
+    styleElement.innerHTML = `
+.auth-prompt-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 90vh;
+  padding: 2rem;
+  background-color: #f4f4f4;
+}
+
+.auth-prompt {
+  background: #ffffff;
+  border-radius: 1rem;
+  padding: 3rem 2rem;
+  max-width: 28rem;
+  width: 100%;
+  box-shadow: 0 1rem 2.5rem rgba(0, 0, 0, 0.07);
+  text-align: center;
+  animation: fadeInUp 0.5s ease-out both;
+}
+
+.auth-icon {
+  font-size: 3rem;
+  color: #e05206;
+  background-color: rgba(224, 82, 6, 0.15);
+  padding: 0.9rem;
+  border-radius: 50%;
+  margin-bottom: 1.5rem;
+}
+
+.auth-prompt h2 {
+  font-size: 1.8rem;
+  margin-bottom: 1rem;
+  color: #333;
+  font-weight: 600;
+}
+
+.auth-prompt p {
+  color: #666;
+  font-size: 1rem;
+  margin-bottom: 2rem;
+  line-height: 1.6;
+}
+
+.auth-buttons {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.login-button,
+.register-button {
+  padding: 0.75rem 1.8rem;
+  border-radius: 0.5rem;
+  font-size: 1rem;
+  font-weight: 500;
+  transition: all 0.3s ease;
+  cursor: pointer;
+  min-width: 8rem;
+}
+
+.login-button {
+  background-color: #e05206;
+  color: white;
+  border: none;
+}
+
+.login-button:hover {
+  background-color: #c04400;
+  transform: translateY(-2px);
+}
+
+.register-button {
+  background: white;
+  color: #e05206;
+  border: 2px solid #e05206;
+}
+
+.register-button:hover {
+  background-color: rgba(224, 82, 6, 0.05);
+  transform: translateY(-2px);
+}
+
+/* Smooth entry animation */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(1.25rem);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (max-width: 500px) {
+  .auth-prompt {
+    padding: 2rem 1.5rem;
+  }
+
+  .auth-buttons {
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  .login-button,
+  .register-button {
+    width: 100%;
+  }
+}
+
+    `;
+    document.head.appendChild(styleElement);
+    
+    // Clean up function
+    return () => {
+      if (document.head.contains(styleElement)) {
+        document.head.removeChild(styleElement);
+      }
+    };
+  }, []);
+
   // Handle form input changes
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -244,6 +272,11 @@ const ProfilePage = () => {
       ...prev,
       [name]: value
     }));
+
+    // Clear email error when user changes the email
+    if (name === 'email') {
+      setEmailError(false);
+    }
   };
 
   // Handle phone input changes with validation
@@ -252,7 +285,21 @@ const ProfilePage = () => {
       ...prev,
       phone: value || ""
     }));
-    setPhoneError(value ? !isValidPhoneNumber(value) : false);
+    
+    // Only set error if there's a value and it's invalid
+    if (value) {
+      const isValid = isValidPhoneNumber(value);
+      setPhoneError(!isValid);
+      
+      // Don't set global error, just handle local validation
+      if (!isValid) {
+        // Clear any previous global error message that might be showing
+        setError(null);
+      }
+    } else {
+      // Clear error if empty
+      setPhoneError(false);
+    }
   };
 
   // Handle profile photo click
@@ -335,7 +382,7 @@ const ProfilePage = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     
-    // Validate phone number if provided
+    // Validate phone number if provided - don't set global error
     if (formData.phone && !isValidPhoneNumber(formData.phone)) {
       setPhoneError(true);
       return;
@@ -349,6 +396,14 @@ const ProfilePage = () => {
         setError("Date of birth cannot be in the future");
         return;
       }
+    }
+
+    // Email validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(formData.email)) {
+      setEmailError(true);
+      setError("Please enter a valid email address");
+      return;
     }
     
     try {
@@ -406,49 +461,6 @@ const ProfilePage = () => {
     setError(null);
   };
 
-  // Loading state
-  if (loading && !userData) {
-    return (
-      <div className="profile-page">
-        <div className="loading-spinner"></div>
-        <p className="loading-text">Loading your profile...</p>
-      </div>
-    );
-  }
-  
-  // Not logged in state - Show auth prompt
-  if (!loading && !userData) {
-    return (
-      <div className="profile-page">
-        <div className="back-button" onClick={handleGoBack}>
-          <FaArrowLeft size={16} /> Back
-        </div>
-        
-        <div className="auth-prompt-container">
-          <div className="auth-prompt">
-            <FaUser className="auth-icon" />
-            <h2>Sign in Required</h2>
-            <p>You need to sign in or create an account to view your profile.</p>
-            <div className="auth-buttons">
-              <button 
-                className="login-button"
-                onClick={() => navigate('/login')}
-              >
-                Sign In
-              </button>
-              <button 
-                className="register-button"
-                onClick={() => navigate('/register')}
-              >
-                Create Account
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
   // Get initials for avatar
   const getInitials = () => {
     return `${userData?.fname?.charAt(0) || ''}${userData?.lname?.charAt(0) || ''}`;
@@ -473,17 +485,60 @@ const ProfilePage = () => {
     return null;
   };
 
+  // Loading state
+  if (loading && !userData) {
+    return (
+      <div className="profile-page">
+        <div className="loading-spinner"></div>
+        <p className="loading-text">Loading your profile...</p>
+      </div>
+    );
+  }
+  
+  // Not logged in state - Show auth prompt
+  if (!loading && !userData) {
+    return (
+      <div className="profile-page">
+        <div className="back-button" onClick={handleGoBack}>
+          <FaArrowLeft size={16} />
+        </div>
+        
+        <div className="auth-prompt-container">
+          <div className="auth-prompt">
+            <FaUser className="auth-icon" />
+            <h2>Sign in Required</h2>
+            <p>You need to sign in or create an account to view your profile.</p>
+            <div className="auth-buttons">
+              <button 
+                className="login-button"
+                onClick={() => navigate('/login')}
+              >
+                Sign In
+              </button>
+              <button 
+                className="register-button"
+                onClick={() => navigate('/signup')}
+              >
+                Create Account
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className="profile-page profile-fullwidth">
+    <div className="profile-page">
+      {/* Back Button */}
       <div className="back-button" onClick={handleGoBack}>
-        <FaArrowLeft size={16} /> Back
+        <FaArrowLeft size={16} />
       </div>
       
       {/* Success Message */}
       {updateSuccess && (
-        <div className="status-message success-message">
-          <span>Profile updated successfully!</span>
-          <button onClick={() => setUpdateSuccess(false)} className="dismiss-button">×</button>
+        <div className="success-message">
+          Profile updated successfully!
         </div>
       )}
 
@@ -495,91 +550,38 @@ const ProfilePage = () => {
         </div>
       )}
 
-      <div className="profile-header">
-        <div className="profile-avatar-container">
-          <div 
-            className={`profile-avatar ${uploading ? 'uploading' : ''}`} 
-            onClick={handlePhotoClick}
-            title="Click to change profile photo"
-          >
-            {getAvatarSource() ? (
-              <img 
-                src={getAvatarSource()} 
-                alt="Profile" 
-                onError={(e) => {
-                  e.target.onerror = null;
-                  e.target.src = "/default-avatar.png";
-                }}
-              />
-            ) : (
-              <div className="avatar-initials">{getInitials()}</div>
-            )}
-            
-            {uploading ? (
-              <div className="avatar-uploading">
-                <div className="spinner"></div>
-                <span>Uploading...</span>
-              </div>
-            ) : (
-              <div className="avatar-edit">
-                <FaCamera />
-                <div style={{ fontSize: '0.8rem', marginTop: '5px' }}>Change Photo</div>
-              </div>
-            )}
-          </div>
-          <input 
-            type="file" 
-            ref={fileInputRef} 
-            onChange={handleFileChange} 
-            accept="image/*" 
-            style={{ display: 'none' }} 
-            aria-label="Upload profile picture"
-          />
-        </div>
-        
-        <div className="profile-title">
-          <h1>My Profile</h1>
-          <p className="profile-name">{getDisplayName()}</p>
-          <p className="profile-email">{auth.currentUser?.email || ""}</p>
-        </div>
-        
-        <button 
-          className={`edit-profile-button ${editing ? 'active' : ''}`}
-          onClick={() => setEditing(prev => !prev)}
-          aria-label={editing ? "Cancel editing" : "Edit profile"}
-        >
-          {editing ? "Cancel" : <><FaEdit /> Edit Profile</>}
-        </button>
-      </div>
-
-      <div className="profile-content">
-        {editing ? (
+      {editing ? (
+        /* Edit Mode - Updated to make name and email editable with fixed phone validation */
+        <div className="profile-content">
           <form className="edit-form" onSubmit={handleSubmit} noValidate>
             <div className="form-section">
               <h2>Personal Information</h2>
               
               <div className="form-row">
                 <div className="form-group">
-                  <label htmlFor="fullName">Full Name (from registration)</label>
+                  <label htmlFor="fullName">Full Name</label>
                   <input
                     type="text"
                     id="fullName"
-                    value={getDisplayName()}
-                    disabled
-                    className="disabled-input"
+                    name="fullName"
+                    value={formData.fullName}
+                    onChange={handleInputChange}
+                    placeholder="Enter your full name"
+                    className="form-input"
                   />
-                  <small>Name is set during registration</small>
                 </div>
                 <div className="form-group">
                   <label htmlFor="email">Email</label>
                   <input
                     type="email"
                     id="email"
-                    value={auth.currentUser?.email || ""}
-                    disabled
-                    className="disabled-input"
+                    name="email"
+                    value={formData.email}
+                    onChange={handleInputChange}
+                    placeholder="Enter your email address"
+                    className={emailError ? "form-input error" : "form-input"}
                   />
-                  <small>Email cannot be changed</small>
+                  {emailError && <small className="error-message">Please enter a valid email address</small>}
                 </div>
               </div>
 
@@ -653,76 +655,143 @@ const ProfilePage = () => {
               <button 
                 type="submit" 
                 className="save-button"
-                disabled={(phoneError && formData.phone !== "") || loading}
+                disabled={(phoneError && formData.phone !== "") || emailError || loading}
               >
                 {loading ? "Saving..." : "Save Changes"}
               </button>
             </div>
           </form>
-        ) : (
-          <div className="info-sections">
-            <div className="info-section">
-              <h2>Personal Information</h2>
-              
-              <div className="info-row">
-                <div className="info-icon"><FaUser /></div>
-                <div className="info-details">
-                  <span className="info-label">Name</span>
-                  <span className="info-value">{getDisplayName()}</span>
+        </div>
+      ) : (
+        /* View Mode - New layout inspired by the image */
+        <div className="profile-card">
+          <div className="profile-header">
+            <div className="profile-header-bg"></div>
+            <div className="profile-header-content">
+              <div className="profile-avatar-container">
+                <div 
+                  className={`profile-avatar ${uploading ? 'uploading' : ''}`} 
+                  onClick={handlePhotoClick}
+                  title="Click to change profile photo"
+                >
+                  {getAvatarSource() ? (
+                    <img 
+                      src={getAvatarSource()} 
+                      alt="Profile" 
+                      onError={(e) => {
+                        e.target.onerror = null;
+                        e.target.src = "/default-avatar.png";
+                      }}
+                    />
+                  ) : (
+                    <div className="avatar-initials">{getInitials()}</div>
+                  )}
+                  
+                  {uploading ? (
+                    <div className="avatar-uploading">
+                      <div className="spinner"></div>
+                      <span>Uploading...</span>
+                    </div>
+                  ) : (
+                    <div className="avatar-edit">
+                      <FaCamera />
+                      <div style={{ fontSize: '0.8rem', marginTop: '5px' }}>Change Photo</div>
+                    </div>
+                  )}
                 </div>
+                <input 
+                  type="file" 
+                  ref={fileInputRef} 
+                  onChange={handleFileChange} 
+                  accept="image/*" 
+                  style={{ display: 'none' }} 
+                  aria-label="Upload profile picture"
+                />
               </div>
-              
-              <div className="info-row">
-                <div className="info-icon"><FaEnvelope /></div>
-                <div className="info-details">
-                  <span className="info-label">Email</span>
-                  <span className="info-value">{auth.currentUser?.email || ""}</span>
-                </div>
-              </div>
-              
-              {userData?.phone && (
+            </div>
+          </div>
+          
+          <div className="profile-info">
+            <div className="profile-name-container">
+              <h1 className="profile-name">{getDisplayName()}</h1>
+              <div className="profile-name-underline"></div>
+            </div>
+            
+            <div className="profile-actions">
+              <button 
+                className="action-button connect-button"
+                onClick={() => setEditing(true)}
+              >
+                <FaEdit /> Edit Profile
+              </button>
+            </div>
+          </div>
+          
+          <div className="profile-content">
+            <div className="info-sections">
+              <div className="info-section">
+                <h2>Personal Information</h2>
+                
                 <div className="info-row">
-                  <div className="info-icon"><FaPhone /></div>
+                  <div className="info-icon"><FaUser /></div>
                   <div className="info-details">
-                    <span className="info-label">Phone</span>
-                    <span className="info-value">{userData.phone}</span>
+                    <span className="info-label">Name</span>
+                    <span className="info-value">{getDisplayName()}</span>
+                  </div>
+                </div>
+                
+                <div className="info-row">
+                  <div className="info-icon"><FaEnvelope /></div>
+                  <div className="info-details">
+                    <span className="info-label">Email</span>
+                    <span className="info-value">{userData?.email || auth.currentUser?.email || ""}</span>
+                  </div>
+                </div>
+                
+                {userData?.phone && (
+                  <div className="info-row">
+                    <div className="info-icon"><FaPhone /></div>
+                    <div className="info-details">
+                      <span className="info-label">Phone</span>
+                      <span className="info-value">{userData.phone}</span>
+                    </div>
+                  </div>
+                )}
+                
+                {userData?.dateOfBirth && (
+                  <div className="info-row">
+                    <div className="info-icon"><FaCalendarAlt /></div>
+                    <div className="info-details">
+                      <span className="info-label">Date of Birth</span>
+                      <span className="info-value">{userData.dateOfBirth}</span>
+                    </div>
+                  </div>
+                )}
+              </div>
+              
+              {userData?.address && (
+                <div className="info-section">
+                  <h2>Contact Information</h2>
+                  <div className="info-row">
+                    <div className="info-icon"><FaMapMarkerAlt /></div>
+                    <div className="info-details">
+                      <span className="info-label">Address</span>
+                      <span className="info-value">{userData.address}</span>
+                    </div>
                   </div>
                 </div>
               )}
               
-              {userData?.dateOfBirth && (
-                <div className="info-row">
-                  <div className="info-icon"><FaCalendarAlt /></div>
-                  <div className="info-details">
-                    <span className="info-label">Date of Birth</span>
-                    <span className="info-value">{userData.dateOfBirth}</span>
-                  </div>
+              {userData?.bio && (
+                <div className="info-section">
+                  <h2>About Me</h2>
+                  <div className="bio-content">{userData.bio}</div>
                 </div>
               )}
             </div>
-            
-            {userData?.address && (
-              <div className="info-section">
-                <h2>Contact Information</h2>
-                <div className="info-row">
-                  <div className="info-icon"><FaMapMarkerAlt /></div>
-                  <div className="info-details">
-                    <span className="info-label">Address</span>
-                    <span className="info-value">{userData.address}</span>
-                  </div>
-                </div>
-              </div>
-            )}
-            
-            {userData?.bio && (
-              <div className="info-section">
-                <h2>About Me</h2>
-                <div className="bio-content">{userData.bio}</div>
-              </div>
-            )}
           </div>
-        )}
-      </div>
+        </div>
+      )}
     </div>
   );
 };

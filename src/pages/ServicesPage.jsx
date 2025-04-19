@@ -3,14 +3,15 @@ import { useNavigate } from "react-router-dom";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { db, auth } from "../config/firebase";
-import { collection, addDoc, doc, getDoc, serverTimestamp  } from "firebase/firestore";
+import { collection, addDoc, doc, getDoc, serverTimestamp } from "firebase/firestore";
 import NavMenu from "../components/NavMenu";
-import ChatWidget from "../components/ChatWidget"; // Import the ChatWidget component
+import ChatWidget from "../components/ChatWidget";
 import "../assets/styles/ServicesPage.css";
+import ProfileSection from "../components/ProfileSection";
 
 // Import images directly if using webpack/vite
-import roomImage from "../assets/images/IMG_0111.JPG"; // Update with your actual image name
-import conferenceImage from "../assets/images/pixelcut-export.jpeg"; // Update with your actual image name
+import roomImage from "../assets/images/IMG_0111.JPG";
+import conferenceImage from "../assets/images/pixelcut-export.jpeg";
 
 const ServicesPage = () => {
   const navigate = useNavigate();
@@ -37,7 +38,6 @@ const ServicesPage = () => {
   useEffect(() => {
     const fetchUserProfile = async () => {
       try {
-        // First check sessionStorage for cached user data
         const sessionUser = sessionStorage.getItem('currentUser');
         if (sessionUser) {
           const parsedUser = JSON.parse(sessionUser);
@@ -46,33 +46,24 @@ const ServicesPage = () => {
           return;
         }
 
-        // If not in sessionStorage, get from Firestore
         const currentUser = auth.currentUser;
-
         if (currentUser) {
           const userDocRef = doc(db, "users", currentUser.uid);
           const userDoc = await getDoc(userDocRef);
 
           if (userDoc.exists()) {
             const userData = userDoc.data();
-
-            // Create user object with support for base64 avatar
             const userObj = {
               id: currentUser.uid,
               fname: userData.firstName || userData.fname || "User",
               lname: userData.lastName || userData.lname || "",
               photoURL: userData.photoURL || currentUser.photoURL || "/images/profile-placeholder.png",
-              avatar: userData.avatar || null, // Add support for base64 avatar
+              avatar: userData.avatar || null,
               email: userData.email || currentUser.email
             };
-
-            // Save to state
             setUser(userObj);
-
-            // Cache in sessionStorage
             sessionStorage.setItem('currentUser', JSON.stringify(userObj));
           } else {
-            // Fallback to auth data
             const userObj = {
               id: currentUser.uid,
               fname: currentUser.displayName?.split(' ')[0] || "User",
@@ -84,7 +75,6 @@ const ServicesPage = () => {
             sessionStorage.setItem('currentUser', JSON.stringify(userObj));
           }
         } else {
-          // Default user for demo purposes if not logged in
           setUser({
             fname: "Guest",
             lname: "User",
@@ -93,7 +83,6 @@ const ServicesPage = () => {
         }
       } catch (error) {
         console.error("Error fetching user profile:", error);
-        // Fallback to default profile
         setUser({
           fname: "Guest",
           lname: "User",
@@ -106,7 +95,6 @@ const ServicesPage = () => {
 
     fetchUserProfile();
 
-    // Add listener for storage events to catch updates from other tabs/pages
     const handleStorageChange = (e) => {
       if (e.key === 'currentUser') {
         try {
@@ -121,64 +109,63 @@ const ServicesPage = () => {
     };
 
     window.addEventListener('storage', handleStorageChange);
-
     return () => {
       window.removeEventListener('storage', handleStorageChange);
     };
   }, []);
 
-  // Get avatar source - prioritize base64 avatar over photoURL
   const getAvatarSource = () => {
-    if (user?.avatar) {
-      return user.avatar; // Use base64 image if available
-    }
-    if (user?.photoURL) {
-      return user.photoURL; // Fallback to photoURL if available
-    }
-    return "/images/profile-placeholder.png"; // Default fallback
+    if (user?.avatar) return user.avatar;
+    if (user?.photoURL) return user.photoURL;
+    return "/images/profile-placeholder.png";
   };
 
   const toggleRoomDropdown = (event) => {
-    event.stopPropagation(); // Stop the click from bubbling up to the document
-    setRoomDropdownOpen(!roomDropdownOpen);
-    if (conferenceDropdownOpen) setConferenceDropdownOpen(false);
+    event.stopPropagation();
+    if (event.currentTarget === event.target.closest('.service-item')) {
+      setConferenceDropdownOpen(false);
+      setRoomDropdownOpen(prev => !prev);
+    }
   };
-  
+
   const toggleConferenceDropdown = (event) => {
-    event.stopPropagation(); // Stop the click from bubbling up to the document
-    setConferenceDropdownOpen(!conferenceDropdownOpen);
-    if (roomDropdownOpen) setRoomDropdownOpen(false);
+    event.stopPropagation();
+    if (event.currentTarget === event.target.closest('.service-item')) {
+      setRoomDropdownOpen(false);
+      setConferenceDropdownOpen(prev => !prev);
+    }
   };
 
   useEffect(() => {
     const handleClickOutside = (event) => {
-      const dropdowns = document.querySelectorAll('.dropdown');
-      let clickedOutside = true;
-  
-      dropdowns.forEach(dropdown => {
-        if (dropdown.contains(event.target) ||
-          event.target.closest('.service-item') === dropdown.closest('.service-item')) {
-          clickedOutside = false;
-        }
-      });
-  
-      if (clickedOutside) {
-        // Close dropdowns if they're open and the click was outside
-        if (roomDropdownOpen) setRoomDropdownOpen(false);
-        if (conferenceDropdownOpen) setConferenceDropdownOpen(false);
+      const roomServiceItem = document.querySelector('.room-service-item');
+      const conferenceServiceItem = document.querySelector('.conference-service-item');
+      const roomDropdown = document.querySelector('.room-dropdown');
+      const conferenceDropdown = document.querySelector('.conference-dropdown');
+      
+      const clickedInRoom = (roomServiceItem && roomServiceItem.contains(event.target)) || 
+                          (roomDropdown && roomDropdown.contains(event.target));
+      
+      const clickedInConference = (conferenceServiceItem && conferenceServiceItem.contains(event.target)) || 
+                                (conferenceDropdown && conferenceDropdown.contains(event.target));
+      
+      if (!clickedInRoom && roomDropdownOpen) {
+        setRoomDropdownOpen(false);
+      }
+      
+      if (!clickedInConference && conferenceDropdownOpen) {
+        setConferenceDropdownOpen(false);
       }
     };
-  
+    
     document.addEventListener('mousedown', handleClickOutside);
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
     };
   }, [roomDropdownOpen, conferenceDropdownOpen]);
 
-  // ✅ Handles Room Booking Submission
   const handleRoomBooking = async () => {
     const { checkIn, checkOut } = roomBookingDetails;
-
     if (!checkIn || !checkOut) {
       alert("Please select check-in and check-out dates!");
       return;
@@ -186,7 +173,7 @@ const ServicesPage = () => {
 
     try {
       const isLoggedIn = !!auth.currentUser;
-      const docRef = await addDoc(collection(db, "roomBookings"), {
+      await addDoc(collection(db, "roomBookings"), {
         checkIn: checkIn.toISOString(),
         checkOut: checkOut.toISOString(),
         createdAt: serverTimestamp(),
@@ -203,25 +190,23 @@ const ServicesPage = () => {
     }
   };
 
-  // ✅ Handles Conference Booking Submission
   const handleConferenceBooking = async () => {
     const { startDate, endDate } = conferenceBookingDetails;
-  
     if (!startDate || !endDate) {
       alert("Please select a start date and end date!");
       return;
     }
-  
+
     try {
       const isLoggedIn = !!auth.currentUser;
-      const docRef = await addDoc(collection(db, "conferenceBookings"), {
+      await addDoc(collection(db, "conferenceBookings"), {
         startDate: startDate.toISOString(),
         endDate: endDate.toISOString(),
         createdAt: serverTimestamp(),
         userId: user?.id || auth.currentUser?.uid || "guest",
-        isGuest: !isLoggedIn // Add this field
+        isGuest: !isLoggedIn
       });
-  
+
       navigate(
         `/conference-booking?startDate=${startDate.toISOString()}&endDate=${endDate.toISOString()}`
       );
@@ -231,40 +216,35 @@ const ServicesPage = () => {
     }
   };
 
-  // Function to handle profile click
   const handleProfileClick = () => {
     navigate("/profile");
   };
 
   return (
     <>
-      {/* Top Navigation Bar - Fixed positioning */}
       <div className="nav-container" style={{ backgroundColor: "transparent", boxShadow: "none" }}>
         <NavMenu menuOpen={menuOpen} setMenuOpen={setMenuOpen} />
         <h1 className="booking-services-heading">Booking Services</h1>
 
-        {/* Top-right profile section - now with only the profile image */}
-        {!loading && user && (
-          <div className="profile-avatar" onClick={handleProfileClick}>
-            <img
-              src={getAvatarSource()}
-              alt="Profile"
-              className="profile-pic"
-              onError={(e) => {
-                e.target.onerror = null;
-                e.target.src = "/images/profile-placeholder.png";
-              }}
-            />
-          </div>
-        )}
+        {!loading && (
+  <ProfileSection 
+    user={user} 
+    onLogout={() => {
+      auth.signOut()
+        .then(() => {
+          sessionStorage.removeItem('currentUser');
+          navigate('/login');
+        })
+        .catch(error => console.error("Error signing out:", error));
+    }} 
+  />
+)}
       </div>
 
-      {/* Services Page Content */}
       <div className="services-page">
-        {/* Booking Options */}
         <div className="services-grid">
-          {/* ✅ Room Booking */}
-          <div className="service-item" onClick={toggleRoomDropdown}>
+          {/* Room Booking */}
+          <div className="service-item room-service-item" onClick={toggleRoomDropdown}>
             <img
               src={roomImage || "/images/room-default.jpg"} 
               alt="Room Booking"
@@ -276,7 +256,7 @@ const ServicesPage = () => {
             />
             <p className="service-title">Room Booking</p>
             <div
-              className={`dropdown ${roomDropdownOpen ? "active" : ""}`}
+              className={`dropdown room-dropdown ${roomDropdownOpen ? "active" : ""}`}
               onClick={(e) => e.stopPropagation()}
             >
               <label>Check-in Date:</label>
@@ -305,8 +285,8 @@ const ServicesPage = () => {
             </div>
           </div>
 
-          {/* ✅ Conference Booking */}
-          <div className="service-item" onClick={toggleConferenceDropdown}>
+          {/* Conference Booking */}
+          <div className="service-item conference-service-item" onClick={toggleConferenceDropdown}>
             <img
               src={conferenceImage || "/images/conference-default.jpg"}
               alt="Conference Booking"
@@ -318,7 +298,7 @@ const ServicesPage = () => {
             />
             <p className="service-title">Conference Booking</p>
             <div
-              className={`dropdown ${conferenceDropdownOpen ? "active" : ""}`}
+              className={`dropdown conference-dropdown ${conferenceDropdownOpen ? "active" : ""}`}
               onClick={(e) => e.stopPropagation()}
             >
               <label>Start Date:</label>
@@ -355,7 +335,6 @@ const ServicesPage = () => {
         </div>
       </div>
 
-      {/* Include the ChatWidget component */}
       <ChatWidget />
     </>
   );

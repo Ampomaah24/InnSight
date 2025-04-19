@@ -191,11 +191,8 @@ export default function SignUp() {
   )}
 
   {/* Error message display */}
-  {error && (
-    <p className="error-message" role="alert">
-      {error}
-    </p>
-  )}
+
+  
       <div className="signup-form-container">
         <div className="signup-form">
  
@@ -203,7 +200,12 @@ export default function SignUp() {
           <h2 className="signup-title">Sign Up</h2>
           
           {/* Error message display */}
-          {error && <p className="error-message" role="alert">{error}</p>}
+          {error && (
+  <p className="error-message" role="alert">
+    <span style={{ marginRight: "0.5rem" }}>⚠️</span>{error}
+  </p>
+)}
+
           
           {/* Success message display */}
           {/* {successMessage && <p className="success-message" role="status">{successMessage}</p>} */}

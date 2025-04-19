@@ -16,7 +16,6 @@ const ERROR_MESSAGES = {
   "default": "Something went wrong. Please try again or contact our support team."
 };
 
-//
 const mapRoomTypeToDatabase = (roomType) => {
   const roomTypeMap = {
     "double bed": "Double bed",
@@ -32,9 +31,6 @@ const mapRoomTypeToDatabase = (roomType) => {
   return roomTypeMap[normalizedType] || roomType;
 };
 
-// Then use this function in your queries:
-
-
 const ChatWidget = () => {
   const navigate = useNavigate();
   
@@ -44,17 +40,28 @@ const ChatWidget = () => {
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [consecutiveErrors, setConsecutiveErrors] = useState(0);
+  const [showBubble, setShowBubble] = useState(true);
   const messagesEndRef = useRef(null);
+  const inputRef = useRef(null);
 
   // Initialize chatbot with welcome message
   useEffect(() => {
     setMessages([
       {
-        text: "Hello! I'm the InnSight Hotel assistant. How can I help you today? You can ask about room availability, make bookings, inquire about our services, or ask about check-in times, WiFi, breakfast, and more.",
+        text: "Hello! I'm the Hotel assistant. How can I help you today? You can ask about room availability, make bookings, inquire about our services, or ask about check-in times, WiFi, breakfast, and more.",
         sender: "bot",
         timestamp: new Date(),
       },
     ]);
+    
+    // Hide bubble after 10 seconds if chat hasn't been opened
+    const bubbleTimer = setTimeout(() => {
+      if (!chatOpen) {
+        setShowBubble(false);
+      }
+    }, 10000);
+    
+    return () => clearTimeout(bubbleTimer);
   }, []);
 
   // Auto-scroll to bottom of chat messages
@@ -63,6 +70,13 @@ const ChatWidget = () => {
       scrollToBottom();
     }
   }, [messages, chatOpen]);
+  
+  // Focus input field when chat is opened
+  useEffect(() => {
+    if (chatOpen && inputRef.current) {
+      inputRef.current.focus();
+    }
+  }, [chatOpen]);
 
   // Function to scroll to bottom of chat
   const scrollToBottom = () => {
@@ -70,9 +84,19 @@ const ChatWidget = () => {
   };
 
   // Handle toggling the chat window
-  const toggleChat = () => {
-    setChatOpen(!chatOpen);
-  };
+// Handle toggling the chat window
+const toggleChat = () => {
+  if (chatOpen) {
+    // When closing the chat, reset the bubble to show again
+    setTimeout(() => {
+      setShowBubble(true);
+    }, 500); // Small delay to prevent the bubble from appearing immediately
+  } else {
+    // When opening the chat, hide the bubble
+    setShowBubble(false);
+  }
+  setChatOpen(!chatOpen);
+};
 
   // Handle input change for chat
   const handleInputChange = (e) => {
@@ -155,6 +179,16 @@ const ChatWidget = () => {
       }
     } finally {
       setIsLoading(false); // End loading
+    }
+  };
+
+  // Handle pressing Enter to send message
+  const handleKeyDown = (e) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      if (input.trim()) {
+        handleSendMessage(e);
+      }
     }
   };
 
@@ -471,26 +505,31 @@ const ChatWidget = () => {
 
   return (
     <div className="chatbot-container">
-      {/* Chat Icon Button */}
-      <button 
-        className="chat-toggle-button"
-        onClick={toggleChat}
-        aria-label="Toggle chat assistant"
-      >
-        {chatOpen ? (
-          <i className="fas fa-times"></i> 
-        ) : (
-          <i className="fas fa-comments"></i>
+      {/* Chat Icon Button with Speech Bubble */}
+      <div className="chat-button-wrapper">
+        {!chatOpen && showBubble && (
+          <div className="speech-bubble">Hi there!</div>
         )}
-      </button>
+        <button 
+          className="chat-toggle-button"
+          onClick={toggleChat}
+          aria-label="Toggle chat assistant"
+        >
+          {chatOpen ? (
+            <span className="close-icon">×</span> 
+          ) : (
+            <span className="human-emoji" role="img" aria-label="Chat assistant">👨‍💼</span>
+          )}
+        </button>
+      </div>
       
       {/* Chat Dialog */}
       {chatOpen && (
         <div className="chat-dialog">
           <div className="chat-header">
-            <h3>InnSight Hotel Assistant</h3>
+            <h3>Hotel Assistant</h3>
             <button className="close-chat" onClick={toggleChat}>
-              <i className="fas fa-times"></i>
+              <span className="close-icon">×</span>
             </button>
           </div>
           
@@ -502,14 +541,21 @@ const ChatWidget = () => {
           
           <form className="chat-input-container" onSubmit={handleSendMessage}>
             <input
+              ref={inputRef}
               type="text"
               value={input}
               onChange={handleInputChange}
+              onKeyDown={handleKeyDown}
               placeholder="Type a message..."
               disabled={isLoading}
             />
-            <button type="submit" disabled={isLoading || !input.trim()}>
-              <i className="fas fa-paper-plane"></i>
+            <button 
+              type="submit" 
+              className="send-button"
+              disabled={isLoading || !input.trim()}
+              aria-label="Send message"
+            >
+              <div className="arrow-icon"></div>
             </button>
           </form>
         </div>

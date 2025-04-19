@@ -8,15 +8,46 @@ const PaymentModal = ({ show, onHide, guest, paymentType, amount, onPaymentCompl
   const [reference, setReference] = useState('');
   const [processingPayment, setProcessingPayment] = useState(false);
   const [printReceipt, setPrintReceipt] = useState(true);
+  const [emailReceipt, setEmailReceipt] = useState(false);
+  const [guestEmail, setGuestEmail] = useState('');
   
   if (!show || !guest) return null;
   
+  // Format date helper function
+  const formatDate = (dateString) => {
+    try {
+      if (dateString instanceof Date) {
+        return dateString.toLocaleDateString();
+      }
+      
+      if (dateString && typeof dateString === 'string') {
+        const date = new Date(dateString);
+        return date instanceof Date && !isNaN(date) 
+          ? date.toLocaleDateString() 
+          : "Not available";
+      } else {
+        return "Not available";
+      }
+    } catch (e) {
+      console.error("Date parsing error:", e);
+      return "Not available";
+    }
+  };
+  
   const handleSubmit = async (e) => {
     e.preventDefault();
+    
+    // Validate email if email receipt is selected
+    if (emailReceipt && !guestEmail) {
+      alert("Please enter guest email address for email receipt");
+      return;
+    }
+    
     setProcessingPayment(true);
     
     try {
       const db = getFirestore();
+      const batch = writeBatch(db);
       
       // Create payment record
       const paymentData = {
@@ -28,7 +59,9 @@ const PaymentModal = ({ show, onHide, guest, paymentType, amount, onPaymentCompl
         reference: reference,
         collectedBy: "Front Desk", // Ideally use current user ID
         timestamp: new Date(),
-        status: "Completed"
+        status: "Completed",
+        emailSent: emailReceipt,
+        guestEmail: emailReceipt ? guestEmail : null
       };
       
       // Add payment to Firestore
@@ -43,26 +76,57 @@ const PaymentModal = ({ show, onHide, guest, paymentType, amount, onPaymentCompl
           lastPaymentDate: new Date(),
           lastPaymentId: paymentRef.id
         });
-      } else if (paymentType === 'food order') {
-        // Update food orders
-        const foodOrdersRef = collection(db, "foodOrders");
-        const q = query(
-          foodOrdersRef,
-          where("guestId", "==", guest.id),
-          where("paid", "==", false)
+      } else if (paymentType === 'food') {
+        // Update food orders (not extension charges)
+        // First, get all food orders that are not extensions
+        const foodOrders = guest.foodOrders.filter(order => 
+          order.type === "food" && 
+          !(order.description && order.description.toLowerCase().includes("extension"))
         );
         
-        const querySnapshot = await getDocs(q);
-        const batch = writeBatch(db);
+        // Update each order to mark as paid
+        for (const order of foodOrders) {
+          if (order.id) {
+            const orderRef = doc(db, "orders", order.id);
+            batch.update(orderRef, { 
+              paid: true, 
+              paymentId: paymentRef.id,
+              paidAt: new Date(),
+              paymentMethod: paymentMethod
+            });
+          }
+        }
         
-        querySnapshot.forEach((doc) => {
-          batch.update(doc.ref, { 
-            paid: true, 
-            paymentId: paymentRef.id,
-            paidAt: new Date()
-          });
+        // Commit the batch
+        await batch.commit();
+      } else if (paymentType === 'extension') {
+        // Update extension charges
+        // First, get all extension orders
+        const extensionOrders = guest.foodOrders.filter(order => 
+          order.type === "extension" || 
+          (order.description && order.description.toLowerCase().includes("extension"))
+        );
+        
+        // Update each order to mark as paid
+        for (const order of extensionOrders) {
+          if (order.id) {
+            const orderRef = doc(db, "orders", order.id);
+            batch.update(orderRef, { 
+              paid: true, 
+              paymentId: paymentRef.id,
+              paidAt: new Date(),
+              paymentMethod: paymentMethod
+            });
+          }
+        }
+        
+        // Clear extension charges from booking document
+        const bookingRef = doc(db, "bookings", guest.id);
+        batch.update(bookingRef, {
+          extensionCharges: []
         });
         
+        // Commit the batch
         await batch.commit();
       }
       
@@ -71,26 +135,69 @@ const PaymentModal = ({ show, onHide, guest, paymentType, amount, onPaymentCompl
         generateReceipt(guest, paymentType, amount, paymentMethod, reference);
       }
       
+      // Handle email receipt if selected
+      if (emailReceipt) {
+        // Create a record for the email to be sent
+        await addDoc(collection(db, "emailQueue"), {
+          to: guestEmail,
+          subject: `Receipt from Ampomaah Tourist Hotel - ${formatPaymentType(paymentType)}`,
+          templateId: "payment-receipt",
+          data: {
+            guestName: guest.name,
+            roomNumber: guest.room,
+            roomName: guest.roomName,
+            paymentType: formatPaymentType(paymentType),
+            paymentMethod: paymentMethod,
+            amount: amount,
+            reference: reference,
+            receiptDate: new Date().toLocaleDateString(),
+            receiptId: `REC-${Math.floor(Math.random() * 10000)}`
+          },
+          status: "pending",
+          createdAt: new Date()
+        });
+      }
+      
       // Notify parent component that payment is complete
-      onPaymentComplete(paymentType);
+      const paymentDetails = {
+        method: paymentMethod,
+        reference: reference,
+        timestamp: new Date(),
+        email: emailReceipt ? guestEmail : null
+      };
+      onPaymentComplete(paymentType, paymentDetails);
       
       // Close the modal
       onHide();
       
       // Show success message
-      alert(`Payment of $${amount.toFixed(2)} for ${guest.name}'s ${paymentType} has been processed successfully.`);
+      alert(`✅ Payment of $${amount.toFixed(2)} for ${guest.name}'s ${formatPaymentType(paymentType)} has been processed successfully.`);
       
     } catch (error) {
       console.error("Payment processing error:", error);
-      alert(`Error processing payment: ${error.message}`);
+      alert(`❌ Error processing payment: ${error.message}`);
     } finally {
       setProcessingPayment(false);
     }
   };
   
+  // Format the type string for display
+  const formatPaymentType = (type) => {
+    switch(type) {
+      case 'accommodation':
+        return 'Accommodation Balance';
+      case 'food':
+        return 'Food & Beverage Charges';
+      case 'extension':
+        return 'Stay Extension Charges';
+      default:
+        return 'Charges';
+    }
+  };
+  
   const generateReceipt = (guest, type, amount, method, reference) => {
     const printWindow = window.open('', '_blank');
-    const hotelName = "YourHotelName"; // Replace with your hotel name
+    const hotelName = "Ampomaah Tourist Hotel"; // Hotel name
     
     const content = `
       <html>
@@ -138,7 +245,7 @@ const PaymentModal = ({ show, onHide, guest, paymentType, amount, onPaymentCompl
           <div class="payment-title">Payment Information</div>
           <div class="details-row">
             <span class="details-label">Payment Type:</span>
-            <span>${type === 'accommodation' ? 'Accommodation' : 'Food & Beverage'}</span>
+            <span>${formatPaymentType(type)}</span>
           </div>
           <div class="details-row">
             <span class="details-label">Payment Method:</span>
@@ -206,37 +313,43 @@ const PaymentModal = ({ show, onHide, guest, paymentType, amount, onPaymentCompl
       <div style={modalStyle} onClick={e => e.stopPropagation()} className="payment-modal">
         <div className="modal-header">
           <h2>Process Payment</h2>
-          <button className="close-button" onClick={onHide}>&times;</button>
+          <button className="close-button" onClick={onHide} disabled={processingPayment}>&times;</button>
         </div>
         
         <div className="modal-body">
+          <div className="payment-summary">
+            <div className="summary-row">
+              <span>Guest:</span>
+              <span>{guest.name}</span>
+            </div>
+            <div className="summary-row">
+              <span>Room:</span>
+              <span>{guest.room} {guest.roomName && `(${guest.roomName})`}</span>
+            </div>
+            <div className="summary-row">
+              <span>Payment Type:</span>
+              <span>{formatPaymentType(paymentType)}</span>
+            </div>
+            <div className="summary-row total">
+              <span>Amount Due:</span>
+              <span>${amount.toFixed(2)}</span>
+            </div>
+          </div>
+          
           <form onSubmit={handleSubmit}>
-            <div className="form-group">
-              <label>Guest:</label>
-              <input type="text" value={guest.name} disabled />
-            </div>
-            
-            <div className="form-group">
-              <label>Payment Type:</label>
-              <input type="text" value={paymentType === 'accommodation' ? 'Accommodation' : 'Food & Beverage'} disabled />
-            </div>
-            
-            <div className="form-group">
-              <label>Amount:</label>
-              <input type="text" value={`$${amount.toFixed(2)}`} disabled />
-            </div>
-            
             <div className="form-group">
               <label>Payment Method:</label>
               <select 
                 value={paymentMethod} 
                 onChange={(e) => setPaymentMethod(e.target.value)}
+                disabled={processingPayment}
               >
                 <option value="Cash">Cash</option>
                 <option value="Credit Card">Credit Card</option>
                 <option value="Debit Card">Debit Card</option>
                 <option value="Bank Transfer">Bank Transfer</option>
                 <option value="Check">Check</option>
+                <option value="Mobile Money">Mobile Money</option>
               </select>
             </div>
             
@@ -246,19 +359,48 @@ const PaymentModal = ({ show, onHide, guest, paymentType, amount, onPaymentCompl
                 type="text" 
                 value={reference} 
                 onChange={(e) => setReference(e.target.value)}
-                placeholder="Optional reference number or notes"
+                placeholder="Card last 4 digits, transaction ID, etc."
+                disabled={processingPayment}
               />
             </div>
             
-            <div className="form-group checkbox">
-              <input 
-                type="checkbox" 
-                id="printReceipt"
-                checked={printReceipt}
-                onChange={(e) => setPrintReceipt(e.target.checked)}
-              />
-              <label htmlFor="printReceipt">Print receipt after payment</label>
+            <div className="receipt-options">
+              <div className="form-group checkbox">
+                <input 
+                  type="checkbox" 
+                  id="printReceipt"
+                  checked={printReceipt}
+                  onChange={(e) => setPrintReceipt(e.target.checked)}
+                  disabled={processingPayment}
+                />
+                <label htmlFor="printReceipt">Print receipt</label>
+              </div>
+              
+              <div className="form-group checkbox">
+                <input 
+                  type="checkbox" 
+                  id="emailReceipt"
+                  checked={emailReceipt}
+                  onChange={(e) => setEmailReceipt(e.target.checked)}
+                  disabled={processingPayment}
+                />
+                <label htmlFor="emailReceipt">Email receipt</label>
+              </div>
             </div>
+            
+            {emailReceipt && (
+              <div className="form-group">
+                <label>Guest Email:</label>
+                <input 
+                  type="email" 
+                  value={guestEmail} 
+                  onChange={(e) => setGuestEmail(e.target.value)}
+                  placeholder="Enter guest email address"
+                  required={emailReceipt}
+                  disabled={processingPayment}
+                />
+              </div>
+            )}
             
             <div className="form-actions">
               <button 

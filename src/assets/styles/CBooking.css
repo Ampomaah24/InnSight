@@ -15,7 +15,7 @@ html, body {
   background-color: #f8f9fa;
 }
 
-/* NavMenu positioning fixes */
+
 .nav-container {
   display: flex;
   justify-content: flex-start;
@@ -25,7 +25,7 @@ html, body {
   z-index: 100;
 }
 
-/* Main Container */
+
 .croom-booking-container {
   width: 100%;
   min-height: 100vh;
@@ -34,7 +34,7 @@ html, body {
   position: relative;
 }
 
-/* Heading */
+
 .title {
   font-size: 2.2rem;
   font-weight: 600;
@@ -56,7 +56,7 @@ html, body {
   transform: translateX(-50%);
 }
 
-/* Conference Room Content */
+
 .croom-content {
   display: flex;
   flex-direction: column;
@@ -70,7 +70,7 @@ html, body {
   padding-bottom: 1.5rem;
 }
 
-/* Conference Room Image Section */
+
 .croom-image-section {
   position: relative;
   width: 100%;
@@ -96,7 +96,7 @@ html, body {
   object-fit: cover;
 }
 
-/* Navigation Buttons */
+
 .nav-button {
   position: absolute;
   top: 50%;
@@ -128,7 +128,7 @@ html, body {
   right: 1rem;
 }
 
-/* Conference Room Pagination */
+
 .croom-pagination {
   position: absolute;
   bottom: 0.9375rem;
@@ -142,13 +142,13 @@ html, body {
   font-weight: 500;
 }
 
-/* Conference Room Details */
+
 .croom-details {
   padding: 0 1.5rem 1rem;
   width: 100%;
 }
 
-/* Room Name */
+
 .room-name {
   font-size: 1.6rem;
   font-weight: 600;
@@ -156,7 +156,7 @@ html, body {
   margin-bottom: 1rem;
 }
 
-/* Price */
+
 .price {
   font-size: 1.5rem;
   margin-bottom: 1rem;
@@ -170,7 +170,7 @@ html, body {
   color: #666;
 }
 
-/* Conference Facilities */
+
 .includes {
   margin-bottom: 1.5rem;
 }
@@ -202,7 +202,7 @@ html, body {
   font-weight: bold;
 }
 
-/* Conference Details Section */
+
 .conference-details {
   background-color: #f9f9f9;
   padding: 1.2rem;
@@ -221,7 +221,7 @@ html, body {
   line-height: 1.5;
 }
 
-/* Book Now Button */
+
 .book-now {
   background-color: #e67e22;
   color: white;
@@ -245,7 +245,7 @@ html, body {
   background-color: #d35400;
 }
 
-/* Date Information */
+
 .date-info {
   background-color: white; 
   padding: 1.2rem 1.5rem;
@@ -271,7 +271,7 @@ html, body {
   margin-right: 0.5rem;
 }
 
-/* Capacity and Size Info */
+
 .room-specs {
   display: flex;
   gap: 1.5rem;
@@ -293,7 +293,7 @@ html, body {
   color: #555;
 }
 
-/* Special Offers */
+
 .special-offer {
   background-color: rgba(39, 174, 96, 0.1);
   border-radius: 0.25rem;
@@ -312,7 +312,7 @@ html, body {
   font-size: 0.95rem;
 }
 
-/* Loading State */
+
 .loading-container {
   display: flex;
   flex-direction: column;
@@ -344,7 +344,7 @@ html, body {
   color: #555;
 }
 
-/* No Rooms Available */
+
 .no-rooms-container {
   display: flex;
   flex-direction: column;
@@ -376,29 +376,9 @@ html, body {
   font-size: 1.1rem;
 }
 
-/* .back-button {
-  background-color: #e67e22;
-  color: white;
-  border: none;
-  border-radius: 0.25rem;
-  padding: 0.9rem 1.8rem;
-  font-size: 1rem;
-  font-weight: 600;
-  cursor: pointer;
-  margin-top: 1rem;
-  transition: background-color 0.2s;
-  text-transform: uppercase;
-  letter-spacing: 0.03125rem;
-}
 
-.back-button:hover {
-  background-color: #d35400;
-}
- */
 
- /* Add these styles to your CBooking.css file */
 
-/* Back Button Container */
 .back-button-container {
   max-width: 75rem;
   width: 90%;
@@ -408,7 +388,7 @@ html, body {
   justify-content: flex-start;
 }
 
-/* Back Button Styles */
+
 .back-button {
   background-color: white;
   color: #333;
@@ -430,7 +410,7 @@ html, body {
   color: #e67e22;
 }
 
-/* For the No Rooms Available page */
+
 .no-rooms-content .back-button {
   margin-top: 1rem;
 }
@@ -440,7 +420,7 @@ html, body {
     padding: 0 0 0.5rem;
   }
 }
-/* Responsive Design */
+
 @media (min-width: 48rem) {
   .croom-content {
     flex-direction: row;

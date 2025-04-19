@@ -1,4 +1,4 @@
-/* ======= Page Header ======= */
+
 .page-header {
   margin-bottom: 1.5rem;
 }
@@ -29,7 +29,7 @@
   font-size: 1rem;
 }
 
-/* Room status update notification */
+
 .room-update-notice {
   margin-top: 0.75rem;
   padding: 0.6rem 1rem;
@@ -48,7 +48,7 @@
   color: #ea4335;
 }
 
-/* ======= Operation Summary Cards ======= */
+
 .operation-summary {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
@@ -85,7 +85,7 @@
   color: #ea4335;
 }
 
-/* ======= Filters & Search ======= */
+
 .filters-container {
   margin-bottom: 1.5rem;
 }
@@ -121,7 +121,7 @@
   color: #aaa;
 }
 
-/* ======= Filter Tabs ======= */
+
 .time-filter-tabs {
   display: flex;
   gap: 0.5rem;
@@ -172,7 +172,7 @@
   background-color: #ea4335;
 }
 
-/* ======= Table Container ======= */
+
 .table-container {
   background: white;
   padding: 1.5rem;
@@ -195,7 +195,7 @@
   margin: 0 -1px;
 }
 
-/* ======= Check-in Table ======= */
+
 .checkin-table {
   width: 100%;
   border-collapse: separate;
@@ -238,7 +238,7 @@
   font-style: italic;
 }
 
-/* Highlight cells for today's dates */
+
 .highlight-cell {
   position: relative;
   font-weight: 600;
@@ -256,7 +256,6 @@
   vertical-align: middle;
 }
 
-/* Expired rows styling */
 .expired-row {
   background-color: rgba(234, 67, 53, 0.05);
 }
@@ -276,7 +275,7 @@
   vertical-align: middle;
 }
 
-/* ======= Status Badges ======= */
+
 .status {
   display: inline-block;
   padding: 0.4rem 0.8rem;
@@ -312,7 +311,7 @@
   color: #5f6368;
 }
 
-/* ======= Action Buttons ======= */
+
 .actions-cell {
   white-space: nowrap;
 }
@@ -351,7 +350,7 @@
   background-color: #fbe5d6;
 }
 
-/* ======= Pagination ======= */
+
 .pagination {
   display: flex;
   justify-content: space-between;
@@ -366,13 +365,13 @@
   font-size: 0.9rem;
 }
 
-/* ======= Loading State ======= */
+
 .loading {
   text-align: center;
   padding: 2rem;
   color: #666;
 }
-/* Add this to your existing CheckIn.css file */
+
 
 .process-btn {
   background-color: #fce8e6;
@@ -384,7 +383,7 @@
   background-color: #ea4335;
   color: white;
 }
-/* ======= Responsive Adjustments ======= */
+
 @media (max-width: 992px) {
   .operation-summary {
     grid-template-columns: repeat(2, 1fr);

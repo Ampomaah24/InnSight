@@ -8,7 +8,12 @@ import {
   FaCog, 
   FaChartBar, 
   FaMoneyBillWave, 
-  FaSignOutAlt 
+  FaSignOutAlt,
+  FaEdit,
+  FaUserPlus,
+  FaTags,
+  FaPlaneDeparture,
+  FaFileInvoiceDollar
 } from "react-icons/fa";
 import { auth } from "../config/firebase";
 import { useNavigate } from "react-router-dom";
@@ -77,7 +82,7 @@ const Sidebar = () => {
         </div>
         
         <ul className="sidebar-menu">
-          <li className={`sidebar-item ${isActive('/') ? 'active' : ''}`}>
+          <li className={`sidebar-item ${isActive('/admin-dashboard') ? 'active' : ''}`}>
             <Link to="/admin-dashboard">
               <span className="sidebar-icon"><FaHome /></span>
               <span className="sidebar-text">Dashboard</span>
@@ -105,18 +110,39 @@ const Sidebar = () => {
             </Link>
           </li>
           
+          {/* Room Management Link */}
+          <li className={`sidebar-item ${isActive('/room-management') ? 'active' : ''}`}>
+            <Link to="/room-management">
+              <span className="sidebar-icon"><FaEdit /></span>
+              <span className="sidebar-text">Room Management</span>
+            </Link>
+          </li>
+          
+         
+      
+          
+          {/* User Registration Link */}
+          <li className={`sidebar-item ${isActive('/user-registration') ? 'active' : ''}`}>
+            <Link to="/user-registration">
+              <span className="sidebar-icon"><FaUserPlus /></span>
+              <span className="sidebar-text">User Registration</span>
+            </Link>
+          </li>
+          
           <li className={`sidebar-item ${isActive('/pickup') ? 'active' : ''}`}>
             <Link to="/pickup">
-              <span className="sidebar-icon"><FaCog /></span>
-              <span className="sidebar-text">Airpot Pickups</span>
+              <span className="sidebar-icon"><FaPlaneDeparture /></span>
+              <span className="sidebar-text">Airport Pickups</span>
             </Link>
           </li>
+          
           <li className={`sidebar-item ${isActive('/bills') ? 'active' : ''}`}>
             <Link to="/bills">
-              <span className="sidebar-icon"><FaCog /></span>
-              <span className="sidebar-text">Oustanding Bills</span>
+              <span className="sidebar-icon"><FaFileInvoiceDollar /></span>
+              <span className="sidebar-text">Outstanding Bills</span>
             </Link>
           </li>
+          
           <li className={`sidebar-item ${isActive('/add-expense') ? 'active' : ''}`}>
             <Link to="/add-expense">
               <span className="sidebar-icon"><FaMoneyBillWave /></span>
@@ -130,12 +156,14 @@ const Sidebar = () => {
               <span className="sidebar-text">Reports & Analytics</span>
             </Link>
           </li>
+          
           <li className={`sidebar-item ${isActive('/ad_settings') ? 'active' : ''}`}>
             <Link to="/ad_settings">
               <span className="sidebar-icon"><FaCog /></span>
               <span className="sidebar-text">Settings</span>
             </Link>
           </li>
+          
   {/*         <li className="sidebar-item" onClick={handleLogout}>
             <Link to="#">
               <span className="sidebar-icon"><FaSignOutAlt /></span>
@@ -146,7 +174,6 @@ const Sidebar = () => {
         
         <div className="sidebar-footer">
           <p>Ampomaah Tourist Hotel</p>
-     
         </div>
       </aside>
     </>

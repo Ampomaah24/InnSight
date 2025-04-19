@@ -144,7 +144,7 @@ button:focus {
   }
 }
 
-/* Payment processing overlay and modal - add to BookingPage.css */
+
 .payment-processing-overlay {
   position: fixed;
   top: 0;

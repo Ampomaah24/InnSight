@@ -87,6 +87,25 @@ const GuestBills = () => {
     };
   }, []);
 
+  // Add a useEffect to poll for updates at a reasonable interval for active bookings
+  useEffect(() => {
+    // Only set up polling if we have a user and are viewing the current stay
+    if (user && selectedBooking?.status === "Checked in") {
+      const intervalId = setInterval(() => {
+        refreshData();
+      }, 30000); // Check every 30 seconds
+      
+      return () => clearInterval(intervalId);
+    }
+  }, [user, selectedBooking]);
+
+  // Function to refresh data when needed
+  const refreshData = () => {
+    if (user) {
+      fetchUserBookings(user.uid);
+    }
+  };
+
   const fetchUserBookings = async (userId) => {
     try {
       console.log("Fetching bookings for user:", userId);
@@ -130,20 +149,22 @@ const GuestBills = () => {
       // Fetch restaurant orders for each booking
       for (let booking of bookingData) {
         try {
-          // First query for orders put on room tab
+          // First query for orders put on room tab - EXPLICITLY CHECK FOR UNPAID ORDERS
           const tabOrdersQuery = query(
             collection(db, "orders"),
             where("roomNumber", "==", booking.room),
-            where("paymentMethod", "==", "Tab")
+            where("paymentMethod", "==", "Tab"),
+            where("paid", "==", false) // EXPLICIT CHECK for unpaid orders only
           );
           
           const tabOrdersSnapshot = await getDocs(tabOrdersQuery);
           
-          // Then query for room service orders
+          // Then query for room service orders - EXPLICITLY CHECK FOR UNPAID ORDERS
           const roomServiceQuery = query(
             collection(db, "orders"),
             where("roomNumber", "==", booking.room),
-            where("deliveryMethod", "==", "roomService")
+            where("deliveryMethod", "==", "roomService"),
+            where("paid", "==", false) // EXPLICIT CHECK for unpaid orders only
           );
           
           const roomServiceSnapshot = await getDocs(roomServiceQuery);
@@ -209,10 +230,13 @@ const GuestBills = () => {
             });
           });
           
-          // Add extension charges from booking if they exist and aren't already in food orders
-          if (booking.extensionCharges && booking.extensionCharges.length > 0) {
-            console.log("Processing extension charges:", booking.extensionCharges);
-            booking.extensionCharges.forEach(charge => {
+          // Filter to only include unpaid extension charges from booking
+          const unpaidExtensionCharges = (booking.extensionCharges || []).filter(charge => charge.paid !== true);
+          
+          // Add extension charges if they exist and aren't already in food orders
+          if (unpaidExtensionCharges.length > 0) {
+            console.log("Processing extension charges:", unpaidExtensionCharges);
+            unpaidExtensionCharges.forEach(charge => {
               // Check if this extension charge is already in food orders
               if (!foodOrders.some(order => order.id === charge.id)) {
                 foodOrders.push({
@@ -556,8 +580,8 @@ const GuestBills = () => {
                     <div className="tab-content">
                       <div className="charges-header">
                         <h3 className="charges-title">Stay Extension Charges</h3>
-                        <span className={`payment-status outstanding`}>
-                          Outstanding
+                        <span className={`payment-status ${getExtensionOrders(activeBooking.foodOrders).length > 0 ? 'outstanding' : 'paid'}`}>
+                          {getExtensionOrders(activeBooking.foodOrders).length > 0 ? "Outstanding" : "No Charges"}
                         </span>
                       </div>
                       
@@ -583,7 +607,7 @@ const GuestBills = () => {
                                 </tr>
                               ))}
                               <tr className="total-row">
-                                <td colSpan={2}>Total Extensions</td>
+                                <td colSpan={2}>Total</td>
                                 <td>$ {calculateExtensionTotal(activeBooking.foodOrders).toFixed(2)}</td>
                               </tr>
                             </tbody>
@@ -591,7 +615,7 @@ const GuestBills = () => {
                         </div>
                       ) : (
                         <div className="empty-food-orders">
-                          <p>You have no stay extension charges.</p>
+                          <p>You currently have no stay extension charges.</p>
                         </div>
                       )}
                       

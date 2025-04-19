@@ -1,7 +1,8 @@
 import React, { useEffect } from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { UserProvider } from "./context/UserContext.jsx";
-import SessionTimeoutService from "./services/SessionTimeoutService"; // Import the service
+import SessionTimeoutService from "./services/SessionTimeoutService"; 
+import RoomManagement from "./pages/RoomManagement";
 
 // Import all your pages
 import Homepage from "./pages/Homepage";
@@ -33,14 +34,30 @@ import Pickup from './pages/Pickup';
 import ContactUs from "./pages/ContactUs";
 import GuestBills from "./pages/GuestBills";
 import SessionTimeoutWarning from "./components/SessionTimeoutWarning";
+import UserRegistration from './pages/UserRegistration';
 
 const App = () => {
   useEffect(() => {
     // Initialize the SessionTimeoutService with custom values
     // This is the ONLY timeout mechanism now - 20 minutes timeout, 1 minute warning
-    new SessionTimeoutService(20, 1);
+    const sessionTimeoutService = new SessionTimeoutService(20, 1);
     
-    // No duplicate timeout logic here anymore
+    // Modify the timeout behavior to prevent redirect to the previous page
+    const originalHandleSessionTimeout = sessionTimeoutService.handleSessionTimeout;
+    
+    // Override the timeout handler to clear stored redirect path
+    sessionTimeoutService.handleSessionTimeout = () => {
+      // Clear any stored redirect paths first
+      localStorage.removeItem('redirectAfterLogin');
+      
+      // Then call the original handler which will handle logout and redirect
+      originalHandleSessionTimeout.call(sessionTimeoutService);
+    };
+    
+    // Clean up on component unmount
+    return () => {
+      sessionTimeoutService.clearTimeouts();
+    };
   }, []);
 
   return (
@@ -77,6 +94,8 @@ const App = () => {
           <Route path="/pickup" element={<Pickup />} />
           <Route path="/contact" element={<ContactUs />} />
           <Route path="/guest-bills" element={<GuestBills />} />
+          <Route path="/room-management" element={<RoomManagement />} />
+          <Route path="/user-registration" element={<UserRegistration />} />
         </Routes>
       </Router>
     </UserProvider>

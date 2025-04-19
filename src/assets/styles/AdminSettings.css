@@ -1,6 +1,4 @@
-/* AdminSettings.css */
 
-/* Page Layout */
 .main-content {
     padding: 1.5rem;
     background-color: #f8f9fa;
@@ -36,7 +34,7 @@
     font-size: 1rem;
   }
   
-  /* Notification */
+
   .notification {
     margin-bottom: 1rem;
     padding: 0.75rem 1rem;
@@ -60,7 +58,6 @@
     to { opacity: 1; transform: translateY(0); }
   }
   
-  /* Tabs */
   .settings-tabs {
     display: flex;
     overflow-x: auto;
@@ -96,7 +93,7 @@
     background-color: #DB6C24;
   }
   
-  /* Settings Content */
+  
   .settings-content {
     background-color: white;
     border-radius: 0.75rem;
@@ -111,7 +108,7 @@
     font-style: italic;
   }
   
-  /* Settings Panel */
+
   .settings-panel {
     padding: 1.5rem;
   }
@@ -132,7 +129,7 @@
     font-size: 1rem;
   }
   
-  /* Form Styling */
+
   .settings-form {
     margin-bottom: 1.5rem;
   }
@@ -194,7 +191,7 @@
     min-height: 80px;
   }
   
-  /* Checkbox Groups */
+
   .checkbox-group {
     display: flex;
     align-items: center;
@@ -214,7 +211,7 @@
     cursor: pointer;
   }
   
-  /* Action Buttons */
+
   .settings-actions {
     display: flex;
     justify-content: flex-end;
@@ -258,7 +255,7 @@
     background-color: #e8eaed;
   }
   
-  /* Promotion Cards */
+ 
   .promotions-list,
   .seasonal-list {
     display: flex;
@@ -326,7 +323,7 @@
     color: white;
   }
   
-  /* Empty States */
+
   .empty-state {
     text-align: center;
     padding: 2rem;
@@ -336,10 +333,7 @@
     border-radius: 0.5rem;
     border: 1px dashed #ddd;
   }
-  /* Add these styles to your AdminSettings.css file */
-/* Add these styles to your AdminSettings.css file */
 
-/* Add these styles to your AdminSettings.css file */
 
 .database-error-banner {
     background-color: #fff3cd;
@@ -433,7 +427,7 @@
     cursor: not-allowed;
   }
   
-  /* Styles for disabled form elements */
+
   input:disabled, 
   select:disabled, 
   textarea:disabled {
@@ -455,9 +449,7 @@
     color: #adb5bd;
     cursor: not-allowed;
   }
- /* Add these styles to your CSS files */
 
-/* View-only banner */
 .view-only-banner {
   background-color: #f8f9fa;
   border-left: 4px solid #6c757d;
@@ -468,7 +460,7 @@
   border-radius: 4px;
 }
 
-/* Read-only form inputs */
+
 .readonly {
   background-color: #f8f9fa !important;
   border-color: #dee2e6 !important;
@@ -493,7 +485,6 @@ textarea.readonly {
   color: #6c757d !important;
 }
 
-/* Hover styles for read-only inputs */
 .readonly:hover {
   border-color: #dee2e6 !important;
   box-shadow: none !important;
@@ -501,7 +492,7 @@ textarea.readonly {
   .checkbox-group input:disabled + span {
     color: #6c757d;
   }
-  /* Responsive Adjustments */
+ 
   @media (max-width: 768px) {
     .settings-tabs {
       flex-wrap: nowrap;

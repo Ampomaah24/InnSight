@@ -1,86 +1,184 @@
+/* NavMenu.css - Improved styling */
+
+:root {
+  --primary-color: #3a6ea5;
+  --primary-light: #5284c0;
+  --primary-dark: #2c5380;
+  --accent-color: #f39c12;
+  --text-dark: #2c3e50;
+  --shadow-sm: 0 2px 5px rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.08);
+  --shadow-lg: 0 8px 20px rgba(0, 0, 0, 0.12);
+  --transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+  --border-radius: 0.5rem;
+}
+
 /* Navbar Container - Fix visibility issue */
 .nav-container {
-  position: fixed; /* Ensures the navbar stays at the top */
+  position: fixed; 
   top: 0;
   left: 0;
   width: 100%;
-  height: 1%;
-  padding: 0; /* Remove extra padding */
-  z-index: 300; /* Ensure it's above other elements */
-}
-.logout-link {
-  background: none;
-  border: none;
-  padding: 12px 16px;
-  color: inherit;
-  font-size: inherit;
-  cursor: pointer;
-  text-align: left;
-  display: block;
-  width: 100%;
-  text-decoration: none;
+  z-index: 300;
 }
 
-.logout-link:hover {
-  background-color: rgba(0, 0, 0, 0.05);
-}
-/* Navigation Bar (Menu Only) */
+/* Navigation Bar */
 .nav {
   display: flex;
   align-items: center;
-  margin-bottom: 3.5rem;
+  padding: 0.75rem 0;
+  position: relative;
+}
+
+/* Menu Container */
+.menu-container {
+  position: relative;
+  z-index: 200;
 }
 
 /* Menu Icon */
 .menu-icon {
-  font-size: 1.75rem; /* 28px -> 1.75rem */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 50%;
+  background-color: white;
+  box-shadow: var(--shadow-sm);
   cursor: pointer;
+  transition: var(--transition);
+  margin-left: 1rem;
+}
+
+.menu-icon:hover {
+  background-color: #f5f7fa;
+  box-shadow: var(--shadow-md);
+  transform: scale(1.05);
+}
+
+.hamburger-icon {
+  font-size: 1.5rem;
+  color: var(--primary-color);
 }
 
 /* Dropdown Menu */
 .dropdown-menu {
   position: absolute;
-  top: 3.125rem; /* 50px -> 3.125rem */
+  top: 3.25rem;
   left: 0;
   background: white;
-  box-shadow: 0px 0.3125rem 0.625rem rgba(0, 0, 0, 0.15); /* 5px 10px -> 0.3125rem 0.625rem */
-  border-radius: 0.625rem; /* 10px -> 0.625rem */
+  box-shadow: var(--shadow-md);
+  border-radius: var(--border-radius);
   display: flex;
   flex-direction: column;
-  width: 11.25rem; /* 180px -> 11.25rem */
-  padding: 0.625rem 0; /* 10px -> 0.625rem */
+  width: 15rem;
+  padding: 0.5rem 0;
+  transform-origin: top left;
+  animation: dropdownFadeIn 0.25s ease-out;
+  border: 1px solid rgba(0, 0, 0, 0.05);
+  overflow: hidden;
 }
 
-/* Fix dropdown links */
+/* Animation for dropdown */
+@keyframes dropdownFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Dropdown links */
 .dropdown-menu a {
-  padding: 0.875rem 1.25rem; /* 14px 20px -> 0.875rem 1.25rem */
+  padding: 0.875rem 1.25rem;
   text-decoration: none;
-  color: black;
-  font-size: 1rem; /* 16px -> 1rem */
-  transition: 0.3s;
+  color: var(--text-dark);
+  font-size: 1rem;
+  transition: var(--transition);
+  position: relative;
+  display: flex;
+  align-items: center;
 }
 
 .dropdown-menu a:hover {
-  background: #f0f0f0;
+  background-color: rgba(58, 110, 165, 0.05);
+  color: var(--primary-color);
+  padding-left: 1.5rem;
 }
 
-/* Log In Button */
-.login {
-  text-decoration: none;
-  color: white;
-  background: #007bff;
-  padding: 0.625rem 0.9375rem; /* 10px 15px -> 0.625rem 0.9375rem */
-  border-radius: 0.3125rem; /* 5px -> 0.3125rem */
-  font-size: 1.125rem; /* 18px -> 1.125rem */
-  font-weight: bold;
-  transition: 0.3s ease-in-out;
+.dropdown-menu a:active {
+  background-color: rgba(58, 110, 165, 0.1);
 }
 
-.login:hover {
-  background: #0056b3;
+/* Add subtle indicator for active link */
+.dropdown-menu a:before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 0;
+  background: var(--primary-light);
+  transition: var(--transition);
 }
 
-/* Fix content being hidden behind navbar */
-.room-booking-container {
-  padding-top: 5rem; /* 80px -> 5rem */
+.dropdown-menu a:hover:before {
+  width: 4px;
+}
+
+/* Logout button styled as a link */
+.logout-link {
+  background: none;
+  border: none;
+  padding: 0.875rem 1.25rem;
+  color: var(--text-dark);
+  font-size: 1rem;
+  cursor: pointer;
+  text-align: left;
+  display: flex;
+  width: 100%;
+  transition: var(--transition);
+  position: relative;
+  align-items: center;
+}
+
+.logout-link:hover {
+  background-color: rgba(243, 156, 18, 0.05);
+  color: var(--accent-color);
+  padding-left: 1.5rem;
+}
+
+.logout-link:before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 0;
+  background: var(--accent-color);
+  transition: var(--transition);
+}
+
+.logout-link:hover:before {
+  width: 4px;
+}
+
+/* Media Queries */
+@media (max-width: 480px) {
+  .dropdown-menu {
+    width: 13rem;
+  }
+  
+  .menu-icon {
+    width: 2.25rem;
+    height: 2.25rem;
+  }
+  
+  .hamburger-icon {
+    font-size: 1.3rem;
+  }
 }

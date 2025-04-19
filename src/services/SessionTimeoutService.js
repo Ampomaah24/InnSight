@@ -164,13 +164,13 @@ class SessionTimeoutService {
     if (this.checkIntervalId) clearInterval(this.checkIntervalId);
     
     try {
-      // Save current URL to localStorage before logout (to redirect back after login)
-      const currentPath = window.location.pathname;
-      if (currentPath !== '/login' && currentPath !== '/signup') {
-        localStorage.setItem('redirectAfterLogin', currentPath);
-      }
+      // IMPORTANT CHANGE: For timeout-based logouts, we DON'T save the current path
+      // This prevents the login page from redirecting back to previous page after timeout
       
-      console.debug("Logging out due to inactivity");
+      // We can completely remove this redirect storage for timeout-based logouts
+      localStorage.removeItem('redirectAfterLogin');
+      
+      console.debug("Logging out due to inactivity - no path saved for redirect");
       
       // Sign out from Firebase
       await signOut(auth);
@@ -179,7 +179,7 @@ class SessionTimeoutService {
       const logoutEvent = new CustomEvent('sessionTimeout:loggedOut');
       document.dispatchEvent(logoutEvent);
       
-      // Redirect to login page
+      // Redirect to login page with timeout parameter
       window.location.href = "/login?timeout=true";
     } catch (error) {
       console.error("Error signing out:", error);
@@ -191,6 +191,54 @@ class SessionTimeoutService {
     if (!this.isActive) return;
     console.debug("Manually extending session");
     this.resetTimer();
+  }
+  // Add this method to your SessionTimeoutService
+clearTimeouts() {
+  // Clear the warning timeout
+  if (this.warningTimer) {
+    clearTimeout(this.warningTimer);
+    this.warningTimer = null;
+  }
+  
+  // Clear the logout timeout
+  if (this.timer) {
+    clearTimeout(this.timer);
+    this.timer = null;
+  }
+  
+  // Clear check interval if it exists
+  if (this.checkIntervalId) {
+    clearInterval(this.checkIntervalId);
+    this.checkIntervalId = null;
+  }
+}
+  // Method to handle regular user-initiated logouts (not timeout)
+  // This can be called from your logout buttons to preserve redirect behavior
+  async regularLogout() {
+    if (!this.isActive) return;
+    
+    // Mark session as inactive
+    this.isActive = false;
+    
+    // Clear all timers
+    if (this.timer) clearTimeout(this.timer);
+    if (this.warningTimer) clearTimeout(this.warningTimer);
+    if (this.checkIntervalId) clearInterval(this.checkIntervalId);
+    
+    try {
+      // For regular logouts, we don't need to store the current path
+      localStorage.removeItem('redirectAfterLogin');
+      
+      console.debug("User initiated logout");
+      
+      // Sign out from Firebase
+      await signOut(auth);
+      
+      // Redirect to login page (no timeout parameter)
+      window.location.href = "/login";
+    } catch (error) {
+      console.error("Error signing out:", error);
+    }
   }
 }
 
