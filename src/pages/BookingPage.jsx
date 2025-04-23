@@ -65,35 +65,11 @@ const getRoomAmenities = (type) => {
   }
 };
 
-// Guest data template
+// Create simplified guest template - just name fields
 const createEmptyGuest = () => ({
   firstName: "",
-  lastName: "",
-  email: "",
-  phone: "",
-  idType: "",
-  idNumber: ""
+  lastName: ""
 });
-
-// Helper to validate ID numbers based on type
-const validateIdNumber = (idType, idNumber) => {
-  if (!idType || !idNumber) return false;
-  
-  switch (idType) {
-    case "passport":
-      // Basic passport validation - usually alphanumeric and 6-9 characters
-      return /^[A-Z0-9]{6,9}$/i.test(idNumber);
-    case "national_id":
-      // Basic national ID validation - usually numeric and 9-15 digits
-      return /^\d{9,15}$/i.test(idNumber);
-    case "driver_license":
-      // Basic driver's license validation - alphanumeric, 5-20 characters
-      return /^[A-Z0-9]{5,20}$/i.test(idNumber);
-    default:
-      // For other types, just ensure it's not empty and at least 4 characters
-      return idNumber.trim().length >= 4;
-  }
-};
 
 const BookingPage = () => {
   const navigate = useNavigate();
@@ -115,8 +91,6 @@ const BookingPage = () => {
   
   // New state to track which room is assigned to main booker
   const [mainBookerRoomId, setMainBookerRoomId] = useState(null);
-  // State to track ID verification errors
-  const [idErrors, setIdErrors] = useState({});
 
   // Safely parse URL parameters
   const getURLParams = () => {
@@ -207,7 +181,7 @@ const BookingPage = () => {
         roomAmenities: getRoomAmenities(room.t_room) || [],
         guestCount: 1,
         capacity,
-        guests: [createEmptyGuest()], // Initialize with empty guest data
+        guests: [createEmptyGuest()], // Initialize with empty guest data (just names)
         isMainBookerRoom: false // By default, no room is assigned to main booker yet
       };
     });
@@ -376,7 +350,7 @@ const BookingPage = () => {
             isMainBookerRoom: false
           };
           
-          // Reset the first guest in the previous main booker room
+          // Reset the first guest in the previous main booker room to empty
           if (updatedRooms[mainBookerRoomId].guests && updatedRooms[mainBookerRoomId].guests.length > 0) {
             updatedRooms[mainBookerRoomId].guests[0] = createEmptyGuest();
           }
@@ -399,15 +373,11 @@ const BookingPage = () => {
         isMainBookerRoom: true
       };
       
-      // Update the first guest in this room with main booker's details
+      // Update the first guest in this room with main booker's details (just names)
       if (updatedRooms[roomId].guests && updatedRooms[roomId].guests.length > 0) {
         updatedRooms[roomId].guests[0] = {
           firstName: formData.firstName,
           lastName: formData.lastName,
-          email: formData.email,
-          phone: formData.phone,
-          idType: formData.idType,
-          idNumber: formData.idNumber,
           isMainBooker: true
         };
       }
@@ -451,18 +421,10 @@ const BookingPage = () => {
     // Regular field updates with sanitization
     setFormData(prev => ({ ...prev, [name]: sanitizeInput(value) }));
     
-    // If this is the main booker info and we have a selected main booker room, 
-    // update the first guest in that room
-    if (['firstName', 'lastName', 'email', 'phone', 'idType', 'idNumber'].includes(name) && mainBookerRoomId) {
+    // If this is the main booker's name and we have a selected main booker room, 
+    // update the first guest name in that room
+    if (['firstName', 'lastName'].includes(name) && mainBookerRoomId) {
       updateGuest(mainBookerRoomId, 0, name, value);
-    }
-    
-    // Clear ID errors when user changes ID fields
-    if (name === 'idType' || name === 'idNumber') {
-      setIdErrors(prev => ({
-        ...prev,
-        mainBooker: null
-      }));
     }
   };
   
@@ -470,11 +432,6 @@ const BookingPage = () => {
     const isValid = isValidPhoneNumber(value || "");
     setFormData((prev) => ({ ...prev, phone: value }));
     setPhoneError(!isValid);
-    
-    // If we have a main booker room selected, update that guest's phone
-    if (mainBookerRoomId) {
-      updateGuest(mainBookerRoomId, 0, "phone", value);
-    }
   };
 
   // Handle guest count change
@@ -501,7 +458,7 @@ const BookingPage = () => {
     });
   };
   
-  // Update an individual guest's information
+  // Update an individual guest's information (just names now)
   const updateGuest = (roomId, guestIndex, field, value) => {
     setRoomGuests(prev => {
       const room = { ...prev[roomId] };
@@ -521,19 +478,10 @@ const BookingPage = () => {
       // If this is updating a guest in the main booker's room and it's the first guest,
       // also update the main form data
       const isMainBookersRoom = roomId === mainBookerRoomId && guestIndex === 0;
-      if (isMainBookersRoom && ['firstName', 'lastName', 'email', 'phone', 'idType', 'idNumber'].includes(field)) {
+      if (isMainBookersRoom && ['firstName', 'lastName'].includes(field)) {
         setFormData(formData => ({
           ...formData,
           [field]: value
-        }));
-      }
-      
-      // Clear ID errors when guest changes ID fields
-      if ((field === 'idType' || field === 'idNumber') && roomId && guestIndex !== undefined) {
-        const errorKey = `${roomId}_${guestIndex}`;
-        setIdErrors(prev => ({
-          ...prev,
-          [errorKey]: null
         }));
       }
       
@@ -547,56 +495,6 @@ const BookingPage = () => {
     });
   };
 
-  // Validate ID for a specific guest
-  const validateGuestId = (roomId, guestIndex) => {
-    const room = roomGuests[roomId];
-    if (!room || !room.guests[guestIndex]) return false;
-    
-    const guest = room.guests[guestIndex];
-    const isValid = validateIdNumber(guest.idType, guest.idNumber);
-    
-    // Update error state
-    const errorKey = `${roomId}_${guestIndex}`;
-    setIdErrors(prev => ({
-      ...prev,
-      [errorKey]: isValid ? null : "Please enter a valid ID"
-    }));
-    
-    return isValid;
-  };
-
-  // Validate all guest IDs
-  const validateAllGuestIds = () => {
-    let allValid = true;
-    const newErrors = {};
-    
-    // Validate main booker ID first
-    if (!validateIdNumber(formData.idType, formData.idNumber)) {
-      newErrors.mainBooker = "Please enter a valid ID";
-      allValid = false;
-    }
-    
-    // Validate each guest's ID in each room
-    for (const roomId in roomGuests) {
-      const room = roomGuests[roomId];
-      
-      // Validate each guest in this room
-      room.guests.forEach((guest, guestIndex) => {
-        // Skip validation for the main booker (we already validated above)
-        if (roomId === mainBookerRoomId && guestIndex === 0) return;
-        
-        const isValid = validateIdNumber(guest.idType, guest.idNumber);
-        if (!isValid) {
-          newErrors[`${roomId}_${guestIndex}`] = "Please enter a valid ID";
-          allValid = false;
-        }
-      });
-    }
-    
-    setIdErrors(newErrors);
-    return allValid;
-  };
-
   // Form validation
   const isAirportPickupValid =
     formData.airportPickup === "No" ||
@@ -606,30 +504,17 @@ const BookingPage = () => {
   const validateGuests = () => {
     // First, check if main booker has been assigned to a room
     if (!mainBookerRoomId) {
-      alert("Please select which room the main booker will stay in");
       return false;
     }
     
-    // Check all IDs
-    if (!validateAllGuestIds()) {
-      return false;
-    }
-    
-    // Validate each room's guests
+    // Validate each room's guests (just need names)
     for (const roomId in roomGuests) {
       const room = roomGuests[roomId];
       
-      // Validate the first guest in each room (primary contact for that room)
-      const firstGuest = room.guests[0];
-      if (!firstGuest || !firstGuest.firstName || !firstGuest.lastName || !firstGuest.email || 
-          !firstGuest.phone || !firstGuest.idType || !firstGuest.idNumber) {
-        return false;
-      }
-      
-      // For additional guests, we need names and ID information
-      for (let i = 1; i < room.guestCount; i++) {
+      // Validate all guests have names
+      for (let i = 0; i < room.guestCount; i++) {
         const guest = room.guests[i];
-        if (!guest || !guest.firstName || !guest.lastName || !guest.idType || !guest.idNumber) {
+        if (!guest || !guest.firstName || !guest.lastName) {
           return false;
         }
       }
@@ -638,6 +523,7 @@ const BookingPage = () => {
   };
 
   const isFormValid =
+    // Main booker must have complete information
     Object.values({
       firstName: formData.firstName,
       lastName: formData.lastName,
@@ -739,20 +625,36 @@ const BookingPage = () => {
             const amountPaid = isDeposit ? discountedPrice * depositRate : discountedPrice;
             const remainderDue = isDeposit ? discountedPrice - amountPaid : 0;
             
-            // Process guests for this room
+            // Process guests for this room - now just names
             const roomGuests = roomInfo.guests || [];
             const roomGuestCount = roomInfo.guestCount || 1;
             
-            // Create a clean array of guest info without empty values
-            const guestListForRoom = roomGuests.slice(0, roomGuestCount).map(guest => ({
-              firstName: guest.firstName,
-              lastName: guest.lastName,
-              email: guest.email || null,
-              phone: guest.phone || null,
-              idType: guest.idType || null,
-              idNumber: guest.idNumber || null,
-              isMainBooker: guest.isMainBooker || false
-            }));
+            // Create a clean array of guest info - just names now
+            const guestListForRoom = roomGuests.slice(0, roomGuestCount).map((guest, index) => {
+              const isMainBooker = roomId === mainBookerRoomId && index === 0;
+              
+              // For the main booker, include all details
+              if (isMainBooker) {
+                return {
+                  firstName: formData.firstName,
+                  lastName: formData.lastName,
+                  email: formData.email,
+                  phone: formData.phone,
+                  idType: formData.idType,
+                  idNumber: formData.idNumber,
+                  isMainBooker: true,
+                  accountCreated: true  // Main booker already has account
+                };
+              }
+              
+              // For other guests, just names and flag for pending account creation
+              return {
+                firstName: guest.firstName,
+                lastName: guest.lastName,
+                accountCreated: false,  // Accounts will be created on arrival
+                isMainBooker: false
+              };
+            });
             
             // Create booking document
             const newBooking = {
@@ -772,7 +674,7 @@ const BookingPage = () => {
               roomCategory,
               numberOfGuests: roomGuestCount,
               
-              // Guest info specific to this room
+              // Guest info specific to this room (just names for additional guests)
               guests: guestListForRoom,
               
               // Booking dates
@@ -812,7 +714,10 @@ const BookingPage = () => {
               
               // Group booking information
               bookingGroupId: csrfToken,
-              totalRoomsInBooking: selectedRooms.length
+              totalRoomsInBooking: selectedRooms.length,
+              
+              // Flag to indicate that additional guests need account creation on arrival
+              pendingGuestAccounts: true
             };
             
             // Create the booking document and store the promise
@@ -1042,59 +947,57 @@ const BookingPage = () => {
                 <input type="hidden" name="csrfToken" value={csrfToken} />
                 
                 {/* Basic Info - Main Booker */}
-                <div className="form-field">
-                  <label className="form-field__label form-field__required">First Name</label>
-                  <input 
-                    type="text" 
-                    name="firstName" 
-                    value={formData.firstName} 
-                    onChange={handleChange} 
-                    className="form-field__input"
-                    required 
-                  />
-                </div>
-                <div className="form-field">
-                  <label className="form-field__label form-field__required">Last Name</label>
-                  <input 
-                    type="text" 
-                    name="lastName" 
-                    value={formData.lastName} 
-                    onChange={handleChange}
-                    className="form-field__input"
-                    required 
-                  />
-                </div>
-                <div className="form-field">
-                  <label className="form-field__label form-field__required">Email</label>
-                  <input 
-                    type="email" 
-                    name="email" 
-                    value={formData.email} 
-                    onChange={handleChange}
-                    className="form-field__input" 
-                    required 
-                  />
-                </div>
-                <div className="phone-input">
-                  <label className="form-field__label form-field__required">Phone</label>
-                  <PhoneInput
-                    international
-                    defaultCountry="GH"
-                    value={formData.phone}
-                    onChange={handlePhoneChange}
-                    className={`phone-input__container ${phoneError ? "phone-input__container--error" : ""}`}
-                  />
-                  {phoneError && (
-                    <small className="phone-input__error">Please enter a valid international phone number</small>
-                  )}
-                </div>
-                
-                {/* ID Verification Section for Main Booker */}
                 <div className="booking-form__full-width">
-                  <h3 className="section__heading">Identification Verification</h3>
-                  <p>For security purposes, we require an ID for all guests</p>
+                  <h3 className="section__heading">Main Booker Information</h3>
+                  <p>Please provide your details as the primary contact for this booking.</p>
                   
                   <div className="guest-form__grid">
+                    <div className="form-field">
+                      <label className="form-field__label form-field__required">First Name</label>
+                      <input 
+                        type="text" 
+                        name="firstName" 
+                        value={formData.firstName} 
+                        onChange={handleChange} 
+                        className="form-field__input"
+                        required 
+                      />
+                    </div>
+                    <div className="form-field">
+                      <label className="form-field__label form-field__required">Last Name</label>
+                      <input 
+                        type="text" 
+                        name="lastName" 
+                        value={formData.lastName} 
+                        onChange={handleChange}
+                        className="form-field__input"
+                        required 
+                      />
+                    </div>
+                    <div className="form-field">
+                      <label className="form-field__label form-field__required">Email</label>
+                      <input 
+                        type="email" 
+                        name="email" 
+                        value={formData.email} 
+                        onChange={handleChange}
+                        className="form-field__input" 
+                        required 
+                      />
+                    </div>
+                    <div className="form-field">
+                      <label className="form-field__label form-field__required">Phone</label>
+                      <PhoneInput
+                        international
+                        defaultCountry="GH"
+                        value={formData.phone}
+                        onChange={handlePhoneChange}
+                        className={`phone-input__container ${phoneError ? "phone-input__container--error" : ""}`}
+                      />
+                      {phoneError && (
+                        <small className="phone-input__error">Please enter a valid international phone number</small>
+                      )}
+                    </div>
                     <div className="form-field">
                       <label className="form-field__label form-field__required">ID Type</label>
                       <select 
@@ -1121,9 +1024,6 @@ const BookingPage = () => {
                         className="form-field__input"
                         required
                       />
-                      {idErrors.mainBooker && (
-                        <div className="form-field__error">{idErrors.mainBooker}</div>
-                      )}
                     </div>
                   </div>
                 </div>
@@ -1131,12 +1031,11 @@ const BookingPage = () => {
                 {/* Room Selection for Main Booker */}
                 <div className="booking-form__full-width room-selection">
                   <h3 className="section__heading">Main Booker's Room</h3>
-                  <p>Please select which room {formData.firstName || "the main booker"} will stay in:</p>
+                  <p>Please select which room you will stay in:</p>
                   
                   <div className="room-selection__buttons">
                     {selectedRooms.map((room, index) => {
                       const roomId = room.id || index;
-                      const roomInfo = roomGuests[roomId] || {};
                       
                       return (
                         <button 
@@ -1153,79 +1052,81 @@ const BookingPage = () => {
                   
                   {!mainBookerRoomId && (
                     <div className="notification notification--warning">
-                      Please select a room for the main booker
+                      Please select a room for yourself as the main booker
                     </div>
                   )}
                 </div>
 
-                {/* Multiple Rooms Guest Information */}
-                {selectedRooms.length > 0 && selectedRooms.map((room, roomIndex) => {
-                  const roomId = room.id || roomIndex;
-                  const roomInfo = roomGuests[roomId] || { 
-                    guests: [], 
-                    guestCount: 1, 
-                    capacity: 1,
-                    roomType: room.t_room || 'Standard', 
-                    roomName: room.name || `Room ${roomIndex + 1}`,
-                    roomDescription: getRoomDescription(room.t_room),
-                    roomAmenities: getRoomAmenities(room.t_room)
-                  };
-                  const isMainBookerRoom = roomId === mainBookerRoomId;
-                  
-                  return (
-                    <div className="booking-form__full-width room-card" key={roomId}>
-                      <div className="room-card__header">
-                        <h4 className="room-card__title">
-                          {room.name || `Room ${roomIndex + 1}`}
-                          <span className="room-card__type">{room.t_room || 'Standard'}</span>
-                          {isMainBookerRoom && (
-                            <span className="room-card__main-booker">Main Booker</span>
-                          )}
-                        </h4>
-                        
-                        {/* Guest count selector */}
-                        <div className="room-card__guests">
-                          <div className="room-card__guest-count">
-                            <label className="room-card__guest-count-label">Number of Guests:</label>
-                            <select 
-                              value={roomInfo.guestCount}
-                              onChange={(e) => handleGuestCountChange(roomId, e.target.value)}
-                              className="form-field__select room-card__guest-count-select"
-                            >
-                              {[...Array(roomInfo.capacity || getRoomCapacity(room.t_room))].map((_, i) => (
-                                <option key={i+1} value={i+1}>{i+1}</option>
-                              ))}
-                            </select>
+                {/* Multiple Rooms Guest Information - Simplified for just names */}
+                <div className="booking-form__full-width">
+                  <h3 className="section__heading">Guest Names</h3>
+                  <p>Please provide the names of all guests who will be staying. Full registration will be completed upon arrival.</p>
+                
+                  {selectedRooms.length > 0 && selectedRooms.map((room, roomIndex) => {
+                    const roomId = room.id || roomIndex;
+                    const roomInfo = roomGuests[roomId] || { 
+                      guests: [], 
+                      guestCount: 1, 
+                      capacity: getRoomCapacity(room.t_room || ''),
+                      roomType: room.t_room || 'Standard', 
+                      roomName: room.name || `Room ${roomIndex + 1}`,
+                      roomDescription: getRoomDescription(room.t_room),
+                      roomAmenities: getRoomAmenities(room.t_room)
+                    };
+                    const isMainBookerRoom = roomId === mainBookerRoomId;
+                    
+                    return (
+                      <div className="booking-form__full-width room-card" key={roomId}>
+                        <div className="room-card__header">
+                          <h4 className="room-card__title">
+                            {room.name || `Room ${roomIndex + 1}`}
+                            <span className="room-card__type">{room.t_room || 'Standard'}</span>
+                            {isMainBookerRoom && (
+                              <span className="room-card__main-booker">Main Booker</span>
+                            )}
+                          </h4>
+                          
+                          {/* Guest count selector */}
+                          <div className="room-card__guests">
+                            <div className="room-card__guest-count">
+                              <label className="room-card__guest-count-label">Number of Guests:</label>
+                              <select 
+                                value={roomInfo.guestCount}
+                                onChange={(e) => handleGuestCountChange(roomId, e.target.value)}
+                                className="form-field__select room-card__guest-count-select"
+                              >
+                                {[...Array(roomInfo.capacity || getRoomCapacity(room.t_room))].map((_, i) => (
+                                  <option key={i+1} value={i+1}>{i+1}</option>
+                                ))}
+                              </select>
+                            </div>
                           </div>
                         </div>
-                      </div>
-                      
-                      {/* Room description and amenities */}
-                      <div className="room-card__info">
-                        <p>{roomInfo.roomDescription}</p>
-                        <div className="room-card__amenities">
-                          <strong>Amenities:</strong> {roomInfo.roomAmenities.join(', ')}
-                        </div>
-                      </div>
-                      
-                      {/* Guest information forms */}
-                      {roomInfo.guests.map((guest, guestIndex) => {
-                        // Check if this is the main booker
-                        const isMainBooker = isMainBookerRoom && guestIndex === 0;
-                        // First guest in each room needs complete contact info
-                        const isFirstGuestInRoom = guestIndex === 0;
                         
-                        return (
-                          <div 
-                            key={`${roomId}-guest-${guestIndex}`} 
-                            className={`guest-form ${isMainBooker ? 'guest-form--main-booker' : ''}`}
-                          >
-                            <h5 className="guest-form__header">Guest {guestIndex + 1}</h5>
-                            
-                            {isMainBooker ? (
-                              <p>Using main booker information from above</p>
-                            ) : (
-                              <>
+                        {/* Room description and amenities */}
+                        <div className="room-card__info">
+                          <p>{roomInfo.roomDescription}</p>
+                          <div className="room-card__amenities">
+                            <strong>Amenities:</strong> {roomInfo.roomAmenities.join(', ')}
+                          </div>
+                        </div>
+                        
+                        {/* Guest information forms - Simplified to just names */}
+                        {roomInfo.guests.map((guest, guestIndex) => {
+                          // Check if this is the main booker
+                          const isMainBooker = isMainBookerRoom && guestIndex === 0;
+                          
+                          return (
+                            <div 
+                              key={`${roomId}-guest-${guestIndex}`} 
+                              className={`guest-form ${isMainBooker ? 'guest-form--main-booker' : ''}`}
+                            >
+                              <h5 className="guest-form__header">Guest {guestIndex + 1}</h5>
+                              
+                              {isMainBooker ? (
+                                <p>Using main booker information from above</p>
+                              ) : (
+                                // For other guests, just collect names
                                 <div className="guest-form__grid">
                                   <div className="form-field">
                                     <label className="form-field__label form-field__required">First Name</label>
@@ -1247,72 +1148,22 @@ const BookingPage = () => {
                                       required
                                     />
                                   </div>
-                                  
-                                  {/* Only show email and phone for first guest in each room */}
-                                  {isFirstGuestInRoom && (
-                                    <>
-                                      <div className="form-field">
-                                        <label className="form-field__label form-field__required">Email</label>
-                                        <input 
-                                          type="email"
-                                          value={guest.email || ''}
-                                          onChange={(e) => updateGuest(roomId, guestIndex, 'email', e.target.value)}
-                                          className="form-field__input"
-                                          required
-                                        />
-                                      </div>
-                                      <div className="form-field">
-                                        <label className="form-field__label form-field__required">Phone</label>
-                                        <PhoneInput
-                                          international
-                                          defaultCountry="GH"
-                                          value={guest.phone || ''}
-                                          onChange={(value) => updateGuest(roomId, guestIndex, 'phone', value)}
-                                          className="phone-input__container"
-                                          required
-                                        />
-                                      </div>
-                                    </>
-                                  )}
-                                  
-                                  {/* ID verification for ALL guests */}
-                                  <div className="form-field">
-                                    <label className="form-field__label form-field__required">ID Type</label>
-                                    <select 
-                                      value={guest.idType || ''}
-                                      onChange={(e) => updateGuest(roomId, guestIndex, 'idType', e.target.value)}
-                                      className="form-field__select"
-                                      required
-                                    >
-                                      <option value="">Select ID Type</option>
-                                      <option value="passport">Passport</option>
-                                      <option value="national_id">National ID</option>
-                                      <option value="driver_license">Driver's License</option>
-                                      <option value="other">Other Government-issued ID</option>
-                                    </select>
-                                  </div>
-                                  <div className="form-field">
-                                    <label className="form-field__label form-field__required">ID Number</label>
-                                    <input 
-                                      type="text"
-                                      value={guest.idNumber || ''}
-                                      onChange={(e) => updateGuest(roomId, guestIndex, 'idNumber', e.target.value)}
-                                      className="form-field__input"
-                                      required
-                                    />
-                                    {idErrors[`${roomId}_${guestIndex}`] && (
-                                      <div className="form-field__error">{idErrors[`${roomId}_${guestIndex}`]}</div>
-                                    )}
-                                  </div>
                                 </div>
-                              </>
-                            )}
-                          </div>
-                        );
-                      })}
-                    </div>
-                  );
-                })}
+                              )}
+                              
+                              {/* Note about accounts being created at check-in */}
+                              {!isMainBooker && (
+                                <div className="notification notification--info">
+                                  Guest registration will be completed upon arrival
+                                </div>
+                              )}
+                            </div>
+                          );
+                        })}
+                      </div>
+                    );
+                  })}
+                </div>
 
                 {/* Airport Pickup Section */}
                 <div className="booking-form__full-width">
@@ -1488,9 +1339,9 @@ const BookingPage = () => {
                         className="button button--primary button--large button--full-width" 
                         onClick={() => {
                           if (!mainBookerRoomId) {
-                            alert("Please select which room the main booker will stay in before completing your booking.");
+                            alert("Please select which room you will stay in as the main booker.");
                           } else if (!isFormValid) {
-                            alert("Please complete all required fields correctly. Ensure all guest information and ID verification is provided.");
+                            alert("Please complete all required fields correctly. Ensure all guest names are provided.");
                           } else {
                             setProcessingPayment(true);
                             initializePayment();

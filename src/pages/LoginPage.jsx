@@ -44,6 +44,11 @@ const LoginPage = () => {
     setIsLoading(true);
 
     try {
+      // Check for internet connection first
+      if (!navigator.onLine) {
+        throw new Error("network_error");
+      }
+
       await setPersistence(auth, browserSessionPersistence);
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
       const user = userCredential.user;
@@ -52,12 +57,29 @@ const LoginPage = () => {
       
       if (userDoc.exists()) {
         const userData = userDoc.data();
+        
+        // Create a standardized user object with all required fields
         const normalizedUser = {
           id: user.uid,
           email: user.email,
           role: userData.role ? userData.role.toLowerCase() : 'user',
+          fname: userData.firstName || userData.fname || user.displayName?.split(' ')[0] || "User",
+          lname: userData.lastName || userData.lname || user.displayName?.split(' ').slice(1).join(' ') || "",
+          fullName: userData.fullName || 
+                  `${userData.firstName || userData.fname || ""} ${userData.lastName || userData.lname || ""}`.trim() || 
+                  user.displayName || "User",
+          photoURL: userData.photoURL || user.photoURL,
+          avatar: userData.avatar || null,
+          phone: userData.phone || "",
+          address: userData.address || "",
+          dateOfBirth: userData.dateOfBirth || "",
+          bio: userData.bio || "",
+          createdAt: userData.createdAt || new Date().toISOString(),
+          updatedAt: userData.updatedAt || new Date().toISOString()
         };
         
+        // Store complete user data
+        console.log("Storing normalized user data:", normalizedUser);
         sessionStorage.setItem('currentUser', JSON.stringify(normalizedUser));
         
         if (timeoutOccurred) {
@@ -69,7 +91,21 @@ const LoginPage = () => {
         }
       }
     } catch (err) {
-      setError("Invalid email or password. Please try again.");
+      console.error("Login error:", err.code || err.message);
+      
+      // Handle different error types
+      if (!navigator.onLine || err.message === "network_error" || 
+          err.code === "auth/network-request-failed") {
+        setError("Network error. Please check your internet connection and try again.");
+      } else if (err.code === "auth/user-not-found" || err.code === "auth/wrong-password") {
+        setError("Invalid email or password. Please try again.");
+      } else if (err.code === "auth/too-many-requests") {
+        setError("Too many failed login attempts. Please try again later or reset your password.");
+      } else if (err.code === "auth/user-disabled") {
+        setError("This account has been disabled. Please contact support.");
+      } else {
+        setError("Login failed. Please try again later.");
+      }
     } finally {
       setIsLoading(false);
     }
@@ -82,14 +118,35 @@ const LoginPage = () => {
     setIsLoading(true);
 
     try {
+      // Check for internet connection first
+      if (!navigator.onLine) {
+        throw new Error("network_error");
+      }
+      
       await sendPasswordResetEmail(auth, resetEmail);
       setMessage("Password reset email sent! Check your inbox.");
       setShowResetPrompt(false);
     } catch (err) {
-      setError("Failed to send reset email. Please try again.");
+      if (!navigator.onLine || err.message === "network_error" || 
+          err.code === "auth/network-request-failed") {
+        setError("Network error. Please check your internet connection and try again.");
+      } else if (err.code === "auth/user-not-found") {
+        setError("No account found with this email address.");
+      } else if (err.code === "auth/invalid-email") {
+        setError("Please enter a valid email address.");
+      } else {
+        setError("Failed to send reset email. Please try again later.");
+      }
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const toggleResetPrompt = () => {
+    setShowResetPrompt(!showResetPrompt);
+    setResetEmail("");
+    setError("");
+    setMessage("");
   };
 
   return (
@@ -110,56 +167,92 @@ const LoginPage = () => {
         )}
 
         <div className="login-box">
-          <form onSubmit={handleLogin}>
-            {error && (
-              <div className="error-message">
-                <FaExclamationTriangle className="error-icon" />
-                <p>{error}</p>
+          {!showResetPrompt ? (
+            <form onSubmit={handleLogin}>
+              {error && (
+                <div style={{
+                  backgroundColor: "#faded7", 
+                  borderRadius: "4px",
+                  padding: "10px 15px",
+                  marginBottom: "15px",
+                  color: "#333",
+                  textAlign: "center" 
+                }}>
+                  {error}
+                </div>
+              )}
+              
+              {message && (
+                <div className="success-message">
+                  <p>{message}</p>
+                </div>
+              )}
+
+              <div className="input-group">
+                <span className="input-icon"><FaUser /></span>
+                <input
+                  type="email"
+                  placeholder="Email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
+                  disabled={isLoading}
+                />
               </div>
-            )}
 
-            <div className="input-group">
-              <span className="input-icon"><FaUser /></span>
-              <input
-                type="email"
-                placeholder="Email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-                disabled={isLoading}
-              />
-            </div>
+              <div className="input-group">
+                <span className="input-icon"><FaLock /></span>
+                <input
+                  type={showPassword ? "text" : "password"}
+                  placeholder="Password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                  disabled={isLoading}
+                />
+                <span
+                  className="toggle-password"
+                  onClick={() => !isLoading && setShowPassword(!showPassword)}
+                >
+                  {showPassword ? <FaEyeSlash /> : <FaEye />}
+                </span>
+              </div>
 
-            <div className="input-group">
-              <span className="input-icon"><FaLock /></span>
-              <input
-                type={showPassword ? "text" : "password"}
-                placeholder="Password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
+              <button 
+                type="submit" 
+                className="login-button" 
                 disabled={isLoading}
-              />
-              <span
-                className="toggle-password"
-                onClick={() => !isLoading && setShowPassword(!showPassword)}
               >
-                {showPassword ? <FaEyeSlash /> : <FaEye />}
-              </span>
-            </div>
-
-            <button 
-              type="submit" 
-              className="login-button" 
-              disabled={isLoading}
-            >
-              {isLoading ? "Signing In..." : "Sign In"}
-            </button>
-          </form>
-
-          {showResetPrompt && (
+                {isLoading ? "Signing In..." : "Sign In"}
+              </button>
+              
+              <div className="forgot-password">
+                <span onClick={toggleResetPrompt}>Forgot password?</span>
+              </div>
+            </form>
+          ) : (
             <div className="reset-dialog">
               <h3>Reset Password</h3>
+              
+              {error && (
+                <div style={{
+                  backgroundColor: "#faded7", 
+                  borderRadius: "4px",
+                  padding: "10px 15px",
+                  marginBottom: "15px",
+                  color: "#333",
+                  textAlign: "center" 
+                }}>
+                  {error}
+                </div>
+              )}
+              
+              {message && (
+                <div className="success-message">
+                  <p>{message}</p>
+                </div>
+              )}
+              
               <div className="input-group">
                 <span className="input-icon"><FaUser /></span>
                 <input
@@ -171,13 +264,24 @@ const LoginPage = () => {
                   disabled={isLoading}
                 />
               </div>
-              <button 
-                className="login-button" 
-                onClick={handleResetPassword}
-                disabled={isLoading}
-              >
-                {isLoading ? "Sending..." : "Reset Password"}
-              </button>
+              
+              <div className="reset-buttons">
+                <button 
+                  className="login-button" 
+                  onClick={handleResetPassword}
+                  disabled={isLoading || !resetEmail}
+                >
+                  {isLoading ? "Sending..." : "Reset Password"}
+                </button>
+                
+                <button 
+                  className="cancel-button" 
+                  onClick={toggleResetPrompt}
+                  disabled={isLoading}
+                >
+                  Back to Login
+                </button>
+              </div>
             </div>
           )}
         </div>

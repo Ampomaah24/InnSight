@@ -8,7 +8,6 @@ import NavMenu from "../components/NavMenu";
 import ChatWidget from "../components/ChatWidget";
 import "../assets/styles/ServicesPage.css";
 import ProfileSection from "../components/ProfileSection";
-
 // Import images directly if using webpack/vite
 import roomImage from "../assets/images/IMG_0111.JPG";
 import conferenceImage from "../assets/images/pixelcut-export.jpeg";
@@ -19,17 +18,14 @@ const ServicesPage = () => {
   const [roomDropdownOpen, setRoomDropdownOpen] = useState(false);
   const [conferenceDropdownOpen, setConferenceDropdownOpen] = useState(false);
   const today = new Date();
-
   const [roomBookingDetails, setRoomBookingDetails] = useState({
     checkIn: null,
     checkOut: null,
   });
-
   const [conferenceBookingDetails, setConferenceBookingDetails] = useState({
     startDate: null,
     endDate: null,
   });
-
   // State for user profile data
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -41,43 +37,55 @@ const ServicesPage = () => {
         const sessionUser = sessionStorage.getItem('currentUser');
         if (sessionUser) {
           const parsedUser = JSON.parse(sessionUser);
+          console.log("Using user from sessionStorage:", parsedUser);
           setUser(parsedUser);
           setLoading(false);
           return;
         }
-
+        
         const currentUser = auth.currentUser;
         if (currentUser) {
           const userDocRef = doc(db, "users", currentUser.uid);
           const userDoc = await getDoc(userDocRef);
-
+          
           if (userDoc.exists()) {
             const userData = userDoc.data();
+            // Make sure fname is not "Guest"
             const userObj = {
               id: currentUser.uid,
-              fname: userData.firstName || userData.fname || "User",
-              lname: userData.lastName || userData.lname || "",
+              fname: userData.firstName || userData.fname || currentUser.displayName?.split(' ')[0] || "User",
+              lname: userData.lastName || userData.lname || currentUser.displayName?.split(' ').slice(1).join(' ') || "",
+              fullName: userData.fullName || `${userData.firstName || userData.fname || ""} ${userData.lastName || userData.lname || ""}`.trim(),
               photoURL: userData.photoURL || currentUser.photoURL || "/images/profile-placeholder.png",
               avatar: userData.avatar || null,
               email: userData.email || currentUser.email
             };
+            
+            console.log("Created user object from Firestore:", userObj);
             setUser(userObj);
             sessionStorage.setItem('currentUser', JSON.stringify(userObj));
           } else {
+            // No user document, create from auth
             const userObj = {
               id: currentUser.uid,
               fname: currentUser.displayName?.split(' ')[0] || "User",
               lname: currentUser.displayName?.split(' ').slice(1).join(' ') || "",
+              fullName: currentUser.displayName || "User",
               photoURL: currentUser.photoURL || "/images/profile-placeholder.png",
               email: currentUser.email
             };
+            
+            console.log("Created user object from Auth (no Firestore doc):", userObj);
             setUser(userObj);
             sessionStorage.setItem('currentUser', JSON.stringify(userObj));
           }
         } else {
+          // No auth user
+          console.log("No authenticated user, setting to Guest");
           setUser({
             fname: "Guest",
             lname: "User",
+            fullName: "Guest User",
             photoURL: "/images/profile-placeholder.png"
           });
         }
@@ -86,15 +94,16 @@ const ServicesPage = () => {
         setUser({
           fname: "Guest",
           lname: "User",
+          fullName: "Guest User",
           photoURL: "/images/profile-placeholder.png"
         });
       } finally {
         setLoading(false);
       }
     };
-
+    
     fetchUserProfile();
-
+    
     const handleStorageChange = (e) => {
       if (e.key === 'currentUser') {
         try {
@@ -107,8 +116,9 @@ const ServicesPage = () => {
         }
       }
     };
-
+    
     window.addEventListener('storage', handleStorageChange);
+    
     return () => {
       window.removeEventListener('storage', handleStorageChange);
     };
@@ -143,16 +153,14 @@ const ServicesPage = () => {
       const roomDropdown = document.querySelector('.room-dropdown');
       const conferenceDropdown = document.querySelector('.conference-dropdown');
       
-      const clickedInRoom = (roomServiceItem && roomServiceItem.contains(event.target)) || 
-                          (roomDropdown && roomDropdown.contains(event.target));
-      
-      const clickedInConference = (conferenceServiceItem && conferenceServiceItem.contains(event.target)) || 
-                                (conferenceDropdown && conferenceDropdown.contains(event.target));
+      const clickedInRoom = (roomServiceItem && roomServiceItem.contains(event.target)) ||
+        (roomDropdown && roomDropdown.contains(event.target));
+      const clickedInConference = (conferenceServiceItem && conferenceServiceItem.contains(event.target)) ||
+        (conferenceDropdown && conferenceDropdown.contains(event.target));
       
       if (!clickedInRoom && roomDropdownOpen) {
         setRoomDropdownOpen(false);
       }
-      
       if (!clickedInConference && conferenceDropdownOpen) {
         setConferenceDropdownOpen(false);
       }
@@ -170,7 +178,7 @@ const ServicesPage = () => {
       alert("Please select check-in and check-out dates!");
       return;
     }
-
+    
     try {
       const isLoggedIn = !!auth.currentUser;
       await addDoc(collection(db, "roomBookings"), {
@@ -180,7 +188,7 @@ const ServicesPage = () => {
         userId: user?.id || auth.currentUser?.uid || "guest",
         isGuest: !isLoggedIn
       });
-
+      
       navigate(
         `/room-booking?checkIn=${checkIn.toISOString()}&checkOut=${checkOut.toISOString()}`
       );
@@ -196,7 +204,7 @@ const ServicesPage = () => {
       alert("Please select a start date and end date!");
       return;
     }
-
+    
     try {
       const isLoggedIn = !!auth.currentUser;
       await addDoc(collection(db, "conferenceBookings"), {
@@ -206,7 +214,7 @@ const ServicesPage = () => {
         userId: user?.id || auth.currentUser?.uid || "guest",
         isGuest: !isLoggedIn
       });
-
+      
       navigate(
         `/conference-booking?startDate=${startDate.toISOString()}&endDate=${endDate.toISOString()}`
       );
@@ -225,32 +233,33 @@ const ServicesPage = () => {
       <div className="nav-container" style={{ backgroundColor: "transparent", boxShadow: "none" }}>
         <NavMenu menuOpen={menuOpen} setMenuOpen={setMenuOpen} />
         <h1 className="booking-services-heading">Booking Services</h1>
-
         {!loading && (
-  <ProfileSection 
-    user={user} 
-    onLogout={() => {
-      auth.signOut()
-        .then(() => {
-          sessionStorage.removeItem('currentUser');
-          navigate('/login');
-        })
-        .catch(error => console.error("Error signing out:", error));
-    }} 
-  />
-)}
+          <>
+            {console.log("About to render ProfileSection with user:", user)}
+            <ProfileSection
+              user={user}
+              onLogout={() => {
+                auth.signOut()
+                  .then(() => {
+                    sessionStorage.removeItem('currentUser');
+                    navigate('/login');
+                  })
+                  .catch(error => console.error("Error signing out:", error));
+              }}
+            />
+          </>
+        )}
       </div>
-
       <div className="services-page">
         <div className="services-grid">
           {/* Room Booking */}
           <div className="service-item room-service-item" onClick={toggleRoomDropdown}>
             <img
-              src={roomImage || "/images/room-default.jpg"} 
+              src={roomImage || "/images/room-default.jpg"}
               alt="Room Booking"
               className="service-image"
               onError={(e) => {
-                e.target.onerror = null; 
+                e.target.onerror = null;
                 e.target.src = "/images/room-placeholder.jpg";
               }}
             />
@@ -268,7 +277,6 @@ const ServicesPage = () => {
                 minDate={today}
                 placeholderText="Select check-in date"
               />
-
               <label>Check-out Date:</label>
               <DatePicker
                 selected={roomBookingDetails.checkOut}
@@ -278,13 +286,11 @@ const ServicesPage = () => {
                 minDate={roomBookingDetails.checkIn || today}
                 placeholderText="Select check-out date"
               />
-
               <button className="learn-more" onClick={handleRoomBooking}>
                 Proceed to Room Booking
               </button>
             </div>
           </div>
-
           {/* Conference Booking */}
           <div className="service-item conference-service-item" onClick={toggleConferenceDropdown}>
             <img
@@ -313,7 +319,6 @@ const ServicesPage = () => {
                 minDate={today}
                 placeholderText="Select start date"
               />
-
               <label>End Date:</label>
               <DatePicker
                 selected={conferenceBookingDetails.endDate}
@@ -326,7 +331,6 @@ const ServicesPage = () => {
                 minDate={conferenceBookingDetails.startDate || today}
                 placeholderText="Select end date"
               />
-
               <button className="learn-more" onClick={handleConferenceBooking}>
                 Proceed to Conference Booking
               </button>
@@ -334,7 +338,6 @@ const ServicesPage = () => {
           </div>
         </div>
       </div>
-
       <ChatWidget />
     </>
   );
