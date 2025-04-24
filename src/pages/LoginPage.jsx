@@ -82,11 +82,14 @@ const LoginPage = () => {
         console.log("Storing normalized user data:", normalizedUser);
         sessionStorage.setItem('currentUser', JSON.stringify(normalizedUser));
         
+        // Check if the user has admin privileges (both admin and super admin should go to admin dashboard)
+        const isAdminUser = normalizedUser.role.includes('admin'); // This will match both "admin" and "super admin"
+        
         if (timeoutOccurred) {
-          navigate(normalizedUser.role === "admin" ? "/admin-dashboard" : "/services", { replace: true });
+          navigate(isAdminUser ? "/admin-dashboard" : "/services", { replace: true });
         } else {
           const redirectPath = localStorage.getItem('redirectAfterLogin') || 
-                             (normalizedUser.role === "admin" ? "/admin-dashboard" : "/services");
+                             (isAdminUser ? "/admin-dashboard" : "/services");
           navigate(redirectPath);
         }
       }
@@ -161,8 +164,9 @@ const LoginPage = () => {
 
         {timeoutOccurred && (
           <div className="timeout-message">
-            <FaExclamationTriangle className="error-icon" />
+  
             <p>Your session expired due to inactivity. Please log in again.</p>
+            
           </div>
         )}
 

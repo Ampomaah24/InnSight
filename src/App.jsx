@@ -35,6 +35,7 @@ import ContactUs from "./pages/ContactUs";
 import GuestBills from "./pages/GuestBills";
 import SessionTimeoutWarning from "./components/SessionTimeoutWarning";
 import UserRegistration from './pages/UserRegistration';
+import BookingHistory from './pages/BookingHistory';
 
 const App = () => {
   useEffect(() => {
@@ -96,6 +97,7 @@ const App = () => {
           <Route path="/guest-bills" element={<GuestBills />} />
           <Route path="/room-management" element={<RoomManagement />} />
           <Route path="/user-registration" element={<UserRegistration />} />
+          <Route path="/booking-history" element={<BookingHistory />} />
         </Routes>
       </Router>
     </UserProvider>

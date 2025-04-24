@@ -213,6 +213,28 @@ const BookingPage = () => {
     setCsrfToken(generateToken());
   }, []);
 
+  // Set the mainBookerRoomId automatically if there's only one room
+// Set the mainBookerRoomId automatically if there's only one room - FIXED VERSION
+useEffect(() => {
+  if (selectedRooms.length === 1 && !mainBookerRoomId) {
+    // Get the ID of the only room - only set this once
+    const singleRoomId = selectedRooms[0].id || 0;
+    setMainBookerRoomId(singleRoomId);
+    
+    // Mark this room as the main booker's room in the roomGuests state
+    setRoomGuests(prev => {
+      const updatedRooms = { ...prev };
+      if (updatedRooms[singleRoomId]) {
+        updatedRooms[singleRoomId] = {
+          ...updatedRooms[singleRoomId],
+          isMainBookerRoom: true
+        };
+      }
+      return updatedRooms;
+    });
+  }
+}, [selectedRooms, mainBookerRoomId]); // Add mainBookerRoomId as a dependency
+
   // Fetch discounts from Firestore if we don't have a discount from URL
   useEffect(() => {
     // If we already have discount from URL params, use it and skip Firestore fetch
@@ -502,7 +524,24 @@ const BookingPage = () => {
     (formData.pickupDate && formData.pickupTime && formData.flightNumber && !pickupDateError);
 
   const validateGuests = () => {
-    // First, check if main booker has been assigned to a room
+    // For single room, the main booker is automatically assigned
+    if (selectedRooms.length === 1 && mainBookerRoomId) {
+      // Just validate that all guests have names filled in
+      for (const roomId in roomGuests) {
+        const room = roomGuests[roomId];
+        
+        // Validate all guests have names
+        for (let i = 0; i < room.guestCount; i++) {
+          const guest = room.guests[i];
+          if (!guest || !guest.firstName || !guest.lastName) {
+            return false;
+          }
+        }
+      }
+      return true;
+    }
+    
+    // For multiple rooms, check if main booker has been assigned to a room
     if (!mainBookerRoomId) {
       return false;
     }
@@ -1028,34 +1067,36 @@ const BookingPage = () => {
                   </div>
                 </div>
                 
-                {/* Room Selection for Main Booker */}
-                <div className="booking-form__full-width room-selection">
-                  <h3 className="section__heading">Main Booker's Room</h3>
-                  <p>Please select which room you will stay in:</p>
-                  
-                  <div className="room-selection__buttons">
-                    {selectedRooms.map((room, index) => {
-                      const roomId = room.id || index;
-                      
-                      return (
-                        <button 
-                          key={roomId}
-                          type="button"
-                          className={`room-selection__button ${roomId === mainBookerRoomId ? 'room-selection__button--selected' : ''}`}
-                          onClick={() => assignMainBookerToRoom(roomId)}
-                        >
-                          {room.name || `${room.t_room || 'Standard'} Room ${index + 1}`}
-                        </button>
-                      );
-                    })}
-                  </div>
-                  
-                  {!mainBookerRoomId && (
-                    <div className="notification notification--warning">
-                      Please select a room for yourself as the main booker
+                {/* Room Selection for Main Booker - Only show for multiple rooms */}
+                {selectedRooms.length > 1 && (
+                  <div className="booking-form__full-width room-selection">
+                    <h3 className="section__heading">Main Booker's Room</h3>
+                    <p>Please select which room you will stay in:</p>
+                    
+                    <div className="room-selection__buttons">
+                      {selectedRooms.map((room, index) => {
+                        const roomId = room.id || index;
+                        
+                        return (
+                          <button 
+                            key={roomId}
+                            type="button"
+                            className={`room-selection__button ${roomId === mainBookerRoomId ? 'room-selection__button--selected' : ''}`}
+                            onClick={() => assignMainBookerToRoom(roomId)}
+                          >
+                            {room.name || `${room.t_room || 'Standard'} Room ${index + 1}`}
+                          </button>
+                        );
+                      })}
                     </div>
-                  )}
-                </div>
+                    
+                    {!mainBookerRoomId && (
+                      <div className="notification notification--warning">
+                        Please select a room for yourself as the main booker
+                      </div>
+                    )}
+                  </div>
+                )}
 
                 {/* Multiple Rooms Guest Information - Simplified for just names */}
                 <div className="booking-form__full-width">
@@ -1338,7 +1379,7 @@ const BookingPage = () => {
                         type="button" 
                         className="button button--primary button--large button--full-width" 
                         onClick={() => {
-                          if (!mainBookerRoomId) {
+                          if (selectedRooms.length > 1 && !mainBookerRoomId) {
                             alert("Please select which room you will stay in as the main booker.");
                           } else if (!isFormValid) {
                             alert("Please complete all required fields correctly. Ensure all guest names are provided.");

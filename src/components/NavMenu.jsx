@@ -1,26 +1,27 @@
 import React, { useEffect, useRef } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import "../assets/styles/NavMenu.css";
+import { FaHistory } from "react-icons/fa";
 
 const NavMenu = ({ menuOpen, setMenuOpen }) => {
   const navigate = useNavigate();
   const menuRef = useRef(null);
   const timeoutRef = useRef(null);
-  
+
   // Handle mouse leave to close menu with a slight delay
   const handleMouseLeave = () => {
     timeoutRef.current = setTimeout(() => {
       setMenuOpen(false);
     }, 300); // 300ms delay before closing
   };
-  
+
   // Cancel the close timeout if mouse returns to menu
   const handleMouseEnter = () => {
     if (timeoutRef.current) {
       clearTimeout(timeoutRef.current);
     }
   };
-  
+
   // Clean up timeout when component unmounts
   useEffect(() => {
     return () => {
@@ -29,7 +30,7 @@ const NavMenu = ({ menuOpen, setMenuOpen }) => {
       }
     };
   }, []);
-  
+
   // Handle click outside to close menu (backup method)
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -37,18 +38,18 @@ const NavMenu = ({ menuOpen, setMenuOpen }) => {
         setMenuOpen(false);
       }
     };
-    
+
     // Add event listener when menu is open
     if (menuOpen) {
       document.addEventListener("mousedown", handleClickOutside);
     }
-    
+
     // Cleanup the event listener
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
   }, [menuOpen, setMenuOpen]);
-  
+
   return (
     <nav className="nav">
       <div
@@ -60,7 +61,6 @@ const NavMenu = ({ menuOpen, setMenuOpen }) => {
         <div className="menu-icon" onClick={() => setMenuOpen(!menuOpen)}>
           <span className="hamburger-icon">☰</span>
         </div>
-        
         {menuOpen && (
           <div className="dropdown-menu">
             <Link to="/services" onClick={() => setMenuOpen(false)}>Services</Link>
@@ -68,6 +68,7 @@ const NavMenu = ({ menuOpen, setMenuOpen }) => {
             <Link to="/guest-bills" onClick={() => setMenuOpen(false)}>Billing</Link>
             <Link to="/room-listings" onClick={() => setMenuOpen(false)}>Room Listings</Link>
             <Link to="/conference-listings" onClick={() => setMenuOpen(false)}>Conference Room Listings</Link>
+            <Link to="/booking-history" onClick={() => setMenuOpen(false)}> My Bookings</Link>
             <Link to="/profile" onClick={() => setMenuOpen(false)}>Profile</Link>
             <Link to="/contact" onClick={() => setMenuOpen(false)}>Contact Us</Link>
           </div>

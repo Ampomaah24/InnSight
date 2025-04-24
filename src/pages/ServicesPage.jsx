@@ -172,7 +172,11 @@ const ServicesPage = () => {
     };
   }, [roomDropdownOpen, conferenceDropdownOpen]);
 
-  const handleRoomBooking = async () => {
+  const handleRoomBooking = async (event) => {
+    // Prevent event propagation to parent elements
+    event.preventDefault();
+    event.stopPropagation();
+    
     const { checkIn, checkOut } = roomBookingDetails;
     if (!checkIn || !checkOut) {
       alert("Please select check-in and check-out dates!");
@@ -198,7 +202,11 @@ const ServicesPage = () => {
     }
   };
 
-  const handleConferenceBooking = async () => {
+  const handleConferenceBooking = async (event) => {
+    // Prevent event propagation to parent elements
+    event.preventDefault();
+    event.stopPropagation();
+    
     const { startDate, endDate } = conferenceBookingDetails;
     if (!startDate || !endDate) {
       alert("Please select a start date and end date!");
@@ -286,7 +294,10 @@ const ServicesPage = () => {
                 minDate={roomBookingDetails.checkIn || today}
                 placeholderText="Select check-out date"
               />
-              <button className="learn-more" onClick={handleRoomBooking}>
+              <button 
+                className="learn-more" 
+                onClick={handleRoomBooking}
+              >
                 Proceed to Room Booking
               </button>
             </div>
@@ -331,7 +342,10 @@ const ServicesPage = () => {
                 minDate={conferenceBookingDetails.startDate || today}
                 placeholderText="Select end date"
               />
-              <button className="learn-more" onClick={handleConferenceBooking}>
+              <button 
+                className="learn-more" 
+                onClick={handleConferenceBooking}
+              >
                 Proceed to Conference Booking
               </button>
             </div>

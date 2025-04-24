@@ -1,19 +1,13 @@
 import { auth } from "../config/firebase";
 import { signOut } from "firebase/auth";
 
-/**
- * Session timeout handler module
- * Manages user session timeouts and redirects
- */
+
 
 // Session timeout in minutes (adjust as needed)
 const SESSION_TIMEOUT_MINUTES = 30;
 let sessionTimeoutId = null;
 
-/**
- * Initialize the session timeout monitor
- * This should be called when the app initializes or user logs in
- */
+
 export const initSessionMonitor = () => {
   // Clear any existing timeout
   if (sessionTimeoutId) {
@@ -27,10 +21,7 @@ export const initSessionMonitor = () => {
   addActivityListeners();
 };
 
-/**
- * Reset the session timeout timer
- * Called when user activity is detected
- */
+
 export const resetSessionTimeout = () => {
   // Clear existing timeout if any
   if (sessionTimeoutId) {
@@ -43,10 +34,6 @@ export const resetSessionTimeout = () => {
   }, SESSION_TIMEOUT_MINUTES * 60 * 1000);
 };
 
-/**
- * Handle session timeout
- * Logs user out and redirects to login page
- */
 const handleSessionTimeout = async () => {
   try {
     // Get current path before logout
@@ -68,9 +55,7 @@ const handleSessionTimeout = async () => {
   }
 };
 
-/**
- * Add activity listeners to reset timeout on user activity
- */
+
 const addActivityListeners = () => {
   // User interactions that reset the timeout
   const events = [
@@ -84,10 +69,7 @@ const addActivityListeners = () => {
   });
 };
 
-/**
- * Remove activity listeners
- * Should be called when user logs out
- */
+
 export const removeActivityListeners = () => {
   const events = [
     'mousedown', 'mousemove', 'keydown',
@@ -104,10 +86,7 @@ export const removeActivityListeners = () => {
   }
 };
 
-/**
- * Clean up the session monitor
- * Should be called when the app unmounts or user logs out
- */
+
 export const cleanupSessionMonitor = () => {
   removeActivityListeners();
   if (sessionTimeoutId) {
