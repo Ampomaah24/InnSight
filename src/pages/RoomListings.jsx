@@ -1,11 +1,30 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import NavMenu from "../components/NavMenu"; // Import NavMenu component
+import { db } from "../config/firebase";
+import { collection, getDocs, query, where } from "firebase/firestore";
+import NavMenu from "../components/NavMenu";
 import "../assets/styles/RoomListings.css";
 
 const RoomListings = () => {
   const navigate = useNavigate();
   const [menuOpen, setMenuOpen] = useState(false);
+  const [roomTypes, setRoomTypes] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  // Room descriptions that will be mapped to room types
+  const roomDescriptions = {
+    "single bed": "Enjoy a comfortable stay in our Single Room, designed for solo travelers or business guests. It comes with a soft, high-quality single bed, fresh bedding, and everything you need to relax or get work done. The room is cozy, well-organized, and perfect for a quiet and restful stay.",
+    "double bed": "Our Double Room is a great choice if you want more space. It features a large, comfortable double bed with soft bedding, making it ideal for couples or anyone who likes extra room while sleeping. The room is stylish, peaceful, and perfect for a relaxing visit.",
+    "twin bed": "The Twin Room has two separate single beds, each with soft sheets and comfortable pillows. It’s a great option for friends, work colleagues, or family members traveling together. Each bed is designed to give you a good night’s sleep, and the room is set up so both guests can feel comfortable."
+  };
+
+  // Default display images for room types
+  const defaultImages = {
+    "single bed": "src/assets/images/pixelcut-export-4.jpg",
+    "double bed": "src/assets/images/Ampomaah-Hotel-Accra-Exterior-2.JPEG",
+    "twin bed": "src/assets/images/ampomaah-hotel-2.jpg"
+  };
 
   // Fix scroll position on page load and ensure content is visible
   useEffect(() => {
@@ -30,42 +49,121 @@ const RoomListings = () => {
     };
   }, []);
 
-  // Room Data with enhanced details
-  const rooms = [
-    {
-      title: "Single Room",
-      description:
-        "A cozy and well-appointed space designed for solo travelers. Features a plush single bed, a sleek work desk, and a private en-suite bathroom. Enjoy high-speed Wi-Fi, a flat-screen TV, and complimentary refreshments.",
-      image: "https://images.unsplash.com/photo-1611892440504-42a792e24d32?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
-      price: 600.00,
-      features: ["Free Wi-Fi", "Flat-screen TV", "En-suite bathroom", "Workspace"],
-      type: "Single"
-    },
-    {
-      title: "Double Room",
-      description:
-        "Elegantly designed for couples or solo guests seeking extra comfort. Features a luxurious queen-sized bed, a stylish seating area, and premium amenities like air conditioning, minibar, and a smart TV.",
-      image: "https://images.unsplash.com/photo-1590490360182-c33d57733427?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
-      price: 700.00,
-      features: ["Queen-sized bed", "Air conditioning", "Minibar", "Smart TV"],
-      type: "Double"
-    },
-    {
-      title: "Twin-Bed Room",
-      description:
-        "Designed for shared accommodation, this room offers two separate beds, making it ideal for friends or family. Equipped with a work desk, storage space, free Wi-Fi, and a relaxing ambiance.",
-      image: "https://images.unsplash.com/photo-1566665797739-1674de7a421a?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
-      price: 800.00,
-      features: ["Two separate beds", "Work desk", "Storage space", "Free Wi-Fi"],
-      type: "Twin"
-    },
-  ];
+  // Fetch and group rooms from Firestore
+  useEffect(() => {
+    const fetchRooms = async () => {
+      try {
+        setLoading(true);
+        const roomsCollection = collection(db, "rooms");
+        
+        // Query for available rooms
+        const q = query(roomsCollection, where("availability", "==", true));
+        const querySnapshot = await getDocs(q);
+        
+        // Create a map to group rooms by type
+        const roomsByType = {};
+        
+        querySnapshot.forEach((doc) => {
+          const data = doc.data();
+          const roomType = (data.t_room || 'standard').toLowerCase();
+          
+          if (!roomsByType[roomType]) {
+            roomsByType[roomType] = {
+              type: data.t_room || 'Standard',
+              title: `${data.t_room || 'Standard'} Room`,
+              description: roomDescriptions[roomType] || "A comfortable room with modern amenities.",
+              image: defaultImages[roomType] || data.image || "https://images.unsplash.com/photo-1611892440504-42a792e24d32",
+              price: data.price || 500,
+              features: data.amenities || ["Free Wi-Fi", "Flat-screen TV"],
+              count: 1,
+              lowestPrice: data.price || 500,
+              highestPrice: data.price || 500
+            };
+          } else {
+            // Update room count
+            roomsByType[roomType].count += 1;
+            
+            // Update price range
+            if (data.price < roomsByType[roomType].lowestPrice) {
+              roomsByType[roomType].lowestPrice = data.price;
+            }
+            if (data.price > roomsByType[roomType].highestPrice) {
+              roomsByType[roomType].highestPrice = data.price;
+            }
+            
+            // Combine amenities if they don't already exist
+            if (data.amenities) {
+              data.amenities.forEach(amenity => {
+                if (!roomsByType[roomType].features.includes(amenity)) {
+                  roomsByType[roomType].features.push(amenity);
+                }
+              });
+            }
+          }
+        });
+        
+        // Convert the roomsByType object to an array
+        const groupedRoomTypes = Object.values(roomsByType);
+        
+        setRoomTypes(groupedRoomTypes);
+        setLoading(false);
+      } catch (error) {
+        console.error("Error fetching rooms:", error);
+        setError("Failed to load rooms. Please try again later.");
+        setLoading(false);
+      }
+    };
+
+    fetchRooms();
+  }, []);
 
   // Handler for booking button
   const handleBookNow = (roomType) => {
-    // Navigate to services page with room type as query parameter
-    navigate(`/services?roomType=${roomType}`);
+    navigate(`/services?roomType=${roomType.toLowerCase()}`);
   };
+
+  if (loading) {
+    return (
+      <div className="main-container">
+        <div className="nav-container" style={{ backgroundColor: "transparent", boxShadow: "none" }}>
+          <NavMenu menuOpen={menuOpen} setMenuOpen={setMenuOpen} />
+        </div>
+        <div className="loading-container">
+          <div className="spinner"></div>
+          <p className="loading-text">Loading available rooms...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="main-container">
+        <div className="nav-container" style={{ backgroundColor: "transparent", boxShadow: "none" }}>
+          <NavMenu menuOpen={menuOpen} setMenuOpen={setMenuOpen} />
+        </div>
+        <div className="error-container">
+          <p className="error-text">{error}</p>
+          <button className="retry-button" onClick={() => window.location.reload()}>
+            Try Again
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  if (roomTypes.length === 0) {
+    return (
+      <div className="main-container">
+        <div className="nav-container" style={{ backgroundColor: "transparent", boxShadow: "none" }}>
+          <NavMenu menuOpen={menuOpen} setMenuOpen={setMenuOpen} />
+        </div>
+        <div className="no-rooms-container">
+          <p className="no-rooms-text">No rooms are currently available. Please check back later.</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="main-container">
@@ -75,15 +173,19 @@ const RoomListings = () => {
       </div>
 
       <div className="rlistings-page">
-        <h2 className="page-title">Room Listings</h2>
+        <h2 className="page-title">Room Types</h2>
         <div className="rlistings-list">
-          {rooms.map((room, index) => (
+          {roomTypes.map((roomType, index) => (
             <div key={index} className="rlistings-card">
               <div className="rlistings-info">
-                <h3 className="rlistings-title">{room.title}</h3>
+                <h3 className="rlistings-title">{roomType.title}</h3>
+                
+                <div className="room-availability">
+                  <span className="availability-badge">{roomType.count} rooms</span>
+                </div>
                 
                 <div className="room-features">
-                  {room.features.map((feature, idx) => (
+                  {roomType.features.slice(0, 4).map((feature, idx) => (
                     <div key={idx} className="feature-item">
                       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                         <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z" fill="currentColor" />
@@ -93,15 +195,20 @@ const RoomListings = () => {
                   ))}
                 </div>
                 
-                <p className="rlistings-description">{room.description}</p>
+                <p className="rlistings-description">{roomType.description}</p>
                 
                 <div className="price-info">
-                  GHS {room.price.toFixed(2)} <span className="per-night">per night</span>
+                  {roomType.lowestPrice === roomType.highestPrice ? (
+                    <>GHS {roomType.lowestPrice.toFixed(2)}</>
+                  ) : (
+                    <>GHS {roomType.lowestPrice.toFixed(2)} - {roomType.highestPrice.toFixed(2)}</>
+                  )}
+                  <span className="per-night"> per night</span>
                 </div>
                 
                 <button 
                   className="book-now"
-                  onClick={() => handleBookNow(room.type.toLowerCase())}
+                  onClick={() => handleBookNow(roomType.type.toLowerCase())}
                 >
                   Book Now
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ marginLeft: '6px' }}>
@@ -111,8 +218,8 @@ const RoomListings = () => {
               </div>
               
               <div className="rlistings-image">
-                <img src={room.image} alt={room.title} />
-                <div className="room-type-badge">{room.type}</div>
+                <img src={roomType.image} alt={roomType.title} />
+                <div className="room-type-badge">{roomType.type}</div>
               </div>
             </div>
           ))}

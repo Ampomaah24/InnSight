@@ -1,4 +1,4 @@
-/* Enhanced Services Page Styling */
+
 :root {
   --primary-color: #3a6ea5;
   --primary-light: #5284c0;
@@ -13,9 +13,9 @@
   --border-radius-sm: 0.375rem;
   --border-radius: 0.5rem;
   --border-radius-lg: 0.75rem;
-  --shadow-sm: 0 2px 5px rgba(0, 0, 0, 0.05);
-  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.08);
-  --shadow-lg: 0 8px 20px rgba(0, 0, 0, 0.12);
+  --shadow-sm: 0 0.125rem 0.3125rem rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 0.25rem 0.75rem rgba(0, 0, 0, 0.08);
+  --shadow-lg: 0 0.5rem 1.25rem rgba(0, 0, 0, 0.12);
   --transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
   --spacing-xs: 0.5rem;
   --spacing-sm: 1rem;
@@ -42,10 +42,10 @@ body, html {
   box-sizing: inherit;
 }
 
-/* Services Page Container */
+
 .services-page {
   width: 100%;
-  max-width: 1280px;
+  max-width: 80rem;
   margin: 0 auto;
   padding: 7.5rem var(--spacing-md) var(--spacing-xl);
   position: relative;
@@ -53,7 +53,7 @@ body, html {
   min-height: 100vh;
 }
 
-/* Nav Container */
+
 .nav-container {
   width: 100%;
   display: flex;
@@ -68,8 +68,8 @@ body, html {
   z-index: 1000;
   background-color: rgba(255, 255, 255, 0.98);
   box-shadow: var(--shadow-sm);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(0.625rem);
+  -webkit-backdrop-filter: blur(0.625rem);
   transition: var(--transition);
 }
 
@@ -79,7 +79,7 @@ body, html {
   box-shadow: var(--shadow-md);
 }
 
-/* Booking Services Heading */
+
 .booking-services-heading {
   font-size: 1.75rem;
   font-weight: 700;
@@ -88,7 +88,7 @@ body, html {
   text-align: center;
   flex-grow: 1;
   position: relative;
-  letter-spacing: 0.3px;
+  letter-spacing: 0.01875rem;
 }
 
 .booking-services-heading::after {
@@ -100,10 +100,10 @@ body, html {
   bottom: -0.6rem;
   left: 50%;
   transform: translateX(-50%);
-  border-radius: 2px;
+  border-radius: 0.125rem;
 }
 
-/* Profile Bar/Avatar */
+
 .profile-avatar {
   cursor: pointer;
   position: relative;
@@ -118,18 +118,18 @@ body, html {
   height: 2.75rem;
   object-fit: cover;
   border-radius: 50%;
-  border: 2px solid var(--primary-light);
-  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.15);
+  border: 0.125rem solid var(--primary-light);
+  box-shadow: 0 0.1875rem 0.5rem rgba(0, 0, 0, 0.15);
   transition: var(--transition);
 }
 
 .profile-avatar:hover .profile-pic {
   transform: scale(1.05);
-  box-shadow: 0 5px 12px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 0.3125rem 0.75rem rgba(0, 0, 0, 0.2);
   border-color: var(--accent-color);
 }
 
-/* Services Grid */
+
 .services-grid {
   display: flex;
   justify-content: center;
@@ -143,7 +143,7 @@ body, html {
   margin-right: auto;
 }
 
-/* Service Item */
+
 .service-item {
   text-align: center;
   flex: 0 1 calc(50% - 3.5rem);
@@ -152,13 +152,13 @@ body, html {
   cursor: pointer;
   transition: var(--transition);
   margin-bottom: var(--spacing-xl);
-  position: relative; /* Make this a positioning context for the dropdown */
+  position: relative; 
   border-radius: var(--border-radius-lg);
-  overflow: visible; /* Changed from hidden to allow dropdown to overflow */
+  overflow: visible; 
   background-color: white;
   padding-bottom: var(--spacing-md);
   box-shadow: var(--shadow-sm);
-  border: 1px solid rgba(0, 0, 0, 0.03);
+  border: 0.0625rem solid rgba(0, 0, 0, 0.03);
 }
 
 .service-item:hover {
@@ -167,17 +167,17 @@ body, html {
 }
 
 .service-item.active {
-  border: 2px solid var(--primary-light);
-  box-shadow: 0 0 15px rgba(58, 110, 165, 0.2);
+  border: 0.125rem solid var(--primary-light);
+  box-shadow: 0 0 0.9375rem rgba(58, 110, 165, 0.2);
 }
 
-/* Service Image */
+
 .service-image {
   width: 100%;
   height: 24rem;
   object-fit: cover;
   transition: transform 0.6s cubic-bezier(0.215, 0.61, 0.355, 1);
-  box-shadow: inset 0 -2px 6px rgba(0, 0, 0, 0.1);
+  box-shadow: inset 0 -0.125rem 0.375rem rgba(0, 0, 0, 0.1);
   aspect-ratio: 4/3;
   display: block;
   border-top-left-radius: var(--border-radius-lg);
@@ -188,7 +188,7 @@ body, html {
   transform: scale(1.05);
 }
 
-/* Service Title */
+
 .service-title {
   font-size: 1.5rem;
   font-weight: 600;
@@ -196,7 +196,7 @@ body, html {
   color: var(--primary-color);
   position: relative;
   padding-bottom: var(--spacing-sm);
-  letter-spacing: 0.5px;
+  letter-spacing: 0.03125rem;
 }
 
 .service-title::after {
@@ -209,17 +209,17 @@ body, html {
   left: 50%;
   transform: translateX(-50%);
   transition: width 0.3s ease-out;
-  border-radius: 2px;
+  border-radius: 0.125rem;
 }
 
 .service-item:hover .service-title::after {
   width: 5.5rem;
 }
 
-/* Dropdown Styling - Completely redesigned */
+
 .dropdown {
   position: absolute;
-  top: 100%; /* Position right below the service item */
+  top: 100%; 
   left: 0;
   right: 0;
   width: 85%;
@@ -233,23 +233,23 @@ body, html {
   transition: height 0.4s ease, opacity 0.4s ease, padding 0.4s ease;
   z-index: 100;
   pointer-events: none;
-  display: none; /* Hide by default */
-  border: 1px solid rgba(58, 110, 165, 0.1);
+  display: none; 
+  border: 0.0625rem solid rgba(58, 110, 165, 0.1);
 }
 
 .dropdown.active {
-  display: flex; /* Show when active */
+  display: flex; 
   flex-direction: column;
   gap: var(--spacing-sm);
-  height: auto; /* Allow natural height */
+  height: auto; 
   opacity: 1;
   padding: var(--spacing-lg);
   box-shadow: var(--shadow-md);
   pointer-events: auto;
-  border: 1px solid rgba(58, 110, 165, 0.15);
+  border: 0.0625rem solid rgba(58, 110, 165, 0.15);
 }
 
-/* Label Styling */
+
 .dropdown label {
   font-weight: 600;
   margin-bottom: 0.5rem;
@@ -257,10 +257,10 @@ body, html {
   text-align: left;
   font-size: 1rem;
   display: block;
-  letter-spacing: 0.3px;
+  letter-spacing: 0.01875rem;
 }
 
-/* Date Picker Styling */
+
 .react-datepicker-wrapper {
   width: 100%;
   margin-bottom: var(--spacing-md);
@@ -269,13 +269,13 @@ body, html {
 .react-datepicker__input-container input {
   width: 100%;
   padding: 0.875rem var(--spacing-sm);
-  border: 1px solid #e0e0e0;
+  border: 0.0625rem solid #e0e0e0;
   border-radius: var(--border-radius);
   text-align: center;
   font-size: 1rem;
   background-color: #fff;
   color: var(--text-dark);
-  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.05);
+  box-shadow: inset 0 0.0625rem 0.1875rem rgba(0, 0, 0, 0.05);
   transition: var(--transition);
 }
 
@@ -286,10 +286,10 @@ body, html {
 .react-datepicker__input-container input:focus {
   outline: none;
   border-color: var(--primary-color);
-  box-shadow: 0 0 0 3px rgba(58, 110, 165, 0.15);
+  box-shadow: 0 0 0 0.1875rem rgba(58, 110, 165, 0.15);
 }
 
-/* Button Styling */
+
 .learn-more {
   width: 100%;
   max-width: 16rem;
@@ -304,10 +304,10 @@ body, html {
   transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
   margin: var(--spacing-md) auto var(--spacing-xs);
   display: block;
-  letter-spacing: 0.5px;
+  letter-spacing: 0.03125rem;
   position: relative;
   overflow: hidden;
-  box-shadow: 0 4px 10px rgba(58, 110, 165, 0.25);
+  box-shadow: 0 0.25rem 0.625rem rgba(58, 110, 165, 0.25);
 }
 
 .learn-more:before {
@@ -328,22 +328,22 @@ body, html {
 
 .learn-more:hover {
   background: linear-gradient(135deg, var(--primary-dark) 0%, var(--primary-color) 100%);
-  transform: translateY(-2px);
-  box-shadow: 0 6px 15px rgba(58, 110, 165, 0.3);
+  transform: translateY(-0.125rem);
+  box-shadow: 0 0.375rem 0.9375rem rgba(58, 110, 165, 0.3);
 }
 
 .learn-more:active {
   transform: translateY(0);
-  box-shadow: 0 2px 8px rgba(58, 110, 165, 0.2);
+  box-shadow: 0 0.125rem 0.5rem rgba(58, 110, 165, 0.2);
 }
 
-/* Fix for the datepicker when inside dropdown */
+
 .dropdown .react-datepicker-popper {
   z-index: 200;
 }
 
-/* Media Queries */
-@media (max-width: 64rem) { /* 1024px */
+
+@media (max-width: 64rem) { 
   .services-grid {
     gap: 2.5rem;
     padding: 0 var(--spacing-sm);
@@ -358,7 +358,7 @@ body, html {
   }
 }
 
-@media (max-width: 48rem) { /* 768px */
+@media (max-width: 48rem) { 
   .nav-container {
     padding: 0.75rem var(--spacing-md);
   }
@@ -381,7 +381,7 @@ body, html {
   }
 }
 
-@media (max-width: 30rem) { /* 480px */
+@media (max-width: 30rem) { 
   .nav-container {
     padding: 0.75rem var(--spacing-sm);
   }
@@ -419,7 +419,7 @@ body, html {
 @keyframes fadeIn {
   from {
     opacity: 0;
-    transform: translateY(15px);
+    transform: translateY(0.9375rem);
   }
   to {
     opacity: 1;
@@ -439,32 +439,31 @@ body, html {
   animation-delay: 0.15s;
 }
 
-/* Enhanced page background */
+
 body {
   background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 50%, #f8f9fa 100%);
 }
 
-/* Additional styling for better UX */
-/* Focus styling for accessibility */
+
 button:focus, 
 input:focus, 
 .service-item:focus {
-  outline: 2px solid var(--primary-light);
-  outline-offset: 2px;
+  outline: 0.125rem solid var(--primary-light);
+  outline-offset: 0.125rem;
 }
 
-/* Add subtle hover states to inputs */
+
 input:hover {
   border-color: var(--primary-light);
 }
 
-/* Style placeholder text */
+
 ::placeholder {
   color: #aab2bd;
   opacity: 0.8;
 }
 
-/* Add subtle card hover effects */
+
 .service-item::before {
   content: '';
   position: absolute;
@@ -478,5 +477,5 @@ input:hover {
 }
 
 .service-item:hover::before {
-  box-shadow: 0 0 0 4px rgba(58, 110, 165, 0.2);
+  box-shadow: 0 0 0 0.25rem rgba(58, 110, 165, 0.2);
 }

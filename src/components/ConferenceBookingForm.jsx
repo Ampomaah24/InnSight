@@ -36,7 +36,9 @@ const ConferenceBookingForm = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [processingPayment, setProcessingPayment] = useState(false);
   const [discounts, setDiscounts] = useState({
-    conferenceAttendeeDiscount: 0
+    conferenceAttendeeDiscount: 0,
+    longStayDiscount: 0,
+    longStayMinNights: 7 // Default value until loaded from Firestore
   });
 
   // Safely parse URL parameters
@@ -150,7 +152,9 @@ const ConferenceBookingForm = () => {
         if (docSnap.exists()) {
           const discountData = docSnap.data();
           setDiscounts({
-            conferenceAttendeeDiscount: discountData.conferenceAttendeeDiscount || 0
+            conferenceAttendeeDiscount: discountData.conferenceAttendeeDiscount || 0,
+            longStayDiscount: discountData.longStayDiscount || 0,
+            longStayMinNights: discountData.longStayMinNights || 7
           });
         } else {
           console.warn("Discounts document doesn't exist");
@@ -176,17 +180,57 @@ const ConferenceBookingForm = () => {
   const checkOutDate = new Date(formData.checkOut);
   const numberOfDays = Math.max(1, (checkOutDate - checkInDate) / (1000 * 3600 * 24));
 
-  // Apply any applicable discount
-  const applicableDiscount = discountFromURL > 0 ? discountFromURL : (isLoggedIn ? discounts.conferenceAttendeeDiscount : 0);
-  const actualDiscountName = discountType || (applicableDiscount > 0 ? 'Conference Attendee' : '');
+  // Updated discount application logic
+  const getApplicableDiscount = () => {
+    // No discounts for non-logged in users (unless from URL)
+    if (!isLoggedIn && discountFromURL === 0) {
+      return 0;
+    }
+    
+    // URL-specified discount takes precedence
+    if (discountFromURL > 0) {
+      return discountFromURL;
+    }
+    
+    // Long stay discount if staying longer than min nights
+    if (numberOfDays >= discounts.longStayMinNights) {
+      return discounts.longStayDiscount;
+    }
+    
+    // Conference discount ONLY if they are also booking rooms
+    if (formData.alsoBookingStay === "Yes") {
+      return discounts.conferenceAttendeeDiscount;
+    }
+    
+    return 0; // No discount applies
+  };
+
+  const getDiscountName = () => {
+    if (discountType) {
+      return discountType;
+    }
+    
+    if (numberOfDays >= discounts.longStayMinNights) {
+      return 'Long Stay';
+    }
+    
+    if (formData.alsoBookingStay === "Yes") {
+      return 'Conference Attendee';
+    }
+    
+    return '';
+  };
+
+  // Calculate the effective discount
+  const applicableDiscount = getApplicableDiscount();
+  const actualDiscountName = getDiscountName();
 
   // Calculate total amount
-
-const totalAmount = selectedRooms.reduce((acc, room) => {
-  const originalPrice = Number(room.price || 0);
-  const discountedPrice = applicableDiscount ? originalPrice - (originalPrice * applicableDiscount / 100) : originalPrice;
-  return acc + (discountedPrice * numberOfDays);
-}, 0);
+  const totalAmount = selectedRooms.reduce((acc, room) => {
+    const originalPrice = Number(room.price || 0);
+    const discountedPrice = applicableDiscount ? originalPrice - (originalPrice * applicableDiscount / 100) : originalPrice;
+    return acc + (discountedPrice * numberOfDays);
+  }, 0);
 
   // Form handlers
   const handleChange = (e) => {
@@ -216,152 +260,157 @@ const totalAmount = selectedRooms.reduce((acc, room) => {
     formData.numberOfAttendees > 0;
 
   // Complete booking process
-  const completeBooking = async () => {
-    try {
-      const bookingPromises = [];
+ // In your ConferenceBookingForm.jsx, update the completeBooking function:
+
+const completeBooking = async () => {
+  try {
+    const bookingPromises = [];
+    
+    // Process each conference room
+    for (const room of selectedRooms) {
+      const checkInFormatted = new Date(formData.checkIn);
+      checkInFormatted.setHours(12, 0, 0, 0);
       
-      // Process each conference room
-      for (const room of selectedRooms) {
-        const checkInFormatted = new Date(formData.checkIn);
-        checkInFormatted.setHours(12, 0, 0, 0);
+      const checkOutFormatted = new Date(formData.checkOut);
+      checkOutFormatted.setHours(12, 0, 0, 0);
+
+      // First, try to find the exact room type
+      let roomQuery = query(
+        collection(db, "conference_rooms"),
+        where("availability", "==", true),
+        where("type", "==", room.type)
+      );
+
+      let roomSnapshot = await getDocs(roomQuery);
+      
+      // If no rooms of exact type, show a specific error
+      if (roomSnapshot.empty) {
+        throw new Error(`No conference rooms of type "${room.type}" are available.`);
+      }
+
+      // Find a room without date conflicts
+      let roomBooked = false;
+      
+      for (const roomDoc of roomSnapshot.docs) {
+        if (roomBooked) break;
         
-        const checkOutFormatted = new Date(formData.checkOut);
-        checkOutFormatted.setHours(12, 0, 0, 0);
-
-        // Query conference rooms by type
-        const roomQuery = query(
-          collection(db, "conference_rooms"),
-          where("type", "==", room.type),
-          where("availability", "==", true)
-        );
-
-        const roomSnapshot = await getDocs(roomQuery);
-        if (roomSnapshot.empty) {
-          throw new Error(`No available conference rooms of type: ${room.type}`);
-        }
-
-        // Find a room without date conflicts
-        let roomBooked = false;
+        const roomRef = roomDoc.ref;
         
-        for (const roomDoc of roomSnapshot.docs) {
-          if (roomBooked) break;
-          
-          const roomRef = roomDoc.ref;
-          
-          try {
-            // Use transaction to check and update room availability
-            await runTransaction(db, async (transaction) => {
-              const roomData = (await transaction.get(roomRef)).data();
-              const existingBookings = roomData.bookings || [];
+        try {
+          // Use transaction to check and update room availability
+          await runTransaction(db, async (transaction) => {
+            const roomData = (await transaction.get(roomRef)).data();
+            const existingBookings = roomData.bookings || [];
+            
+            // Check for overlaps with any existing bookings
+            const hasOverlap = existingBookings.some(booking => {
+              // Support both naming conventions (checkIn/checkOut)
+              const existingCheckIn = new Date(booking.checkIn);
+              const existingCheckOut = new Date(booking.checkOut);
               
-              // Check for overlaps
-              const hasOverlap = existingBookings.some(booking => {
-                const existingCheckIn = new Date(booking.checkIn);
-                const existingCheckOut = new Date(booking.checkOut);
-                const newCheckIn = checkInFormatted;
-                const newCheckOut = checkOutFormatted;
-                
-                return (newCheckIn < existingCheckOut && newCheckOut > existingCheckIn);
-              });
-              
-              if (hasOverlap) {
-                throw new Error("Room unavailable for these dates");
-              }
-              
-              // Update room with new booking
-              transaction.update(roomRef, {
-                bookings: [...existingBookings, {
-                  checkIn: checkInFormatted.toISOString(),
-                  checkOut: checkOutFormatted.toISOString(),
-                }]
-              });
+              // Check if there's an overlap between the requested dates and existing booking
+              return (checkInFormatted < existingCheckOut && checkOutFormatted > existingCheckIn);
             });
             
-            // If transaction successful, create booking
-            roomBooked = true;
+            if (hasOverlap) {
+              throw new Error(`Room ${roomData.name || roomRef.id} is already booked for these dates.`);
+            }
             
-            // Calculate prices with discount
-            const originalPrice = Number(room.price || 0) * numberOfDays * formData.numberOfAttendees;
-            const discountedPrice = applicableDiscount ? 
-              originalPrice - (originalPrice * applicableDiscount / 100) : 
-              originalPrice;
+            // Update room with new booking
+            transaction.update(roomRef, {
+              bookings: [...existingBookings, {
+                checkIn: checkInFormatted.toISOString(),
+                checkOut: checkOutFormatted.toISOString()
+              }]
+            });
+          });
+          
+          // If transaction successful, room is available - proceed with booking creation
+          roomBooked = true;
+          
+          // Calculate prices with discount
+          const originalPrice = Number(room.price || 0) * numberOfDays * formData.numberOfAttendees;
+          const discountedPrice = applicableDiscount ? 
+            originalPrice - (originalPrice * applicableDiscount / 100) : 
+            originalPrice;
+          
+          // Create booking document
+          const newBooking = {
+            // Main booker info
+            userId: auth.currentUser?.uid || "guest",
+            email: formData.email,
+            firstName: formData.firstName,
+            lastName: formData.lastName,
+            phone: formData.phone,
+            idType: formData.idType,
+            idNumber: formData.idNumber,
             
-            // Conference booking with simplified structure
-            const newBooking = {
-              // Main booker info
-              userId: auth.currentUser?.uid || "guest",
-              email: formData.email,
-              firstName: formData.firstName,
-              lastName: formData.lastName,
-              phone: formData.phone,
-              idType: formData.idType,
-              idNumber: formData.idNumber,
-              
-              // Room details
-              roomType: room.type,
-              roomName: room.name || "Conference Room",
-              roomNumber: roomRef.id,
-              roomCategory: "conference",
-              
-              // Conference specifics
-              numberOfAttendees: formData.numberOfAttendees,
-              
-              // Booking dates
-              checkIn: formData.checkIn,
-              checkOut: formData.checkOut,
-              
-              // Payment info
-              originalPrice: originalPrice,
-              discountApplied: applicableDiscount,
-              discountType: actualDiscountName,
-              finalPrice: discountedPrice,
-              amountPaid: discountedPrice, // Always full payment for conference
-              remainderDue: 0,
-              paymentStatus: "Paid in Full",
-              paymentOption: "Full Payment",
-              
-              // Follow-up info
-              alsoBookingStay: formData.alsoBookingStay,
-              
-              // Security
-              csrfToken: csrfToken,
-              
-              // Additional info
-              specialRequests: formData.specialRequests,
-              status: "Confirmed",
-              createdAt: serverTimestamp(),
-              
-              // Group booking info
-              bookingGroupId: csrfToken,
-              totalRoomsInBooking: selectedRooms.length
-            };
+            // Room details
+            roomType: room.type,
+            roomName: room.name || "Conference Room",
+            roomNumber: roomRef.id,
+            roomCategory: "conference",
             
-            // Create the booking document
-            const bookingRef = collection(db, "conferenceBookings");
-            bookingPromises.push(addDoc(bookingRef, newBooking));
+            // Conference specifics
+            numberOfAttendees: formData.numberOfAttendees,
             
-            break; // Found and booked a room, move to next room in selection
+            // Booking dates
+            checkIn: formData.checkIn,
+            checkOut: formData.checkOut,
             
-          } catch (error) {
-            // This specific room was unavailable - try the next one
-            console.log(`Room ${roomRef.id} unavailable:`, error.message);
-            continue;
-          }
-        }
-        
-        if (!roomBooked) {
-          throw new Error(`No available conference rooms of type: ${room.type} for the selected dates.`);
+            // Payment info
+            originalPrice: originalPrice,
+            discountApplied: applicableDiscount,
+            discountType: actualDiscountName,
+            finalPrice: discountedPrice,
+            amountPaid: discountedPrice, // Always full payment for conference
+            remainderDue: 0,
+            paymentStatus: "Paid in Full",
+            paymentOption: "Full Payment",
+            
+            // Follow-up info
+            alsoBookingStay: formData.alsoBookingStay,
+            
+            // Security
+            csrfToken: csrfToken,
+            
+            // Additional info
+            specialRequests: formData.specialRequests,
+            status: "Confirmed",
+            createdAt: serverTimestamp(),
+            
+            // Group booking info
+            bookingGroupId: csrfToken,
+            totalRoomsInBooking: selectedRooms.length
+          };
+          
+          // Create the booking document
+          const bookingRef = collection(db, "conferenceBookings");
+          bookingPromises.push(addDoc(bookingRef, newBooking));
+          
+          break; // Found and booked a room, move to next room in selection
+          
+        } catch (error) {
+          // This specific room was unavailable - try the next one
+          console.log(`Room ${roomRef.id} unavailable:`, error.message);
+          continue;
         }
       }
       
-      // Wait for all booking documents to be created
-      await Promise.all(bookingPromises);
-      return true;
-    } catch (err) {
-      console.error("Conference booking failed:", err);
-      throw err;
+      // If we couldn't book any room, throw a specific error
+      if (!roomBooked) {
+        throw new Error(`All conference rooms of type "${room.type}" are already booked for these dates.`);
+      }
     }
-  };
+    
+    // Wait for all booking documents to be created
+    await Promise.all(bookingPromises);
+    return true;
+  } catch (err) {
+    console.error("Conference booking failed:", err);
+    throw err;
+  }
+};
 
   // Paystack configuration
   const config = {

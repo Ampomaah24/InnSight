@@ -175,8 +175,7 @@ const BookingPage = () => {
   const [roomGuests, setRoomGuests] = useState(() => {
     const initialRoomGuests = {};
     
-    // Now we don't automatically assign the main booker to the first room
-    // Instead, we'll let the user choose which room the main booker stays in
+
     selectedRooms.forEach((room, idx) => {
       const roomId = room.id || idx;
       const capacity = getRoomCapacity(room.t_room || "");
@@ -188,8 +187,8 @@ const BookingPage = () => {
         roomAmenities: getRoomAmenities(room.t_room) || [],
         guestCount: 1,
         capacity,
-        guests: [createEmptyGuest()], // Initialize with empty guest data (just names)
-        isMainBookerRoom: false // By default, no room is assigned to main booker yet
+        guests: [createEmptyGuest()], 
+        isMainBookerRoom: false 
       };
     });
     return initialRoomGuests;
@@ -210,7 +209,7 @@ const BookingPage = () => {
 
   // Generate CSRF token
   useEffect(() => {
-    // In a real app, this would be fetched from the server
+
     const generateToken = () => {
       const randomBytes = new Uint8Array(16);
       window.crypto.getRandomValues(randomBytes);
@@ -221,14 +220,13 @@ const BookingPage = () => {
   }, []);
 
   // Set the mainBookerRoomId automatically if there's only one room
-  // Set the mainBookerRoomId automatically if there's only one room - FIXED VERSION
   useEffect(() => {
     if (selectedRooms.length === 1 && !mainBookerRoomId) {
-      // Get the ID of the only room - only set this once
+     
       const singleRoomId = selectedRooms[0].id || 0;
       setMainBookerRoomId(singleRoomId);
       
-      // Mark this room as the main booker's room in the roomGuests state
+
       setRoomGuests(prev => {
         const updatedRooms = { ...prev };
         if (updatedRooms[singleRoomId]) {
@@ -240,11 +238,11 @@ const BookingPage = () => {
         return updatedRooms;
       });
     }
-  }, [selectedRooms, mainBookerRoomId]); // Add mainBookerRoomId as a dependency
+  }, [selectedRooms, mainBookerRoomId]); 
 
   // Fetch discounts from Firestore if we don't have a discount from URL
   useEffect(() => {
-    // If we already have discount from URL params, use it and skip Firestore fetch
+    
     if (discountFromURL > 0) {
       setDiscounts(prev => ({ 
         ...prev, 
@@ -291,7 +289,7 @@ const BookingPage = () => {
     fetchDiscounts();
   }, [discountFromURL, fromConference, isLoggedIn]);
 
-  // Fix scroll to top on page load
+
   useEffect(() => {
     window.scrollTo(0, 0);
   }, []);
@@ -308,26 +306,25 @@ const BookingPage = () => {
   const checkOutDate = new Date(formData.checkOut);
   const numberOfDays = Math.max(1, (checkOutDate - checkInDate) / (1000 * 3600 * 24));
 
-  // Determine which discount to apply
   const getApplicableDiscount = () => {
     // No discounts for non-logged in users (unless from URL)
     if (!isLoggedIn && discountFromURL === 0) {
       return 0;
     }
     
-    // If we already have a discount from the URL, use that
+    // URL-specified discount takes precedence
     if (discountFromURL > 0) {
       return discountFromURL;
-    }
-    
-    // Priority of discounts
-    if (fromConference) {
-      return discounts.conferenceAttendeeDiscount;
     }
     
     // Long stay discount if staying longer than min nights
     if (numberOfDays >= discounts.longStayMinNights) {
       return discounts.longStayDiscount;
+    }
+    
+    // Conference discount - only apply if booking BOTH conference AND rooms
+    if (roomCategory === "conference" && formData.alsoBookingStay === "Yes") {
+      return discounts.conferenceAttendeeDiscount;
     }
     
     // Group discount if booking more than min rooms
@@ -337,14 +334,35 @@ const BookingPage = () => {
     
     return 0; // No discount applies
   };
-
+  
+  // Add this new function for determining discount names
+  const getDiscountName = () => {
+    if (discountType) {
+      return discountType;
+    }
+    
+    if (numberOfDays >= discounts.longStayMinNights) {
+      return 'Long Stay';
+    }
+    
+    if (roomCategory === "conference" && formData.alsoBookingStay === "Yes") {
+      return 'Conference Attendee';
+    }
+    
+    if (selectedRooms.length >= discounts.groupDiscountMinRooms) {
+      return 'Group Booking';
+    }
+    
+    return '';
+  };
+  
+// Find this section in the code around line 359-360:
+  
   // Calculate the effective discount
+  const actualDiscountName = getDiscountName();
+  
+  // Add this line to call getApplicableDiscount() and store its result
   const applicableDiscount = getApplicableDiscount();
-  const actualDiscountName = discountType || (
-    fromConference ? 'Conference Attendee' : 
-    numberOfDays >= discounts.longStayMinNights ? 'Long Stay' :
-    selectedRooms.length >= discounts.groupDiscountMinRooms ? 'Group Booking' : ''
-  );
 
   // Calculate total amount
   const totalAmount = selectedRooms.reduce((acc, room) => {
@@ -356,7 +374,7 @@ const BookingPage = () => {
   // Calculate payment amount based on payment option
   const paymentAmount = (roomCategory === "conference" || formData.paymentOption === "Full Payment")
     ? totalAmount  // For conference bookings or full payment option
-    : totalAmount * 0.2;  // 20% deposit for regular room bookings
+    : totalAmount * 0.2; 
 
   // Get total guest count
   const getTotalGuests = () => {
@@ -367,12 +385,12 @@ const BookingPage = () => {
 
   // Handle main booker room selection
   const assignMainBookerToRoom = (roomId) => {
-    // If there was a previous main booker room, reset it
+
     if (mainBookerRoomId) {
       setRoomGuests(prev => {
         const updatedRooms = { ...prev };
         
-        // Reset the old main booker room
+     
         if (updatedRooms[mainBookerRoomId]) {
           updatedRooms[mainBookerRoomId] = {
             ...updatedRooms[mainBookerRoomId],
@@ -828,17 +846,12 @@ const completeBooking = async () => {
     }
   };
 
-  // Handle successful payment
+  
   // Handle successful payment
   const onSuccess = async (reference) => {
     try {
       // Immediately set processing state to show loading indicator
       setProcessingPayment(true);
-      
-      // Verify the payment reference with your backend before proceeding
-      // This should be done server-side in a real app:
-      // const paymentVerified = await verifyPaymentWithServer(reference.reference);
-      // if (!paymentVerified) throw new Error("Payment verification failed");
       
       // Calculate how much was actually paid in this transaction
       const amountPaid = paymentAmount;
@@ -978,7 +991,7 @@ const completeBooking = async () => {
 
   return (
     <>
-      {/* NavMenu in top left */}
+    
       <div className="nav-container" style={{ backgroundColor: "transparent", boxShadow: "none" }}>
         <NavMenu menuOpen={menuOpen} setMenuOpen={setMenuOpen} />
       </div>
@@ -1091,7 +1104,7 @@ const completeBooking = async () => {
                   </div>
                 </div>
                 
-                {/* Room Selection for Main Booker - Only show for multiple rooms */}
+               
                 {selectedRooms.length > 1 && (
                   <div className="booking-form__full-width room-selection">
                     <h3 className="section__heading">Main Booker's Room</h3>
@@ -1260,6 +1273,7 @@ const completeBooking = async () => {
                         </div>
                         <div className="form-field">
                           <label className="form-field__label form-field__required">Pickup Time</label>
+                          {/* Here's the modified time picker component */}
                           <input 
                             type="time" 
                             name="pickupTime" 
@@ -1395,30 +1409,34 @@ const completeBooking = async () => {
                   </div>
                 </div>
 
-                {/* Payment Button */}
-                <div className="booking-form__full-width">
-                  <PaystackConsumer {...config} onSuccess={onSuccess} onClose={() => setProcessingPayment(false)}>
-                    {({ initializePayment }) => (
-                      <button 
-                        type="button" 
-                        className="button button--primary button--large button--full-width" 
-                        onClick={() => {
-                          if (selectedRooms.length > 1 && !mainBookerRoomId) {
-                            alert("Please select which room you will stay in as the main booker.");
-                          } else if (!isFormValid) {
-                            alert("Please complete all required fields correctly. Ensure all guest names are provided.");
-                          } else {
-                            setProcessingPayment(true);
-                            initializePayment();
-                          }
-                        }}
-                        disabled={processingPayment}
-                      >
-                        {processingPayment ? "Processing..." : "Complete Booking"}
-                      </button>
-                    )}
-                  </PaystackConsumer>
-                </div>
+               
+<div className="booking-form__full-width">
+  <PaystackConsumer {...config} onSuccess={onSuccess} onClose={() => setProcessingPayment(false)}>
+    {({ initializePayment }) => (
+      <button 
+        type="button" 
+        className="button button--primary button--large centered-payment-button" 
+        style={{
+          width: "100%", 
+          maxWidth: "400px", 
+          margin: "2rem auto", 
+          display: "block"
+        }}
+        onClick={() => {
+          if (!isFormValid) {
+            alert("Please complete all required fields correctly.");
+          } else {
+            setProcessingPayment(true);
+            initializePayment();
+          }
+        }}
+        disabled={processingPayment}
+      >
+        {processingPayment ? "Processing..." : "COMPLETE BOOKING"}
+      </button>
+    )}
+  </PaystackConsumer>
+</div>
               </form>
             )}
           </div>

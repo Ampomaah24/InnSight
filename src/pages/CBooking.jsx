@@ -43,44 +43,55 @@ const ConferenceBooking = () => {
       return;
     }
 
-    const fetchAvailableConferenceRooms = async () => {
-      try {
-        const roomsCollection = collection(db, "conference_rooms");
-        const q = query(roomsCollection, where("availability", "==", true));
-        const querySnapshot = await getDocs(q);
-        let availableRooms = [];
+// In your ConferenceBooking.jsx, update the fetchAvailableConferenceRooms function:
 
-        querySnapshot.forEach((doc) => {
-          let room = { id: doc.id, ...doc.data() };
+const fetchAvailableConferenceRooms = async () => {
+  try {
+    const roomsCollection = collection(db, "conference_rooms");
+    const q = query(roomsCollection, where("availability", "==", true));
+    const querySnapshot = await getDocs(q);
+    let availableRooms = [];
 
-          if (!room.bookings || room.bookings.length === 0) {
-            availableRooms.push(room);
-            return;
-          }
+    querySnapshot.forEach((doc) => {
+      let room = { id: doc.id, ...doc.data() };
 
-          const selectedStartDate = new Date(startDate);
-          const selectedEndDate = new Date(endDate);
-
-          const isBooked = room.bookings.some((booking) => {
-            if (!booking.startDate || !booking.endDate) return false;
-            const bookedStart = new Date(booking.startDate);
-            const bookedEnd = new Date(booking.endDate);
-            return selectedStartDate <= bookedEnd && selectedEndDate >= bookedStart;
-          });
-
-          if (!isBooked) {
-            availableRooms.push(room);
-          }
-        });
-
-        setConferenceRooms(availableRooms);
-        setLoading(false);
-      } catch (error) {
-        console.error(" Error fetching conference rooms:", error);
-        setConferenceRooms([]);
-        setLoading(false);
+      if (!room.bookings || room.bookings.length === 0) {
+        availableRooms.push(room);
+        return;
       }
-    };
+
+      const selectedStartDate = new Date(startDate);
+      const selectedEndDate = new Date(endDate);
+
+      // Check for booking conflicts, accounting for both naming conventions
+      const isBooked = room.bookings.some((booking) => {
+        // Support both naming conventions (startDate/endDate and checkIn/checkOut)
+        const bookedStart = booking.startDate ? new Date(booking.startDate) : 
+                          (booking.checkIn ? new Date(booking.checkIn) : null);
+                          
+        const bookedEnd = booking.endDate ? new Date(booking.endDate) : 
+                        (booking.checkOut ? new Date(booking.checkOut) : null);
+        
+        // Skip invalid bookings
+        if (!bookedStart || !bookedEnd) return false;
+        
+        // Check for date overlap
+        return selectedStartDate < bookedEnd && selectedEndDate > bookedStart;
+      });
+
+      if (!isBooked) {
+        availableRooms.push(room);
+      }
+    });
+
+    setConferenceRooms(availableRooms);
+    setLoading(false);
+  } catch (error) {
+    console.error("Error fetching conference rooms:", error);
+    setConferenceRooms([]);
+    setLoading(false);
+  }
+};
 
     fetchAvailableConferenceRooms();
   }, [startDate, endDate]);

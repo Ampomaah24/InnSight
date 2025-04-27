@@ -99,7 +99,7 @@
    
    .input-group:hover {
      border-color: #d0d0d0;
-     transform: translateY(-2px);
+     transform: translateY(-0.125rem);
    }
    
    .input-group:focus-within {

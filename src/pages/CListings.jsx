@@ -1,11 +1,25 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import NavMenu from "../components/NavMenu"; // Import NavMenu component
+import { db } from "../config/firebase";
+import { collection, getDocs, query, where } from "firebase/firestore";
+import NavMenu from "../components/NavMenu";
 import "../assets/styles/CListings.css";
 
 const CListings = () => {
   const navigate = useNavigate();
   const [menuOpen, setMenuOpen] = useState(false);
+  const [conferenceRooms, setConferenceRooms] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  // Room descriptions that will be mapped to room types
+  const roomDescriptions = {
+    "large": "Our Grand Hall provides a spacious setting for large events. With high ceilings, large windows, and good lighting, this area can be arranged for conferences, or formal dinners. The neutral colors work well with any decoration theme, and the room includes sound equipment and presentation technology.",
+    "executive": "Perfect for board meetings and executive discussions. This long conference room features a sleek table, premium chairs, and video conferencing facilities.",
+    "small": "The Mini Hall offers an intimate space for smaller meetings and gatherings. It's ideal for business discussions, small training sessions, or private celebrations. The room is equipped with necessary technology for presentations and includes access to an outdoor terrace.",
+    "big": "Our Grand Hall provides a spacious setting for large events. With high ceilings, large windows, and good lighting, this area can be arranged for conferences, or formal dinners. The neutral colors work well with any decoration theme, and the room includes sound equipment and presentation technology.",
+    "long": "Perfect for board meetings and executive discussions. This long conference room features a sleek table, premium chairs, and video conferencing facilities."
+  };
 
   // Fix scroll position on page load
   useEffect(() => {
@@ -30,46 +44,97 @@ const CListings = () => {
     };
   }, []);
 
-  // Conference Room Data
-  const conferenceRooms = [
-    {
-      title: "Big Conference Room",
-      description:
-        "A spacious and fully equipped room ideal for large corporate meetings, seminars, and events. Includes a projector, high-speed internet, and modern seating.",
-      image: "/images/big-conference.jpg",
-      price: 8000.00,
-      features: ["Projector", "High-speed Wi-Fi", "Seating for 50", "Catering Available"],
-      type: "Large"
-    },
-    {
-      title: "Long Conference Room",
-      description:
-        "Perfect for board meetings and executive discussions. This long conference room features a sleek table, premium chairs, and video conferencing facilities.",
-      image: "/images/long-conference.jpg",
-      price: 5000.00,
-      features: ["Video Conferencing", "Executive Chairs", "Whiteboard", "Coffee Service"],
-      type: "Executive"
-    },
-    {
-      title: "Small Conference Room",
-      description:
-        "A cozy and professional space for small team meetings or private discussions. Features soundproofing, a smart TV, and comfortable seating.",
-      image: "/images/small-conference.jpg",
-      price: 3000.00,
-      features: ["Smart TV", "Soundproofing", "Seating for 10", "Presentation Tools"],
-      type: "Small"
-    },
-  ];
+  // Fetch conference rooms from Firestore
+  useEffect(() => {
+    const fetchConferenceRooms = async () => {
+      try {
+        setLoading(true);
+        const roomsCollection = collection(db, "conference_rooms");
+        
+        // Query for available conference rooms
+        const q = query(roomsCollection, where("availability", "==", true));
+        const querySnapshot = await getDocs(q);
+        
+        const roomData = [];
+        querySnapshot.forEach((doc) => {
+          const data = doc.data();
+          
+          // Get the room type in lowercase for mapping to descriptions
+          const roomType = (data.type || '').toLowerCase();
+          
+          roomData.push({
+            id: doc.id,
+            title: data.name || `${data.type || 'Conference'} Room`,
+            description: roomDescriptions[roomType] || "A professionally equipped conference room for your business needs.",
+            image: data.image || "/images/conference-default.jpg",
+            price: data.price || 3000,
+            features: data.amenities || ["Wi-Fi", "Presentation Equipment"],
+            type: data.type || "Conference"
+          });
+        });
+        
+        setConferenceRooms(roomData);
+        setLoading(false);
+      } catch (error) {
+        console.error("Error fetching conference rooms:", error);
+        setError("Failed to load conference rooms. Please try again later.");
+        setLoading(false);
+      }
+    };
+
+    fetchConferenceRooms();
+  }, []);
 
   // Handler for booking button
   const handleBookNow = (roomType) => {
-    // Navigate to conference booking page with room type as query parameter
-    navigate(`/services?roomType=${roomType}`);
+    navigate(`/services?roomType=${roomType.toLowerCase()}`);
   };
+
+  if (loading) {
+    return (
+      <div className="main-container">
+        <div className="nav-container" style={{ backgroundColor: "transparent", boxShadow: "none" }}>
+          <NavMenu menuOpen={menuOpen} setMenuOpen={setMenuOpen} />
+        </div>
+        <div className="loading-container">
+          <div className="spinner"></div>
+          <p className="loading-text">Loading conference rooms...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="main-container">
+        <div className="nav-container" style={{ backgroundColor: "transparent", boxShadow: "none" }}>
+          <NavMenu menuOpen={menuOpen} setMenuOpen={setMenuOpen} />
+        </div>
+        <div className="error-container">
+          <p className="error-text">{error}</p>
+          <button className="retry-button" onClick={() => window.location.reload()}>
+            Try Again
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  if (conferenceRooms.length === 0) {
+    return (
+      <div className="main-container">
+        <div className="nav-container" style={{ backgroundColor: "transparent", boxShadow: "none" }}>
+          <NavMenu menuOpen={menuOpen} setMenuOpen={setMenuOpen} />
+        </div>
+        <div className="no-rooms-container">
+          <p className="no-rooms-text">No conference rooms are currently available. Please check back later.</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="main-container">
-      {/* NavMenu in top left - Remove the inline styles that were causing transparency */}
       <div className="nav-container" style={{ backgroundColor: "transparent", boxShadow: "none" }}>
         <NavMenu menuOpen={menuOpen} setMenuOpen={setMenuOpen} />
       </div>
@@ -78,7 +143,7 @@ const CListings = () => {
         <h2 className="page-title">Conference Room Listings</h2>
         <div className="clistings-list">
           {conferenceRooms.map((room, index) => (
-            <div key={index} className="clistings-card">
+            <div key={room.id || index} className="clistings-card">
               <div className="clistings-info">
                 <h3 className="clistings-title">{room.title}</h3>
                 
