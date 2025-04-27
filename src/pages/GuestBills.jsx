@@ -340,6 +340,11 @@ const GuestBills = () => {
     }
   };
 
+  // Helper function to format currency in Ghana Cedis
+  const formatCurrency = (amount) => {
+    return `GHS ${Number(amount).toFixed(2)}`;
+  };
+
   if (loading) {
     return (
       <div className="loading-container">
@@ -484,22 +489,22 @@ const GuestBills = () => {
                         </div>
                         <div className="charge-item">
                           <span>Original Price</span>
-                          <span>${Number(activeBooking.originalPrice).toFixed(2)}</span>
+                          <span>{formatCurrency(activeBooking.originalPrice)}</span>
                         </div>
                         {getExtensionOrders(activeBooking.foodOrders).length > 0 && (
                           <div className="charge-item extension-charge">
                             <span>Extension Charges</span>
-                            <span>${calculateExtensionTotal(activeBooking.foodOrders).toFixed(2)}</span>
+                            <span>{formatCurrency(calculateExtensionTotal(activeBooking.foodOrders))}</span>
                           </div>
                         )}
                         <div className="charge-item">
                           <span>Total Room Charges</span>
-                          <span>${(Number(activeBooking.originalPrice) + calculateExtensionTotal(activeBooking.foodOrders)).toFixed(2)}</span>
+                          <span>{formatCurrency(Number(activeBooking.originalPrice) + calculateExtensionTotal(activeBooking.foodOrders))}</span>
                         </div>
                         {(activeBooking.accommodationBalance + calculateExtensionTotal(activeBooking.foodOrders)) > 0 && (
                           <div className="charge-total">
                             <span>Balance Due</span>
-                            <span>${(Number(activeBooking.accommodationBalance) + calculateExtensionTotal(activeBooking.foodOrders)).toFixed(2)}</span>
+                            <span>{formatCurrency(Number(activeBooking.accommodationBalance) + calculateExtensionTotal(activeBooking.foodOrders))}</span>
                           </div>
                         )}
                       </div>
@@ -509,7 +514,7 @@ const GuestBills = () => {
                         <div className="payment-instructions">
                           <h4>Payment Instructions</h4>
                           <p>Please visit the front desk to settle your room balance.</p>
-                          <p>We accept credit cards, debit cards, and cash payments.</p>
+                          <p>We accept credit cards, debit cards, mobile money, and cash payments.</p>
                         </div>
                       )}
                       
@@ -547,12 +552,12 @@ const GuestBills = () => {
                                 <tr key={order.id}>
                                   <td>{formatDate(order.date)}</td>
                                   <td>{order.description}</td>
-                                  <td>$ {order.amount.toFixed(2)}</td>
+                                  <td>{formatCurrency(order.amount)}</td>
                                 </tr>
                               ))}
                               <tr className="total-row">
                                 <td colSpan={2}>Total</td>
-                                <td>$ {calculateFoodTotal(activeBooking.foodOrders).toFixed(2)}</td>
+                                <td>{formatCurrency(calculateFoodTotal(activeBooking.foodOrders))}</td>
                               </tr>
                             </tbody>
                           </table>
@@ -603,12 +608,12 @@ const GuestBills = () => {
                                     {order.description}
                                     {order.notes && <div className="order-notes">{order.notes}</div>}
                                   </td>
-                                  <td>$ {order.amount.toFixed(2)}</td>
+                                  <td>{formatCurrency(order.amount)}</td>
                                 </tr>
                               ))}
                               <tr className="total-row">
                                 <td colSpan={2}>Total</td>
-                                <td>$ {calculateExtensionTotal(activeBooking.foodOrders).toFixed(2)}</td>
+                                <td>{formatCurrency(calculateExtensionTotal(activeBooking.foodOrders))}</td>
                               </tr>
                             </tbody>
                           </table>

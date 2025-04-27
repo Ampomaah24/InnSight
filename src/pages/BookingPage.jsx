@@ -11,6 +11,7 @@ import PhoneInput, { isValidPhoneNumber } from "react-phone-number-input";
 import "react-phone-number-input/style.css";
 import NavMenu from "../components/NavMenu";
 import "../assets/styles/BookingPage.css";
+import ConferenceBookingForm from "../components/ConferenceBookingForm"; 
 
 // Use environment variable directly from .env file
 const PAYSTACK_PUBLIC_KEY = import.meta.env.VITE_PAYSTACK_PUBLIC_KEY;
@@ -75,24 +76,8 @@ const BookingPage = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const auth = getAuth();
-  const [menuOpen, setMenuOpen] = useState(false);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const [csrfToken, setCsrfToken] = useState("");
-  const [isLoggedIn, setIsLoggedIn] = useState(false); // Track login state
-  const [discounts, setDiscounts] = useState({
-    conferenceAttendeeDiscount: 0,
-    corporateDiscount: 0,
-    groupDiscountMinRooms: 0,
-    groupDiscountRate: 0,
-    longStayDiscount: 0,
-    longStayMinNights: 0,
-  });
   
-  // New state to track which room is assigned to main booker
-  const [mainBookerRoomId, setMainBookerRoomId] = useState(null);
-
-  // Safely parse URL parameters
+  // Safely parse URL parameters - moved to the top before using roomCategory
   const getURLParams = () => {
     try {
       const params = new URLSearchParams(location.search);
@@ -122,7 +107,6 @@ const BookingPage = () => {
       };
     } catch (error) {
       console.error("Error processing URL parameters:", error);
-      setError("Invalid URL parameters. Please try again.");
       return {
         selectedRooms: [],
         checkInParam: "",
@@ -135,6 +119,7 @@ const BookingPage = () => {
     }
   };
 
+  // Extract URL parameters immediately
   const {
     selectedRooms,
     checkInParam,
@@ -144,6 +129,28 @@ const BookingPage = () => {
     discountFromURL,
     discountType
   } = getURLParams();
+  
+  // Now we can safely check roomCategory
+  if (roomCategory === "conference") {
+    return <ConferenceBookingForm />;
+  }
+
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [csrfToken, setCsrfToken] = useState("");
+  const [isLoggedIn, setIsLoggedIn] = useState(false); // Track login state
+  const [discounts, setDiscounts] = useState({
+    conferenceAttendeeDiscount: 0,
+    corporateDiscount: 0,
+    groupDiscountMinRooms: 0,
+    groupDiscountRate: 0,
+    longStayDiscount: 0,
+    longStayMinNights: 0,
+  });
+
+  // New state to track which room is assigned to main booker
+  const [mainBookerRoomId, setMainBookerRoomId] = useState(null);
 
   // Main guest form data
   const [formData, setFormData] = useState({
@@ -214,26 +221,26 @@ const BookingPage = () => {
   }, []);
 
   // Set the mainBookerRoomId automatically if there's only one room
-// Set the mainBookerRoomId automatically if there's only one room - FIXED VERSION
-useEffect(() => {
-  if (selectedRooms.length === 1 && !mainBookerRoomId) {
-    // Get the ID of the only room - only set this once
-    const singleRoomId = selectedRooms[0].id || 0;
-    setMainBookerRoomId(singleRoomId);
-    
-    // Mark this room as the main booker's room in the roomGuests state
-    setRoomGuests(prev => {
-      const updatedRooms = { ...prev };
-      if (updatedRooms[singleRoomId]) {
-        updatedRooms[singleRoomId] = {
-          ...updatedRooms[singleRoomId],
-          isMainBookerRoom: true
-        };
-      }
-      return updatedRooms;
-    });
-  }
-}, [selectedRooms, mainBookerRoomId]); // Add mainBookerRoomId as a dependency
+  // Set the mainBookerRoomId automatically if there's only one room - FIXED VERSION
+  useEffect(() => {
+    if (selectedRooms.length === 1 && !mainBookerRoomId) {
+      // Get the ID of the only room - only set this once
+      const singleRoomId = selectedRooms[0].id || 0;
+      setMainBookerRoomId(singleRoomId);
+      
+      // Mark this room as the main booker's room in the roomGuests state
+      setRoomGuests(prev => {
+        const updatedRooms = { ...prev };
+        if (updatedRooms[singleRoomId]) {
+          updatedRooms[singleRoomId] = {
+            ...updatedRooms[singleRoomId],
+            isMainBookerRoom: true
+          };
+        }
+        return updatedRooms;
+      });
+    }
+  }, [selectedRooms, mainBookerRoomId]); // Add mainBookerRoomId as a dependency
 
   // Fetch discounts from Firestore if we don't have a discount from URL
   useEffect(() => {
@@ -578,213 +585,229 @@ useEffect(() => {
     validateGuests();
 
   // Use Firestore transaction for booking to prevent race conditions
-  const completeBooking = async () => {
-    try {
-      const bookingPromises = [];
+ // Modify the completeBooking function to properly handle primary guests for each room
+const completeBooking = async () => {
+  try {
+    const bookingPromises = [];
+    
+    // For each selected room, find an available room and book it
+    for (const room of selectedRooms) {
+      const roomId = room.id || room.t_room;
+      const roomInfo = roomGuests[roomId] || { guests: [], guestCount: 1 };
       
-      // For each selected room, find an available room and book it
-      for (const room of selectedRooms) {
-        const roomId = room.id || room.t_room;
-        const roomInfo = roomGuests[roomId] || { guests: [], guestCount: 1 };
-        
-        // Format dates for comparison
-        const formatDateWithNoon = (dateStr) => {
-          const date = new Date(dateStr);
-          date.setHours(12, 0, 0, 0);
-          return date.toISOString();
-        };
-        
-        const checkInFormatted = formatDateWithNoon(formData.checkIn);
-        const checkOutFormatted = formatDateWithNoon(formData.checkOut);
+      // Format dates for comparison
+      const formatDateWithNoon = (dateStr) => {
+        const date = new Date(dateStr);
+        date.setHours(12, 0, 0, 0);
+        return date.toISOString();
+      };
+      
+      const checkInFormatted = formatDateWithNoon(formData.checkIn);
+      const checkOutFormatted = formatDateWithNoon(formData.checkOut);
 
-        // Query rooms by type
-        const roomQuery = query(
-          collection(db, roomCategory === "conference" ? "conference_rooms" : "rooms"),
-          where(roomCategory === "conference" ? "type" : "t_room", "==", roomCategory === "conference" ? room.type : room.t_room),
-          where("availability", "==", true)
-        );
+      // Query rooms by type
+      const roomQuery = query(
+        collection(db, roomCategory === "conference" ? "conference_rooms" : "rooms"),
+        where(roomCategory === "conference" ? "type" : "t_room", "==", roomCategory === "conference" ? room.type : room.t_room),
+        where("availability", "==", true)
+      );
 
-        const roomSnapshot = await getDocs(roomQuery);
-        if (roomSnapshot.empty) {
-          throw new Error(`No available rooms of type: ${room.t_room || room.type}`);
-        }
+      const roomSnapshot = await getDocs(roomQuery);
+      if (roomSnapshot.empty) {
+        throw new Error(`No available rooms of type: ${room.t_room || room.type}`);
+      }
 
-        // Find a room without date conflicts using transactions
-        let roomBooked = false;
+      // Find a room without date conflicts using transactions
+      let roomBooked = false;
+      
+      for (const roomDoc of roomSnapshot.docs) {
+        if (roomBooked) break;
         
-        for (const roomDoc of roomSnapshot.docs) {
-          if (roomBooked) break;
-          
-          const roomRef = roomDoc.ref;
-          
-          try {
-            // Use transaction to check and update room availability
-            await runTransaction(db, async (transaction) => {
-              const roomData = (await transaction.get(roomRef)).data();
-              const existingBookings = roomData.bookings || [];
+        const roomRef = roomDoc.ref;
+        
+        try {
+          // Use transaction to check and update room availability
+          await runTransaction(db, async (transaction) => {
+            const roomData = (await transaction.get(roomRef)).data();
+            const existingBookings = roomData.bookings || [];
+            
+            // Check if there's any overlap with existing bookings
+            const hasOverlap = existingBookings.some(booking => {
+              const existingCheckIn = new Date(booking.checkIn);
+              const existingCheckOut = new Date(booking.checkOut);
+              const newCheckIn = new Date(checkInFormatted);
+              const newCheckOut = new Date(checkOutFormatted);
               
-              // Check if there's any overlap with existing bookings
-              const hasOverlap = existingBookings.some(booking => {
-                const existingCheckIn = new Date(booking.checkIn);
-                const existingCheckOut = new Date(booking.checkOut);
-                const newCheckIn = new Date(checkInFormatted);
-                const newCheckOut = new Date(checkOutFormatted);
-                
-                // Overlap occurs if:
-                // (new check-in is before existing check-out) AND (new check-out is after existing check-in)
-                return (newCheckIn < existingCheckOut && newCheckOut > existingCheckIn);
-              });
-              
-              if (hasOverlap) {
-                // Skip this room and try the next one
-                throw new Error("Room unavailable for these dates");
-              }
-              
-              // Update room with new booking
-              transaction.update(roomRef, {
-                bookings: [...existingBookings, {
-                  checkIn: checkInFormatted,
-                  checkOut: checkOutFormatted,
-                }]
-              });
+              // Overlap occurs if:
+              // (new check-in is before existing check-out) AND (new check-out is after existing check-in)
+              return (newCheckIn < existingCheckOut && newCheckOut > existingCheckIn);
             });
             
-            // If transaction successful, room is available - proceed with booking creation
-            roomBooked = true;
+            if (hasOverlap) {
+              // Skip this room and try the next one
+              throw new Error("Room unavailable for these dates");
+            }
             
-            // Calculate prices with discount
-            const originalPrice = Number(room.price || 0) * numberOfDays;
-            const discountedPrice = applicableDiscount ? 
-              originalPrice - (originalPrice * applicableDiscount / 100) : 
-              originalPrice;
+            // Update room with new booking
+            transaction.update(roomRef, {
+              bookings: [...existingBookings, {
+                checkIn: checkInFormatted,
+                checkOut: checkOutFormatted,
+              }]
+            });
+          });
+          
+          // If transaction successful, room is available - proceed with booking creation
+          roomBooked = true;
+          
+          // Calculate prices with discount
+          const originalPrice = Number(room.price || 0) * numberOfDays;
+          const discountedPrice = applicableDiscount ? 
+            originalPrice - (originalPrice * applicableDiscount / 100) : 
+            originalPrice;
 
-            // Check if this is a deposit payment (never for conference bookings)
-            const isDeposit = roomCategory !== "conference" && formData.paymentOption === "Deposit for Reservation";
-            const depositRate = 0.2; // 20% deposit
-            const amountPaid = isDeposit ? discountedPrice * depositRate : discountedPrice;
-            const remainderDue = isDeposit ? discountedPrice - amountPaid : 0;
+          // Check if this is a deposit payment (never for conference bookings)
+          const isDeposit = roomCategory !== "conference" && formData.paymentOption === "Deposit for Reservation";
+          const depositRate = 0.2; // 20% deposit
+          const amountPaid = isDeposit ? discountedPrice * depositRate : discountedPrice;
+          const remainderDue = isDeposit ? discountedPrice - amountPaid : 0;
+          
+          // Process guests for this room
+          const roomGuestsList = roomInfo.guests || [];
+          const roomGuestCount = roomInfo.guestCount || 1;
+          
+          // Determine primary guest for this room
+          const isMainBookerRoom = roomId === mainBookerRoomId;
+          
+          // Get the first guest's info as the primary guest for this room
+          const primaryGuest = roomGuestsList[0] || { firstName: "", lastName: "" };
+          
+          // If this is the main booker's room, the primary guest is the main booker
+          const primaryGuestFirstName = isMainBookerRoom ? formData.firstName : primaryGuest.firstName;
+          const primaryGuestLastName = isMainBookerRoom ? formData.lastName : primaryGuest.lastName;
+          
+          // Create a clean array of guest info
+          const guestListForRoom = roomGuestsList.slice(0, roomGuestCount).map((guest, index) => {
+            const isMainBooker = isMainBookerRoom && index === 0;
             
-            // Process guests for this room - now just names
-            const roomGuests = roomInfo.guests || [];
-            const roomGuestCount = roomInfo.guestCount || 1;
-            
-            // Create a clean array of guest info - just names now
-            const guestListForRoom = roomGuests.slice(0, roomGuestCount).map((guest, index) => {
-              const isMainBooker = roomId === mainBookerRoomId && index === 0;
-              
-              // For the main booker, include all details
-              if (isMainBooker) {
-                return {
-                  firstName: formData.firstName,
-                  lastName: formData.lastName,
-                  email: formData.email,
-                  phone: formData.phone,
-                  idType: formData.idType,
-                  idNumber: formData.idNumber,
-                  isMainBooker: true,
-                  accountCreated: true  // Main booker already has account
-                };
-              }
-              
-              // For other guests, just names and flag for pending account creation
+            // For the main booker, include all details
+            if (isMainBooker) {
               return {
-                firstName: guest.firstName,
-                lastName: guest.lastName,
-                accountCreated: false,  // Accounts will be created on arrival
-                isMainBooker: false
+                firstName: formData.firstName,
+                lastName: formData.lastName,
+                email: formData.email,
+                phone: formData.phone,
+                idType: formData.idType,
+                idNumber: formData.idNumber,
+                isMainBooker: true,
+                accountCreated: true  // Main booker already has account
               };
-            });
+            }
             
-            // Create booking document
-            const newBooking = {
-              // Main booker info (same for all rooms)
-              userId: auth.currentUser?.uid || "guest",
-              email: formData.email,
-              firstName: formData.firstName,
-              lastName: formData.lastName,
-              phone: formData.phone,
-              idType: formData.idType,
-              idNumber: formData.idNumber,
-              
-              // Room details
-              roomType: room.t_room || room.type,
-              roomName: room.name || "Unnamed",
-              roomNumber: roomRef.id,
-              roomCategory,
-              numberOfGuests: roomGuestCount,
-              
-              // Guest info specific to this room (just names for additional guests)
-              guests: guestListForRoom,
-              
-              // Booking dates
-              checkIn: formData.checkIn,
-              checkOut: formData.checkOut,
-              
-              // Payment info
-              originalPrice: originalPrice,
-              discountApplied: applicableDiscount,
-              discountType: actualDiscountName,
-              finalPrice: discountedPrice,
-              amountPaid: amountPaid,
-              remainderDue: remainderDue,
-              depositRate: isDeposit ? depositRate : null,
-              paymentStatus: isDeposit ? "Partial Payment" : "Paid in Full",
-              paymentOption: roomCategory === "conference" ? "Full Payment" : formData.paymentOption,
-              
-              // Additional services
-              airportPickup: formData.airportPickup,
-              pickupDetails: (formData.airportPickup === "Yes") ? {
-                pickupDate: formData.pickupDate,
-                pickupTime: formData.pickupTime,
-                flightNumber: formData.flightNumber,
-                airportLocation: "Kotoka International Airport"
-              } : null,
-              
-              // For conference bookings
-              alsoBookingStay: roomCategory === "conference" ? formData.alsoBookingStay : null,
-              
-              // Security and verification
-              csrfToken: csrfToken,
-              
-              // Additional info
-              specialRequests: formData.specialRequests,
-              status: "Confirmed",
-              createdAt: serverTimestamp(),
-              
-              // Group booking information
-              bookingGroupId: csrfToken,
-              totalRoomsInBooking: selectedRooms.length,
-              
-              // Flag to indicate that additional guests need account creation on arrival
-              pendingGuestAccounts: true
+            // For other guests, just names and flag for pending account creation
+            return {
+              firstName: guest.firstName,
+              lastName: guest.lastName,
+              accountCreated: false,  // Accounts will be created on arrival
+              isMainBooker: false
             };
+          });
+          
+          // Create booking document
+          const newBooking = {
+            // Main booker info (who made the transaction - this stays the same for all rooms)
+            userId: auth.currentUser?.uid || "guest",
+            email: formData.email,
+            bookerFirstName: formData.firstName,
+            bookerLastName: formData.lastName,
+            bookerPhone: formData.phone,
+            bookerIdType: formData.idType,
+            bookerIdNumber: formData.idNumber,
             
-            // Create the booking document and store the promise
-            const bookingRef = collection(db, roomCategory === "conference" ? "conferenceBookings" : "bookings");
-            bookingPromises.push(addDoc(bookingRef, newBooking));
+            // Primary guest info for this specific room (may be different from booker)
+            primaryGuestFirstName: primaryGuestFirstName,
+            primaryGuestLastName: primaryGuestLastName,
+            isMainBookerRoom: isMainBookerRoom,
             
-            break; // Found and booked a room, move to next room in selection
+            // Room details
+            roomType: room.t_room || room.type,
+            roomName: room.name || "Unnamed",
+            roomNumber: roomRef.id,
+            roomCategory,
+            numberOfGuests: roomGuestCount,
             
-          } catch (error) {
-            // This specific room was unavailable - try the next one
-            console.log(`Room ${roomRef.id} unavailable:`, error.message);
-            continue;
-          }
-        }
-        
-        if (!roomBooked) {
-          throw new Error(`No available rooms of type: ${room.t_room || room.type} for the selected dates.`);
+            // Guest info specific to this room
+            guests: guestListForRoom,
+            
+            // Booking dates
+            checkIn: formData.checkIn,
+            checkOut: formData.checkOut,
+            
+            // Payment info
+            originalPrice: originalPrice,
+            discountApplied: applicableDiscount,
+            discountType: actualDiscountName,
+            finalPrice: discountedPrice,
+            amountPaid: amountPaid,
+            remainderDue: remainderDue,
+            depositRate: isDeposit ? depositRate : null,
+            paymentStatus: isDeposit ? "Partial Payment" : "Paid in Full",
+            paymentOption: roomCategory === "conference" ? "Full Payment" : formData.paymentOption,
+            
+            // Additional services
+            airportPickup: formData.airportPickup,
+            pickupDetails: (formData.airportPickup === "Yes") ? {
+              pickupDate: formData.pickupDate,
+              pickupTime: formData.pickupTime,
+              flightNumber: formData.flightNumber,
+              airportLocation: "Kotoka International Airport"
+            } : null,
+            
+            // For conference bookings
+            alsoBookingStay: roomCategory === "conference" ? formData.alsoBookingStay : null,
+            
+            // Security and verification
+            csrfToken: csrfToken,
+            
+            // Additional info
+            specialRequests: formData.specialRequests,
+            status: "Confirmed",
+            createdAt: serverTimestamp(),
+            
+            // Group booking information
+            bookingGroupId: csrfToken,
+            totalRoomsInBooking: selectedRooms.length,
+            
+            // Flag to indicate that additional guests need account creation on arrival
+            pendingGuestAccounts: true
+          };
+          
+          // Create the booking document and store the promise
+          const bookingRef = collection(db, roomCategory === "conference" ? "conferenceBookings" : "bookings");
+          bookingPromises.push(addDoc(bookingRef, newBooking));
+          
+          break; // Found and booked a room, move to next room in selection
+          
+        } catch (error) {
+          // This specific room was unavailable - try the next one
+          console.log(`Room ${roomRef.id} unavailable:`, error.message);
+          continue;
         }
       }
       
-      // Wait for all booking documents to be created
-      await Promise.all(bookingPromises);
-      return true;
-    } catch (err) {
-      console.error("Booking failed:", err);
-      throw err;
+      if (!roomBooked) {
+        throw new Error(`No available rooms of type: ${room.t_room || room.type} for the selected dates.`);
+      }
     }
-  };
+    
+    // Wait for all booking documents to be created
+    await Promise.all(bookingPromises);
+    return true;
+  } catch (err) {
+    console.error("Booking failed:", err);
+    throw err;
+  }
+};
 
   // Paystack configuration
   const config = {
@@ -805,6 +828,7 @@ useEffect(() => {
     }
   };
 
+  // Handle successful payment
   // Handle successful payment
   const onSuccess = async (reference) => {
     try {
@@ -831,7 +855,7 @@ useEffect(() => {
         date: new Date(),
         reference: reference.reference,
         createdBy: auth.currentUser?.uid || "guest",
-        isGuest: !auth.currentUser, // ✅ Required for Firestore rules
+        isGuest: !auth.currentUser, 
         userDetails: {
           firstName: formData.firstName,
           lastName: formData.lastName,

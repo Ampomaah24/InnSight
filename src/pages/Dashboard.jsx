@@ -135,10 +135,30 @@ const Dashboard = () => {
           // Get the lowercase status for consistent comparison
           const lowerCaseStatus = (data.status || "").toLowerCase();
           
+          // Get the guest name for this specific room (primary guest)
+          // First try primary guest fields, then guests array, then fall back to booker fields, then legacy fields
+          let guestName = "";
+          if (data.primaryGuestFirstName || data.primaryGuestLastName) {
+            // Use primary guest fields (first person assigned to the room)
+            guestName = `${data.primaryGuestFirstName || ''} ${data.primaryGuestLastName || ''}`.trim();
+          } else if (data.guests && Array.isArray(data.guests) && data.guests.length > 0) {
+            // If no primary guest fields but guests array exists, use the first guest's information
+            const firstGuest = data.guests[0];
+            if (firstGuest && (firstGuest.firstName || firstGuest.lastName)) {
+              guestName = `${firstGuest.firstName || ''} ${firstGuest.lastName || ''}`.trim();
+            }
+          } else if (data.bookerFirstName || data.bookerLastName) {
+            // Fall back to booker fields
+            guestName = `${data.bookerFirstName || ''} ${data.bookerLastName || ''}`.trim();
+          } else {
+            // Last resort - legacy fields
+            guestName = `${data.firstName || ''} ${data.lastName || ''}`.trim();
+          }
+          
           // Create a reservation object
           const reservation = {
             id: doc.id,
-            guestName: `${data.firstName || ''} ${data.lastName || ''}`.trim(),
+            guestName: guestName, // Use the room-specific guest name
             checkInDate: checkInDate,
             checkOutDate: checkOutDate,
             createdAt: createdAtDate,
@@ -146,6 +166,7 @@ const Dashboard = () => {
             checkOut: checkOutFormatted,
             room: data.roomNumber || "N/A",
             status: data.status || "Confirmed",
+            isMainBookerRoom: !!data.isMainBookerRoom,
           };
           
           // Log the comparison results for debugging
