@@ -1,12 +1,11 @@
-/* ProfilePage.css - Enhanced Layout based on inspiration */
-@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+/* ProfilePage.css - Enhanced Layout with elegant styling and centering */
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=Poppins:wght@300;400;500;600;700&display=swap');
 
 /* Basic Resets */
 * {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
-  font-family: 'Poppins', sans-serif;
 }
 
 :root {
@@ -23,86 +22,29 @@
   --error: #e74c3c;
   --shadow: 0 0.25rem 0.75rem rgba(0,0,0,0.1);
   --transition: all 0.3s ease;
+  
+  --heading-font: 'Playfair Display', serif;
+  --body-font: 'Lato', sans-serif;
+  --accent-font: 'Cormorant Garamond', serif;
 }
 
-body, html {
-  margin: 0;
-  padding: 0;
-  min-height: 100vh;
-  background-color: var(--light-gray);
-}
-
-/* Action Buttons wrapper */
-.profile-actions {
-  display: flex;
-  justify-content: center;
-  gap: 1rem;
-  margin: 2rem 0 1rem;
-}
-
-/* Info row styling to match screenshot */
-.info-row {
-  display: flex;
-  margin-bottom: 1.75rem;
-  align-items: center;
-}
-
-.info-icon {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 3rem;
-  height: 3rem;
-  background-color: rgba(224, 82, 6, 0.1);
-  border-radius: 0.75rem;
-  margin-right: 1.5rem;
-  color: var(--primary);
-  font-size: 1.25rem;
-  flex-shrink: 0;
-}
-
-.info-details {
-  flex: 1;
-}
-
-.info-label {
-  display: block;
-  font-size: 0.875rem;
-  color: var(--gray);
-  margin-bottom: 0.25rem;
-  font-weight: 500;
-}
-
-.info-value {
-  font-size: 1rem;
-  color: var(--dark);
-  font-weight: 500;
-}
-
-.bio-content {
-  line-height: 1.8;
-  color: var(--dark);
-  padding: 1rem;
-  background-color: rgba(224, 82, 6, 0.03);
-  border-radius: 0.75rem;
-  font-size: 1.125rem;
-}
-
-/* Profile Page Layout - Centered with wide width maintained */
+/* Page container - Centered layout */
 .profile-page {
   min-height: 100vh;
-  width: 55rem;
+  max-width: 55rem;
   position: relative;
-  background-color: var(--light-gray);
-  padding-top: 0;
+  padding-top: 5rem;
+  margin: 0 auto; /* Center the profile page */
+  font-family: var(--body-font); /* Set body font */
   display: flex;
-  justify-content: center;
+  flex-direction: column;
+  align-items: center;
 }
 
-/* Profile Card - Wide width but centered */
+/* Profile Card - Centered and styled */
 .profile-card {
-  width: 60rem;
-  max-width: 100rem;
+  width: 100%;
+  max-width: 55rem;
   margin: 1.5rem auto;
   background-color: white;
   border-radius: 1.25rem;
@@ -113,7 +55,7 @@ body, html {
   flex-direction: column;
 }
 
-/* Profile Header - Reduced height */
+/* Profile Header - With elegant font */
 .profile-header {
   background: linear-gradient(135deg, #e05206 0%, #ff7a3c 100%);
   color: white;
@@ -152,7 +94,7 @@ body, html {
   padding: 2rem 2rem 5rem;
 }
 
-/* Avatar Styling - Smaller for reduced height */
+/* Avatar Styling */
 .profile-avatar-container {
   margin-bottom: 1rem;
   position: relative;
@@ -188,6 +130,7 @@ body, html {
   color: var(--primary);
   background-color: white;
   text-transform: uppercase;
+  font-family: var(--heading-font); /* More elegant font for initials */
 }
 
 .avatar-edit {
@@ -208,7 +151,11 @@ body, html {
   opacity: 1;
 }
 
+<<<<<<< Updated upstream
 /* Profile Info - Wider central content */
+=======
+/* Profile Info - Elegant typography */
+>>>>>>> Stashed changes
 .profile-info {
   text-align: center;
   padding: 1.25rem 3rem;
@@ -241,15 +188,22 @@ body, html {
   position: relative;
   display: inline-block;
   margin-bottom: 0.25rem;
+  font-family: var(--heading-font); /* Elegant font for name */
+  letter-spacing: 0.03125rem;
 }
 
 /* .profile-name-underline {
   width: 50%;
-  height: 3px;
+  height: 0.1875rem;
   background-color: var(--primary);
   margin: 0.25rem auto 0.5rem;
+<<<<<<< Updated upstream
   border-radius: 2px;
 } */
+=======
+  border-radius: 0.125rem;
+}
+>>>>>>> Stashed changes
 
 .profile-location {
   font-size: 1rem;
@@ -261,16 +215,7 @@ body, html {
   gap: 0.5rem;
 }
 
-/* Stats Row - Removed */
-.profile-stats {
-  display: none;
-}
-
-.stat-item {
-  display: none;
-}
-
-/* Edit button - Better styling */
+/* Edit button - Elegant styling */
 .action-button {
   padding: 0.875rem 2.5rem;
   border-radius: 2rem;
@@ -282,6 +227,7 @@ body, html {
   transition: var(--transition);
   font-size: 1.125rem;
   margin: 0 auto;
+  letter-spacing: 0.03125rem;
 }
 
 .connect-button {
@@ -293,50 +239,29 @@ body, html {
 
 .connect-button:hover {
   background-color: var(--primary-dark);
-  transform: translateY(-2px);
+  transform: translateY(-0.125rem);
   box-shadow: 0 0.25rem 0.75rem rgba(224, 82, 6, 0.3);
 }
 
 .message-button {
   background-color: white;
   color: var(--primary);
-  border: 1px solid var(--primary);
+  border: 0.0625rem solid var(--primary);
 }
 
 .message-button:hover {
   background-color: rgba(224, 82, 6, 0.05);
-  transform: translateY(-2px);
+  transform: translateY(-0.125rem);
   box-shadow: 0 0.25rem 0.75rem rgba(224, 82, 6, 0.15);
 }
 
-/* Show More Button */
-.show-more-button {
-  display: block;
-  width: max-content;
-  margin: 2rem auto;
-  padding: 0.75rem 2.5rem;
-  background-color: var(--primary);
-  color: white;
-  border: none;
-  border-radius: 2rem;
-  font-weight: 500;
-  cursor: pointer;
-  transition: var(--transition);
-}
-
-.show-more-button:hover {
-  background-color: var(--primary-dark);
-  transform: translateY(-2px);
-  box-shadow: 0 0.25rem 0.75rem rgba(224, 82, 6, 0.3);
-}
-
-/* Profile Content - Reduced vertical spacing */
+/* Profile Content - Elegant design */
 .profile-content {
   padding: 0 2rem 2rem;
   width: 100%;
 }
 
-/* Info Sections - Reduced vertical spacing */
+/* Info Sections - Enhanced typography */
 .info-sections {
   display: flex;
   flex-direction: column;
@@ -356,57 +281,88 @@ body, html {
   position: relative;
 }
 
-/* Section Headers - Match design in screenshot */
+/* Section Headers - Elegant typography */
 .info-section h2 {
   font-size: 1.5rem;
   font-weight: 600;
   color: var(--primary);
   margin-bottom: 2rem;
   padding-bottom: 1rem;
+<<<<<<< Updated upstream
  
+=======
+  border-bottom: 0.0625rem solid #eee;
+>>>>>>> Stashed changes
   position: relative;
   display: flex;
   align-items: center;
+  font-family: var(--heading-font); /* Elegant font for headings */
+  letter-spacing: 0.03125rem;
 }
 
 .info-section h2:before {
   content: '';
   position: absolute;
-  bottom: -1px;
+  bottom: -0.0625rem;
   left: 0;
   width: 3rem;
-  height: 3px;
+  height: 0.1875rem;
   background-color: var(--primary);
-  border-radius: 1px;
+  border-radius: 0.0625rem;
 }
 
-/* Phone input specific styling */
-.phone-input-group {
-  position: relative;
+/* Info row styling */
+.info-row {
+  display: flex;
+  margin-bottom: 1.75rem;
+  align-items: center;
 }
 
-.phone-input {
-  width: 100%;
+.info-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 3rem;
+  height: 3rem;
+  background-color: rgba(224, 82, 6, 0.1);
+  border-radius: 0.75rem;
+  margin-right: 1.5rem;
+  color: var(--primary);
+  font-size: 1.25rem;
+  flex-shrink: 0;
 }
 
-.phone-input.error input {
-  border-color: var(--error) !important;
-  background-color: rgba(231, 76, 60, 0.05);
+.info-details {
+  flex: 1;
 }
 
-.error-message {
-  color: var(--error);
-  font-size: 0.75rem;
-  margin-top: 0.25rem;
+.info-label {
   display: block;
+  font-size: 0.875rem;
+  color: var(--gray);
+  margin-bottom: 0.25rem;
+  font-weight: 500;
+  letter-spacing: 0.01875rem;
 }
 
-.form-input.error {
-  border-color: var(--error) !important;
-  background-color: rgba(231, 76, 60, 0.05);
+.info-value {
+  font-size: 1rem;
+  color: var(--dark);
+  font-weight: 500;
+  letter-spacing: 0.0125rem;
 }
 
-/* Edit Form - Wider layout */
+.bio-content {
+  line-height: 1.8;
+  color: var(--dark);
+  padding: 1rem;
+  background-color: rgba(224, 82, 6, 0.03);
+  border-radius: 0.75rem;
+  font-size: 1.125rem;
+  letter-spacing: 0.0125rem;
+}
+
+
 .edit-form {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(25rem, 1fr));
@@ -427,6 +383,8 @@ body, html {
   margin-bottom: 1.5625rem;
   padding-bottom: 0.9375rem;
   border-bottom: 0.0625rem solid var(--border);
+  font-family: var(--heading-font); 
+  letter-spacing: 0.03125rem;
 }
 
 .form-row {
@@ -445,6 +403,7 @@ body, html {
   margin-bottom: 0.5rem;
   font-weight: 500;
   color: var(--gray);
+  letter-spacing: 0.01875rem;
 }
 
 .form-group input,
@@ -456,6 +415,7 @@ body, html {
   font-size: 0.95rem;
   transition: var(--transition);
   background-color: #fafafa;
+  font-family: var(--body-font); 
 }
 
 .form-group input:focus,
@@ -484,6 +444,7 @@ body, html {
   cursor: pointer;
   transition: var(--transition);
   font-size: 1rem;
+  letter-spacing: 0.03124rem;
 }
 
 .save-button:hover {
@@ -496,19 +457,51 @@ body, html {
   padding: 0.75rem 2.5rem;
   background-color: white;
   color: var(--gray);
-  border: 1px solid var(--border);
+  border: 0.0625rem solid var(--border);
   border-radius: 2rem;
   font-weight: 600;
   cursor: pointer;
   transition: var(--transition);
   font-size: 1rem;
+  letter-spacing: 0.03125rem;
 }
 
 .cancel-button:hover {
   background-color: var(--light-gray);
 }
 
-/* Character count */
+.phone-input-group {
+  position: relative;
+}
+
+.phone-input {
+  width: 100%;
+  font-family: var(--body-font);
+}
+
+
+.phone-input .PhoneInputInput {
+  font-family: var(--body-font) !important;
+}
+
+.phone-input.error input {
+  border-color: var(--error) !important;
+  background-color: rgba(231, 76, 60, 0.05);
+}
+
+.error-message {
+  color: var(--error);
+  font-size: 0.75rem;
+  margin-top: 0.25rem;
+  display: block;
+}
+
+.form-input.error {
+  border-color: var(--error) !important;
+  background-color: rgba(231, 76, 60, 0.05);
+}
+
+
 .character-count {
   text-align: right;
   font-size: 0.75rem;
@@ -516,7 +509,7 @@ body, html {
   margin-top: 0.25rem;
 }
 
-/* Status messages */
+
 .status-message {
   position: fixed;
   top: 1.5rem;
@@ -530,6 +523,8 @@ body, html {
   align-items: center;
   gap: 0.75rem;
   animation: fadeIn 0.3s;
+  font-family: var(--body-font);
+  letter-spacing: 0.0125rem;
 }
 
 .success-message {
@@ -544,6 +539,8 @@ body, html {
   z-index: 9999;
   box-shadow: 0 0.25rem 1rem rgba(0, 0, 0, 0.2);
   animation: fadeIn 0.3s, fadeOut 0.3s 2.7s;
+  font-family: var(--body-font);
+  letter-spacing: 0.0125rem;
 }
 
 .error-message {
@@ -560,34 +557,7 @@ body, html {
   cursor: pointer;
 }
 
-/* Back Button - Improved Styling */
-.back-button {
-  position: fixed !important;
-  top: 1.25rem !important;
-  left: 1.25rem !important;
-  width: 3.5rem !important;
-  height: 3.5rem !important;
-  background-color: rgba(255, 255, 255, 0.9) !important;
-  color: var(--primary) !important;
-  border-radius: 50% !important;
-  display: flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-  cursor: pointer !important;
-  font-size: 1.125rem !important;
-  box-shadow: 0 0.25rem 0.75rem rgba(0, 0, 0, 0.2) !important;
-  z-index: 9999 !important;
-  border: none !important;
-  transition: var(--transition);
-}
 
-.back-button:hover {
-  background-color: white !important;
-  transform: translateY(-0.125rem);
-  box-shadow: 0 0.25rem 0.75rem rgba(0, 0, 0, 0.3);
-}
-
-/* Loading state */
 .loading-spinner {
   display: inline-block;
   width: 3rem;
@@ -602,11 +572,13 @@ body, html {
 .loading-text {
   text-align: center;
   margin-top: 1rem;
-  color: var(--gray);
+  
   font-size: 1.125rem;
+  font-family: var(--heading-font);
+  letter-spacing: 0.01875rem;
 }
 
-/* Avatar Upload */
+
 .avatar-uploading {
   position: absolute;
   top: 0;
@@ -631,7 +603,95 @@ body, html {
   margin-bottom: 0.5rem;
 }
 
-/* Animations */
+.auth-prompt-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 90vh;
+  padding: 2rem;
+  background-color: #f4f4f4;
+  font-family: var(--body-font);
+}
+
+.auth-prompt {
+  background: #ffffff;
+  border-radius: 1rem;
+  padding: 3rem 2rem;
+  max-width: 28rem;
+  width: 100%;
+  box-shadow: 0 1rem 2.5rem rgba(0, 0, 0, 0.07);
+  text-align: center;
+  animation: fadeInUp 0.5s ease-out both;
+}
+
+.auth-icon {
+  font-size: 3rem;
+  color: #e05206;
+  background-color: rgba(224, 82, 6, 0.15);
+  padding: 0.9rem;
+  border-radius: 50%;
+  margin-bottom: 1.5rem;
+}
+
+.auth-prompt h2 {
+  font-size: 1.8rem;
+  margin-bottom: 1rem;
+  color: #333;
+  font-weight: 600;
+  font-family: var(--heading-font); 
+  letter-spacing: 0.03125rem;
+}
+
+.auth-prompt p {
+  color: #666;
+  font-size: 1rem;
+  margin-bottom: 2rem;
+  line-height: 1.6;
+  letter-spacing: 0.0125rem;
+}
+
+.auth-buttons {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.login-button,
+.register-button {
+  padding: 0.75rem 1.8rem;
+  border-radius: 0.5rem;
+  font-size: 1rem;
+  font-weight: 500;
+  transition: all 0.3s ease;
+  cursor: pointer;
+  min-width: 8rem;
+  letter-spacing: 0.01875;
+}
+
+.login-button {
+  background-color: #e05206;
+  color: white;
+  border: none;
+}
+
+.login-button:hover {
+  background-color: #c04400;
+  transform: translateY(-0.125rem);
+}
+
+.register-button {
+  background: white;
+  color: #e05206;
+  border: 0.125rem solid #e05206;
+}
+
+.register-button:hover {
+  background-color: rgba(224, 82, 6, 0.05);
+  transform: translateY(-0.125rem);
+}
+
+
 @keyframes spin {
   to { transform: rotate(360deg); }
 }
@@ -646,10 +706,26 @@ body, html {
   to { opacity: 0; transform: translate(-50%, -1rem); }
 }
 
-/* Responsive Design - Adjusted for wider layout */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(1.25rem);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+
 @media (max-width: 75rem) {
+  .profile-page {
+    max-width: 100%;
+    padding: 0 1rem;
+  }
+  
   .profile-card {
-    width: 98%;
+    width: 100%;
     margin: 1rem auto;
     border-radius: 1rem;
   }
@@ -671,7 +747,7 @@ body, html {
   }
 
   .profile-name {
-    font-size: 2.5rem;
+    font-size: 2.25rem;
   }
 }
 
@@ -682,7 +758,7 @@ body, html {
   }
 
   .profile-name {
-    font-size: 2rem;
+    font-size: 1.8rem;
   }
 
   .form-row {
@@ -728,4 +804,79 @@ body, html {
   .info-value {
     font-size: 1.125rem;
   }
+}
+
+.PhoneInput {
+
+  display: flex;
+  align-items: center;
+  width: 100%;
+  height: 2.75ren !important; 
+  min-height: 2.75rem !important;
+  max-height: 2.75rem !important;
+  
+
+  background-color: #fafafa;
+  border: 0.0625rem solid var(--border);
+  border-radius: 0.5rem;
+  padding: 0 0.5rem;
+  
+  
+  position: relative !important;
+  overflow: hidden !important;
+}
+
+
+.PhoneInputInput {
+  
+  height: 100% !important;
+  flex: 1;
+  width: 0.0625rem;
+  border: none !important;
+  background: transparent !important;
+  padding: 0 0.5rem !important;
+  margin: 0 !important;
+
+  font-size: 0.95rem !important;
+  font-family: var(--body-font) !important;
+  
+
+  box-shadow: none !important;
+  outline: none !important;
+}
+
+.phone-input {
+  width: 100%;
+  height: auto; 
+  position: relative;
+}
+
+
+.PhoneInput {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  height: auto !important; 
+  min-height: auto !important;
+  max-height: none !important;
+  
+  background-color: #fafafa;
+  border: 0.0625rem solid var(--border);
+  border-radius: 0.5rem;
+  padding: 0.75rem 0.5rem;
+}
+
+
+.error-message {
+  position: static; 
+  color: var(--error);
+  font-size: 0.75rem;
+  margin-top: 0.25rem;
+  display: block;
+}
+
+
+.phone-input-group {
+  margin-bottom: 1rem;
+  position: relative;
 }
