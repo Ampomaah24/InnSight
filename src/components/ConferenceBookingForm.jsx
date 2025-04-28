@@ -464,7 +464,7 @@ const completeBooking = async () => {
     return (
       <div className="booking-page">
         <div className="loading">
-          <div className="loading__spinner" />
+          
           <p>Loading conference booking details...</p>
         </div>
       </div>
@@ -723,7 +723,7 @@ const completeBooking = async () => {
                           if (!isFormValid) {
                             alert("Please complete all required fields correctly.");
                           } else {
-                            setProcessingPayment(true);
+                            
                             initializePayment();
                           }
                         }}
