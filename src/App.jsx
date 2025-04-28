@@ -1,6 +1,7 @@
 import React, { useEffect } from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { UserProvider } from "./context/UserContext.jsx";
+import { BookingProvider } from "./components/BookingContext.jsx"; // Import the BookingProvider
 import SessionTimeoutService from "./services/SessionTimeoutService"; 
 import RoomManagement from "./pages/RoomManagement";
 
@@ -63,43 +64,45 @@ const App = () => {
 
   return (
     <UserProvider>
-      <Router>
-        <SessionTimeoutWarning />
-        
-        <Routes>
-          <Route path="/" element={<Homepage />} />
-          <Route path="/services" element={<ServicesPage />} />
-          <Route path="/signup" element={<SignUp />} />
-          <Route path="/login" element={<LoginPage />} />
-          <Route path="/conference-listings" element={<CListings />} />
-          <Route path="/room-listings" element={<RoomListings />} />
-          <Route path="/room-booking" element={<RoomBooking />} />
-          <Route path="/conference-booking" element={<CBooking />} />
-          <Route path="/admin-dashboard" element={<Dashboard />} />
-          <Route path="/reservations" element={<Reservations />} />
-          <Route path="/check-in" element={<CheckIn />} />
-          <Route path="/rooms" element={<Rooms />} />
-          <Route path="/add-expense" element={<AddExpense />} />
-          <Route path="/book-room" element={<BookingPage />} />
-          <Route path="/user-history" element={<UserHistory />} />
-          <Route path="/freports" element={<FinancialReports />} />
-          <Route path="/reset-password" element={<ResetPasswordPage />} />
-          <Route path="/booking-confirmation" element={<BookingConfirmation />} />
-          <Route path="/restaurant" element={<Menu />} />
-          <Route path="/restaurant/cart" element={<Cart />} />
-          <Route path="/restaurant/checkout" element={<Checkout />} />
-          <Route path="/restaurant/orders" element={<Orders />} />
-          <Route path="/profile" element={<Profile />} />
-          <Route path="/ad_settings" element={<AdminSettings />} />
-          <Route path="/bills" element={<Bills />} />
-          <Route path="/pickup" element={<Pickup />} />
-          <Route path="/contact" element={<ContactUs />} />
-          <Route path="/guest-bills" element={<GuestBills />} />
-          <Route path="/room-management" element={<RoomManagement />} />
-          <Route path="/user-registration" element={<UserRegistration />} />
-          <Route path="/booking-history" element={<BookingHistory />} />
-        </Routes>
-      </Router>
+      <BookingProvider>
+        <Router>
+          <SessionTimeoutWarning />
+          
+          <Routes>
+            <Route path="/" element={<Homepage />} />
+            <Route path="/services" element={<ServicesPage />} />
+            <Route path="/signup" element={<SignUp />} />
+            <Route path="/login" element={<LoginPage />} />
+            <Route path="/conference-listings" element={<CListings />} />
+            <Route path="/room-listings" element={<RoomListings />} />
+            <Route path="/room-booking" element={<RoomBooking />} />
+            <Route path="/conference-booking" element={<CBooking />} />
+            <Route path="/admin-dashboard" element={<Dashboard />} />
+            <Route path="/reservations" element={<Reservations />} />
+            <Route path="/check-in" element={<CheckIn />} />
+            <Route path="/rooms" element={<Rooms />} />
+            <Route path="/add-expense" element={<AddExpense />} />
+            <Route path="/book-room" element={<BookingPage />} />
+            <Route path="/user-history" element={<UserHistory />} />
+            <Route path="/freports" element={<FinancialReports />} />
+            <Route path="/reset-password" element={<ResetPasswordPage />} />
+            <Route path="/booking-confirmation" element={<BookingConfirmation />} />
+            <Route path="/restaurant" element={<Menu />} />
+            <Route path="/restaurant/cart" element={<Cart />} />
+            <Route path="/restaurant/checkout" element={<Checkout />} />
+            <Route path="/restaurant/orders" element={<Orders />} />
+            <Route path="/profile" element={<Profile />} />
+            <Route path="/ad_settings" element={<AdminSettings />} />
+            <Route path="/bills" element={<Bills />} />
+            <Route path="/pickup" element={<Pickup />} />
+            <Route path="/contact" element={<ContactUs />} />
+            <Route path="/guest-bills" element={<GuestBills />} />
+            <Route path="/room-management" element={<RoomManagement />} />
+            <Route path="/user-registration" element={<UserRegistration />} />
+            <Route path="/booking-history" element={<BookingHistory />} />
+          </Routes>
+        </Router>
+      </BookingProvider>
     </UserProvider>
   );
 };

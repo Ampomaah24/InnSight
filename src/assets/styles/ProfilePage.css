@@ -209,7 +209,6 @@ body, html {
 }
 
 /* Profile Info - Wider central content */
-/* Profile Info - Reduced vertical spacing */
 .profile-info {
   text-align: center;
   padding: 1.25rem 3rem;
@@ -244,13 +243,13 @@ body, html {
   margin-bottom: 0.25rem;
 }
 
-.profile-name-underline {
+/* .profile-name-underline {
   width: 50%;
   height: 3px;
   background-color: var(--primary);
   margin: 0.25rem auto 0.5rem;
   border-radius: 2px;
-}
+} */
 
 .profile-location {
   font-size: 1rem;
@@ -364,7 +363,7 @@ body, html {
   color: var(--primary);
   margin-bottom: 2rem;
   padding-bottom: 1rem;
-  border-bottom: 1px solid #eee;
+ 
   position: relative;
   display: flex;
   align-items: center;

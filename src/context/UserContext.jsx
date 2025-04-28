@@ -18,7 +18,7 @@ export const UserProvider = ({ children }) => {
     
     if (data.fullName) {
       const nameParts = data.fullName.split(' ');
-      firstName = nameParts[0] || "";
+      firstName = normalizeUserData.fname;
       lastName = nameParts.slice(1).join(' ') || "";
     } else if (data.fname && data.lname) {
       firstName = data.fname;

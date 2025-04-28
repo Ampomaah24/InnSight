@@ -1,33 +1,66 @@
 import React, { useEffect, useState } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import emailjs from "@emailjs/browser";
 import "../assets/styles/BookingConfirmation.css";
+import { useBooking } from "../components/BookingContext";
 
 const BookingConfirmation = () => {
-  const location = useLocation();
   const navigate = useNavigate();
   const [emailSent, setEmailSent] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   
-  // Get booking info from location state, or fall back to sensible defaults
-  const booking = location.state?.booking || {};
-  const totalGuests = location.state?.totalGuests || 0;
-  const isDeposit = location.state?.isDeposit || false;
+  // Get booking info from context instead of location state
+  const { bookingData } = useBooking();
+  
+  // If no booking data in context, try to get from session storage
+  const [booking, setBooking] = useState({});
+  const [totalGuests, setTotalGuests] = useState(0);
+  const [isDeposit, setIsDeposit] = useState(false);
   
   useEffect(() => {
-    // Check if we have booking data, if not redirect to home
+    // First check if we have booking data in context
+    if (bookingData) {
+      setBooking(bookingData);
+      setTotalGuests(bookingData.numberOfGuests || 0);
+      setIsDeposit(bookingData.paymentOption === "Deposit for Reservation");
+      console.log("Booking data from context:", bookingData);
+    } else {
+      // Try to get booking data from session storage
+      const storedBooking = sessionStorage.getItem('bookingData');
+      console.log("Stored booking data:", storedBooking);
+      if (storedBooking) {
+        const parsedBooking = JSON.parse(storedBooking);
+        setBooking(parsedBooking);
+        setTotalGuests(parsedBooking.numberOfGuests || 0);
+        setIsDeposit(parsedBooking.paymentOption === "Deposit for Reservation");
+      } else {
+        // No booking data found
+        console.error("Missing booking information");
+        setError("Missing booking information. Please try again.");
+        setLoading(false);
+        return;
+      }
+    }
+  }, [bookingData]);
+  
+  useEffect(() => {
+    // Check if we have booking data, if not don't proceed
     if (!booking.email || !booking.checkIn) {
-      console.error("Missing booking information");
-      setError("Missing booking information. Please try again.");
-      setLoading(false);
+      if (!loading) { // Only set error if initial loading is complete
+        console.error("Missing booking information");
+        setError("Missing booking information. Please try again.");
+      }
       return;
     }
     
+    // Store booking data in session storage for persistence
+    sessionStorage.setItem('bookingData', JSON.stringify(booking));
+    
     const templateParams = {
       guest_name: `${booking.firstName || ''} ${booking.lastName || ''}`.trim() || 'Guest',
-      room_name: booking.roomName || 'Your room',
-      room_type: booking.roomType || 'Standard',
+      room_name: booking.roomNames || 'Your room',
+      room_type: booking.roomTypes || 'Standard',
       check_in: booking.checkIn ? new Date(booking.checkIn).toLocaleDateString() : 'as scheduled',
       check_out: booking.checkOut ? new Date(booking.checkOut).toLocaleDateString() : 'as scheduled',
       guests: booking.numberOfGuests || totalGuests || 1,
@@ -58,7 +91,7 @@ const BookingConfirmation = () => {
           // Don't show error to user, just log it - they still have their booking
         }
       );
-  }, [booking, totalGuests, isDeposit]);
+  }, [booking, totalGuests, isDeposit, loading]);
   
   if (loading) {
     return (
@@ -98,7 +131,7 @@ const BookingConfirmation = () => {
         
         <div className="booking-details">
           <p><strong>Name:</strong> {booking.firstName} {booking.lastName}</p>
-          <p><strong>Room:</strong> {booking.roomName || 'Standard Room'}</p>
+          <p><strong>Room:</strong> {booking.roomNames || 'Standard Room'}</p>
           <p><strong>Check-in:</strong> {booking.checkIn ? new Date(booking.checkIn).toLocaleDateString() : 'As scheduled'}</p>
           <p><strong>Check-out:</strong> {booking.checkOut ? new Date(booking.checkOut).toLocaleDateString() : 'As scheduled'}</p>
           <p><strong>Guests:</strong> {booking.numberOfGuests || totalGuests || 1}</p>

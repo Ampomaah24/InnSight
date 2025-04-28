@@ -1,15 +1,18 @@
 import React, { useState, useEffect } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { db } from "../config/firebase";
 import { collection, getDocs, query, where, doc, getDoc } from "firebase/firestore";
-import { getAuth, onAuthStateChanged } from "firebase/auth"; // Add auth import
+import { getAuth, onAuthStateChanged } from "firebase/auth"; 
 import NavMenu from "../components/NavMenu";
 import "../assets/styles/RoomBooking.css";
+import { useBooking } from "../components/BookingContext"; // Import our custom hook
 
 const RoomBooking = () => {
   const navigate = useNavigate();
-  const location = useLocation();
-  const auth = getAuth(); // Initialize auth
+  const auth = getAuth();
+  
+  // Get booking data from context
+  const { bookingData, setBookingData } = useBooking();
 
   // App state variables
   const [rooms, setRooms] = useState([]);
@@ -30,11 +33,17 @@ const RoomBooking = () => {
     // weekdayDiscount: 0
   });
 
-  // Extract query parameters from the URL
-  const params = new URLSearchParams(location.search);
-  const checkIn = params.get("checkIn") ? decodeURIComponent(params.get("checkIn")) : null;
-  const checkOut = params.get("checkOut") ? decodeURIComponent(params.get("checkOut")) : null;
-  const fromConference = params.get("fromConference") === "true";
+  // Extract booking data from context
+  const checkIn = bookingData?.checkIn || null;
+  const checkOut = bookingData?.checkOut || null;
+  const fromConference = bookingData?.fromConference === true;
+
+  // Check if we have required booking data, if not redirect to services page
+  useEffect(() => {
+    if (!bookingData || !checkIn || !checkOut) {
+      navigate('/services');
+    }
+  }, [bookingData, checkIn, checkOut, navigate]);
 
   // Check authentication state
   useEffect(() => {
@@ -79,7 +88,7 @@ const RoomBooking = () => {
     };
 
     fetchDiscounts();
-  }, [isLoggedIn]); // Only run when isLoggedIn changes
+  }, [isLoggedIn]); 
 
   // Fix for scrolling issues
   useEffect(() => {
@@ -96,7 +105,6 @@ const RoomBooking = () => {
     document.body.style.overflow = 'auto';
     document.body.style.height = 'auto';
     
-
     const root = document.getElementById('root');
     if (root) {
       root.style.minHeight = '100vh';
@@ -104,20 +112,12 @@ const RoomBooking = () => {
       root.style.overflow = 'visible';
     }
     
-
-    const container = document.querySelector('.room-booking-container');
-    if (container) {
-      container.style.marginTop = '0';
-    }
-    
-  
     setTimeout(() => {
       window.scrollTo(0, 0);
       window.dispatchEvent(new Event('resize'));
     }, 100);
     
     return () => {
-    
       document.documentElement.style.overflow = '';
       document.body.style.overflow = '';
       document.body.style.height = '';
@@ -131,12 +131,12 @@ const RoomBooking = () => {
 
   useEffect(() => {
     if (!checkIn || !checkOut) {
-      console.error(" Missing query parameters for fetching rooms");
+      console.error("Missing booking data for fetching rooms");
       setLoading(false);
       return;
     }
 
-     //  Fetch available rooms from Firestore
+    // Fetch available rooms from Firestore
     const getAvailableRooms = async () => {
       try {
         const roomsCollection = collection(db, "rooms");
@@ -173,7 +173,7 @@ const RoomBooking = () => {
         });
         setRoomIndexes(initialIndexes);
       } catch (error) {
-        console.error(" Error fetching available rooms:", error);
+        console.error("Error fetching available rooms:", error);
         setRooms([]);
         setLoading(false);
       }
@@ -182,7 +182,7 @@ const RoomBooking = () => {
     getAvailableRooms();
   }, [checkIn, checkOut]);
 
-  //  Group rooms by type
+  // Group rooms by type
   const groupedRooms = rooms.reduce((acc, room) => {
     const type = room.t_room || "Other";
     if (!acc[type]) acc[type] = [];
@@ -269,8 +269,32 @@ const RoomBooking = () => {
 
   // Function to go to login page
   const goToLogin = () => {
-    // Save current selection in session storage if needed
-    navigate('/login', { state: { returnPath: location.pathname + location.search } });
+    // Save current path to redirect back after login
+    localStorage.setItem('redirectAfterLogin', window.location.pathname);
+    navigate('/login');
+  };
+  
+  // Function to proceed to booking page
+  const proceedToBooking = () => {
+    if (selectedRooms.length === 0) {
+      alert("Please select at least one room to book");
+      return;
+    }
+    
+    // Update booking data in context with selected rooms and more details
+    setBookingData({
+      ...bookingData, // Preserve original booking data
+      rooms: selectedRooms,
+      nights,
+      discount: {
+        rate: applicableDiscount,
+        type: discountName
+      },
+      roomCategory: "regular"
+    });
+    
+    // Navigate to booking page with no URL parameters
+    navigate('/book-room');
   };
 
   if (loading) {
@@ -309,7 +333,7 @@ const RoomBooking = () => {
       {!isLoggedIn && (
         <div className="login-prompt">
           <p>Sign in to access exclusive discounts!</p>
-          
+          <button onClick={goToLogin} className="login-button">Log In</button>
         </div>
       )}
 
@@ -347,7 +371,6 @@ const RoomBooking = () => {
 
               <div className="room-row">
                 <div className="image-carousel">
-                  
                   <button 
                     className="carousel-btn prev" 
                     onClick={() => changeRoomIndex(roomType, "prev")}
@@ -405,19 +428,7 @@ const RoomBooking = () => {
       {selectedRooms.length > 0 && (
         <button
           className="proceed-booking"
-          onClick={() => {
-            const encodedRooms = encodeURIComponent(JSON.stringify(selectedRooms));
-            const encodedCheckIn = encodeURIComponent(checkIn);
-            const encodedCheckOut = encodeURIComponent(checkOut);
-            const query = new URLSearchParams({
-              rooms: encodedRooms,
-              checkIn: encodedCheckIn,
-              checkOut: encodedCheckOut,
-              roomCategory: "regular"
-            }).toString();
-            
-            navigate(`/book-room?${query}`);
-          }}
+          onClick={proceedToBooking}
         >
           Book {selectedRooms.length} {selectedRooms.length === 1 ? 'Room' : 'Rooms'}
         </button>

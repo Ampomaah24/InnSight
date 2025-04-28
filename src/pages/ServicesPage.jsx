@@ -11,6 +11,7 @@ import ProfileSection from "../components/ProfileSection";
 // Import images directly if using webpack/vite
 import roomImage from "../assets/images/IMG_0111.JPG";
 import conferenceImage from "../assets/images/pixelcut-export.jpeg";
+import { useBooking } from "../components/BookingContext";
 
 const ServicesPage = () => {
   const navigate = useNavigate();
@@ -29,6 +30,9 @@ const ServicesPage = () => {
   // State for user profile data
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
+  
+  // Get the setBookingData function from our context
+  const { setBookingData } = useBooking();
 
   // Fetch user profile data - with sessionStorage check
   useEffect(() => {
@@ -193,9 +197,17 @@ const ServicesPage = () => {
         isGuest: !isLoggedIn
       });
       
-      navigate(
-        `/room-booking?checkIn=${checkIn.toISOString()}&checkOut=${checkOut.toISOString()}`
-      );
+      // Store in context instead of URL params
+      setBookingData({
+        checkIn: checkIn.toISOString(),
+        checkOut: checkOut.toISOString(),
+        userId: user?.id || auth.currentUser?.uid || "guest",
+        isGuest: !isLoggedIn,
+        fromServices: true // Flag to indicate the origin of this data
+      });
+      
+      // Navigate without params
+      navigate('/room-booking');
     } catch (error) {
       console.error("Error saving room booking:", error.message);
       alert(`Failed to save room booking: ${error.message}`);
@@ -215,6 +227,8 @@ const ServicesPage = () => {
     
     try {
       const isLoggedIn = !!auth.currentUser;
+      
+      // Save booking to Firestore for record keeping
       await addDoc(collection(db, "conferenceBookings"), {
         startDate: startDate.toISOString(),
         endDate: endDate.toISOString(),
@@ -223,9 +237,18 @@ const ServicesPage = () => {
         isGuest: !isLoggedIn
       });
       
-      navigate(
-        `/conference-booking?startDate=${startDate.toISOString()}&endDate=${endDate.toISOString()}`
-      );
+      // Store in context instead of URL params
+      setBookingData({
+        startDate: startDate.toISOString(),
+        endDate: endDate.toISOString(),
+        userId: user?.id || auth.currentUser?.uid || "guest",
+        isGuest: !isLoggedIn,
+        roomCategory: "conference", // Flag to indicate this is a conference booking
+        fromServices: true // Flag to indicate the origin of this data
+      });
+      
+      // Navigate without params
+      navigate('/conference-booking');
     } catch (error) {
       console.error("Error saving conference booking:", error);
       alert("Failed to save conference booking. Please try again.");

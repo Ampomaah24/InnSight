@@ -1,21 +1,22 @@
 import React, { useState, useEffect } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { db } from "../config/firebase";
 import { collection, getDocs, query, where } from "firebase/firestore";
 import NavMenu from "../components/NavMenu";
+import { useBooking } from "../components/BookingContext"; // Import the custom hook
 import "../assets/styles/CBooking.css";
 
 const ConferenceBooking = () => {
   const navigate = useNavigate();
-  const location = useLocation();
+  const { bookingData, setBookingData } = useBooking(); // Use the booking context
   const [conference_rooms, setConferenceRooms] = useState([]);
   const [menuOpen, setMenuOpen] = useState(false);
   const [loading, setLoading] = useState(true);
   const [currentIndex, setCurrentIndex] = useState(0);
-
-  const params = new URLSearchParams(location.search);
-  const startDate = params.get("startDate") ? new Date(decodeURIComponent(params.get("startDate"))) : null;
-  const endDate = params.get("endDate") ? new Date(decodeURIComponent(params.get("endDate"))) : null;
+  console.log("Booking data:", bookingData);
+  // Get dates from context instead of URL
+  const startDate = bookingData?.startDate ? new Date(bookingData.startDate) : null;
+  const endDate = bookingData?.endDate ? new Date(bookingData.endDate) : null;
 
   // Calculate duration between start and end dates
   const calculateDuration = () => {
@@ -38,7 +39,7 @@ const ConferenceBooking = () => {
     document.body.style.overflow = 'auto';
     
     if (!startDate || !endDate) {
-      console.error(" Missing query parameters for fetching conference rooms");
+      console.error("Missing dates in booking context for fetching conference rooms");
       setLoading(false);
       return;
     }
@@ -84,14 +85,14 @@ const fetchAvailableConferenceRooms = async () => {
       }
     });
 
-    setConferenceRooms(availableRooms);
-    setLoading(false);
-  } catch (error) {
-    console.error("Error fetching conference rooms:", error);
-    setConferenceRooms([]);
-    setLoading(false);
-  }
-};
+        setConferenceRooms(availableRooms);
+        setLoading(false);
+      } catch (error) {
+        console.error("Error fetching conference rooms:", error);
+        setConferenceRooms([]);
+        setLoading(false);
+      }
+    };
 
     fetchAvailableConferenceRooms();
   }, [startDate, endDate]);
@@ -134,19 +135,20 @@ const fetchAvailableConferenceRooms = async () => {
 
   const currentRoom = conference_rooms[currentIndex];
   const totalPrice = currentRoom.price * duration;
-<div className="back-button-container">
-  <button 
-    className="back-button"
-    onClick={() => navigate(-1)}
-  >
-    ← 
-  </button>
-</div>
 
   return (
     <div className="croom-booking-container">
-      <div className="nav-container"  style={{ backgroundColor: "transparent", boxShadow: "none" }}>
+      <div className="nav-container" style={{ backgroundColor: "transparent", boxShadow: "none" }}>
         <NavMenu menuOpen={menuOpen} setMenuOpen={setMenuOpen} />
+      </div>
+
+      <div className="back-button-container">
+        <button 
+          className="back-button"
+          onClick={() => navigate(-1)}
+        >
+          ← 
+        </button>
       </div>
 
       <h2 className="title">Conference Rooms Available</h2>
@@ -222,7 +224,7 @@ const fetchAvailableConferenceRooms = async () => {
           <button
             className="book-now"
             onClick={() => {
-              // Prepare data for booking
+              // Prepare selected room data
               const selectedRooms = [{
                 id: currentRoom.id,
                 name: currentRoom.name || `Conference Room ${currentIndex + 1}`,
@@ -231,14 +233,16 @@ const fetchAvailableConferenceRooms = async () => {
                 image: currentRoom.image,
               }];
 
-              const checkIn = startDate?.toISOString().split("T")[0];
-              const checkOut = endDate?.toISOString().split("T")[0];
+              // Update booking context with the selected room
+              setBookingData({
+                ...bookingData,
+                selectedRooms,
+                roomCategory: 'conference',
+                totalPrice: totalPrice
+              });
 
-              const encodedRooms = encodeURIComponent(JSON.stringify(selectedRooms));
-              const encodedCheckIn = encodeURIComponent(checkIn);
-              const encodedCheckOut = encodeURIComponent(checkOut);
-
-              navigate(`/book-room?rooms=${encodedRooms}&checkIn=${encodedCheckIn}&checkOut=${encodedCheckOut}&roomCategory=conference`);
+              // Navigate to booking form
+              navigate("/book-room");
             }}
           >
             Book Now

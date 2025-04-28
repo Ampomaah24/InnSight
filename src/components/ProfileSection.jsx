@@ -124,11 +124,11 @@ const ProfileSection = ({ user, onLogout }) => {
   // Sync local user with prop or session storage
   useEffect(() => {
     // If props user exists, use it
-    if (user) {
-      console.log("Using user from props:", user);
-      setLocalUser(user);
-      return;
-    }
+    // if (user) {
+    //   console.log("Using user from props:", user);
+    //   setLocalUser(user);
+    //   return;
+    // }
     
     // Otherwise, try to get from sessionStorage
     const storedUser = sessionStorage.getItem('currentUser');

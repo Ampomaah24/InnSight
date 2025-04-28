@@ -63,7 +63,7 @@ const LoginPage = () => {
           id: user.uid,
           email: user.email,
           role: userData.role ? userData.role.toLowerCase() : 'user',
-          fname: userData.firstName || userData.fname || user.displayName?.split(' ')[0] || "User",
+          fname: userData.firstName || userData.fname || userData.fullName || user.displayName?.split(' ')[0] || "User",
           lname: userData.lastName || userData.lname || user.displayName?.split(' ').slice(1).join(' ') || "",
           fullName: userData.fullName || 
                   `${userData.firstName || userData.fname || ""} ${userData.lastName || userData.lname || ""}`.trim() || 

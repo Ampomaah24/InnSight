@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { getAuth, onAuthStateChanged } from "firebase/auth";
 import { db } from "../config/firebase";
 import {
@@ -10,8 +10,8 @@ import { PaystackConsumer } from "react-paystack";
 import PhoneInput, { isValidPhoneNumber } from "react-phone-number-input";
 import "react-phone-number-input/style.css";
 import NavMenu from "../components/NavMenu";
+import { useBooking } from "../components/BookingContext"; // Import the booking context
 import "../assets/styles/BookingPage.css";
-
 
 const PAYSTACK_PUBLIC_KEY = import.meta.env.VITE_PAYSTACK_PUBLIC_KEY;
 
@@ -27,8 +27,8 @@ const sanitizeInput = (input) => {
 
 const ConferenceBookingForm = () => {
   const navigate = useNavigate();
-  const location = useLocation();
   const auth = getAuth();
+  const { bookingData, setBookingData } = useBooking(); // Use booking context
   const [menuOpen, setMenuOpen] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -36,56 +36,28 @@ const ConferenceBookingForm = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [processingPayment, setProcessingPayment] = useState(false);
   const [discounts, setDiscounts] = useState({
-    conferenceAttendeeDiscount: 0,
-    longStayDiscount: 0,
-    longStayMinNights: 7 // Default value until loaded from Firestore
+    conferenceAttendeeDiscount: 0
   });
 
-  // Safely parse URL parameters
-  const getURLParams = () => {
-    try {
-      const params = new URLSearchParams(location.search);
-      let selectedRooms = [];
-      
-      if (params.get("rooms")) {
-        try {
-          selectedRooms = JSON.parse(decodeURIComponent(params.get("rooms")));
-          if (!Array.isArray(selectedRooms)) {
-            throw new Error("Invalid rooms format");
-          }
-        } catch (e) {
-          console.error("Error parsing rooms parameter:", e);
-          selectedRooms = [];
-        }
-      }
-      
-      return {
-        selectedRooms,
-        checkInParam: params.get("checkIn") ? decodeURIComponent(params.get("checkIn")) : "",
-        checkOutParam: params.get("checkOut") ? decodeURIComponent(params.get("checkOut")) : "",
-        discountFromURL: parseFloat(params.get("discount")) || 0,
-        discountType: params.get("discountType") ? decodeURIComponent(params.get("discountType")) : ""
-      };
-    } catch (error) {
-      console.error("Error processing URL parameters:", error);
-      setError("Invalid URL parameters. Please try again.");
-      return {
-        selectedRooms: [],
-        checkInParam: "",
-        checkOutParam: "",
-        discountFromURL: 0,
-        discountType: ""
-      };
+  // Check if we have the necessary data in the context
+  useEffect(() => {
+    if (!bookingData || !bookingData.selectedRooms || bookingData.selectedRooms.length === 0) {
+      setError("No conference rooms selected. Please select a room first.");
+      setLoading(false);
+    } else if (!bookingData.startDate || !bookingData.endDate) {
+      setError("Missing date information. Please select dates first.");
+      setLoading(false);
+    } else {
+      setLoading(false);
     }
-  };
+  }, [bookingData]);
 
-  const {
-    selectedRooms,
-    checkInParam,
-    checkOutParam,
-    discountFromURL,
-    discountType
-  } = getURLParams();
+  // Extract data from context instead of URL
+  const selectedRooms = bookingData?.selectedRooms || [];
+  const checkInParam = bookingData?.startDate || "";
+  const checkOutParam = bookingData?.endDate || "";
+  const discountFromContext = bookingData?.discount || 0;
+  const discountType = bookingData?.discountType || "";
 
   // Simplified form data for conference booking
   const [formData, setFormData] = useState({
@@ -129,10 +101,10 @@ const ConferenceBookingForm = () => {
 
   // Fetch discounts if needed
   useEffect(() => {
-    if (discountFromURL > 0) {
+    if (discountFromContext > 0) {
       setDiscounts(prev => ({ 
         ...prev, 
-        conferenceAttendeeDiscount: discountFromURL 
+        conferenceAttendeeDiscount: discountFromContext 
       }));
       setLoading(false);
       return;
@@ -168,7 +140,7 @@ const ConferenceBookingForm = () => {
     };
 
     fetchDiscounts();
-  }, [discountFromURL, isLoggedIn]);
+  }, [discountFromContext, isLoggedIn]);
 
   // Fix scroll to top on page load
   useEffect(() => {
@@ -180,50 +152,9 @@ const ConferenceBookingForm = () => {
   const checkOutDate = new Date(formData.checkOut);
   const numberOfDays = Math.max(1, (checkOutDate - checkInDate) / (1000 * 3600 * 24));
 
-  // Updated discount application logic
-  const getApplicableDiscount = () => {
-    // No discounts for non-logged in users (unless from URL)
-    if (!isLoggedIn && discountFromURL === 0) {
-      return 0;
-    }
-    
-    // URL-specified discount takes precedence
-    if (discountFromURL > 0) {
-      return discountFromURL;
-    }
-    
-    // Long stay discount if staying longer than min nights
-    if (numberOfDays >= discounts.longStayMinNights) {
-      return discounts.longStayDiscount;
-    }
-    
-    // Conference discount ONLY if they are also booking rooms
-    if (formData.alsoBookingStay === "Yes") {
-      return discounts.conferenceAttendeeDiscount;
-    }
-    
-    return 0; // No discount applies
-  };
-
-  const getDiscountName = () => {
-    if (discountType) {
-      return discountType;
-    }
-    
-    if (numberOfDays >= discounts.longStayMinNights) {
-      return 'Long Stay';
-    }
-    
-    if (formData.alsoBookingStay === "Yes") {
-      return 'Conference Attendee';
-    }
-    
-    return '';
-  };
-
-  // Calculate the effective discount
-  const applicableDiscount = getApplicableDiscount();
-  const actualDiscountName = getDiscountName();
+  // Apply any applicable discount
+  const applicableDiscount = discountFromContext > 0 ? discountFromContext : (isLoggedIn ? discounts.conferenceAttendeeDiscount : 0);
+  const actualDiscountName = discountType || (applicableDiscount > 0 ? 'Conference Attendee' : '');
 
   // Calculate total amount
   const totalAmount = selectedRooms.reduce((acc, room) => {
@@ -466,15 +397,18 @@ const completeBooking = async () => {
             
       // Prepare booking object for confirmation page or redirect to room booking
       if (formData.alsoBookingStay === "Yes") {
-        const query = new URLSearchParams({
-          fromConference: "true",
+        // Update booking context for room booking
+        setBookingData({
+          ...bookingData,
           checkIn: formData.checkIn,
           checkOut: formData.checkOut,
-          csrfToken: csrfToken,
-          discount: applicableDiscount.toString(),
-          discountType: "Conference Attendee"
-        }).toString();
-        navigate(`/room-booking?${query}`);
+          fromConference: true,
+          discount: applicableDiscount,
+          discountType: "Conference Attendee",
+          csrfToken: csrfToken
+        });
+        
+        navigate("/room-booking");
         return;
       }
       
@@ -497,15 +431,17 @@ const completeBooking = async () => {
         bookingGroupId: csrfToken
       };
       
-      navigate("/booking-confirmation", { 
-        state: { 
-          booking: bookingDetails,
-          totalAttendees: formData.numberOfAttendees,
-          totalRooms: selectedRooms.length, 
-          isDeposit: false,
-          csrfToken
-        } 
+      // Update booking context with confirmation details
+      setBookingData({
+        ...bookingData,
+        booking: bookingDetails,
+        totalAttendees: formData.numberOfAttendees,
+        totalRooms: selectedRooms.length,
+        isDeposit: false,
+        csrfToken
       });
+      
+      navigate("/booking-confirmation");
       
     } catch (error) {
       console.error("Error in payment processing:", error);
@@ -516,7 +452,12 @@ const completeBooking = async () => {
 
   // Function to go to login page
   const goToLogin = () => {
-    navigate('/login', { state: { returnPath: location.pathname + location.search } });
+    // Save current state to context before redirecting
+    setBookingData({
+      ...bookingData,
+      returnPath: "/conference-book"
+    });
+    navigate('/login');
   };
 
   if (loading) {
@@ -746,7 +687,7 @@ const completeBooking = async () => {
                     </div>
                     <div className="booking-summary__item">
                       <span className="booking-summary__label">Conference Rooms:</span>
-                      <span className="booking-summary__value">{selectedRooms.length} ({selectedRooms.map(r => r.type).join(', ')})</span>
+                      <span className="booking-summary__value">{selectedRooms.length} ({selectedRooms.map(r => r.name).join(', ')})</span>
                     </div>
                     <div className="booking-summary__item">
                       <span className="booking-summary__label">Attendees:</span>
@@ -802,5 +743,4 @@ const completeBooking = async () => {
   );
 };
 
-// Add this at the end of your ConferenceBookingForm.jsx file
 export default ConferenceBookingForm;
