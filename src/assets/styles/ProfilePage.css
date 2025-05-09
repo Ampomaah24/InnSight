@@ -1,7 +1,6 @@
-/* ProfilePage.css - Enhanced Layout with elegant styling and centering */
 @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=Poppins:wght@300;400;500;600;700&display=swap');
 
-/* Basic Resets */
+
 * {
   margin: 0;
   padding: 0;
@@ -28,20 +27,20 @@
   --accent-font: 'Cormorant Garamond', serif;
 }
 
-/* Page container - Centered layout */
+
 .profile-page {
   min-height: 100vh;
   max-width: 55rem;
   position: relative;
-  padding-top: 5rem;
-  margin: 0 auto; /* Center the profile page */
-  font-family: var(--body-font); /* Set body font */
+  padding-top: 3rem;
+  margin: 0 auto; 
+  font-family: var(--body-font); 
   display: flex;
   flex-direction: column;
   align-items: center;
 }
 
-/* Profile Card - Centered and styled */
+
 .profile-card {
   width: 100%;
   max-width: 55rem;
@@ -55,7 +54,7 @@
   flex-direction: column;
 }
 
-/* Profile Header - With elegant font */
+
 .profile-header {
   background: linear-gradient(135deg, #e05206 0%, #ff7a3c 100%);
   color: white;
@@ -94,7 +93,7 @@
   padding: 2rem 2rem 5rem;
 }
 
-/* Avatar Styling */
+
 .profile-avatar-container {
   margin-bottom: 1rem;
   position: relative;
@@ -130,7 +129,7 @@
   color: var(--primary);
   background-color: white;
   text-transform: uppercase;
-  font-family: var(--heading-font); /* More elegant font for initials */
+  font-family: var(--heading-font); 
 }
 
 .avatar-edit {
@@ -151,11 +150,7 @@
   opacity: 1;
 }
 
-<<<<<<< Updated upstream
-/* Profile Info - Wider central content */
-=======
-/* Profile Info - Elegant typography */
->>>>>>> Stashed changes
+
 .profile-info {
   text-align: center;
   padding: 1.25rem 3rem;
@@ -188,22 +183,10 @@
   position: relative;
   display: inline-block;
   margin-bottom: 0.25rem;
-  font-family: var(--heading-font); /* Elegant font for name */
+  font-family: var(--heading-font); 
   letter-spacing: 0.03125rem;
 }
 
-/* .profile-name-underline {
-  width: 50%;
-  height: 0.1875rem;
-  background-color: var(--primary);
-  margin: 0.25rem auto 0.5rem;
-<<<<<<< Updated upstream
-  border-radius: 2px;
-} */
-=======
-  border-radius: 0.125rem;
-}
->>>>>>> Stashed changes
 
 .profile-location {
   font-size: 1rem;
@@ -215,10 +198,10 @@
   gap: 0.5rem;
 }
 
-/* Edit button - Elegant styling */
+
 .action-button {
   padding: 0.875rem 2.5rem;
-  border-radius: 2rem;
+  /* border-radius: 2rem; */
   display: flex;
   align-items: center;
   gap: 0.75rem;
@@ -255,13 +238,13 @@
   box-shadow: 0 0.25rem 0.75rem rgba(224, 82, 6, 0.15);
 }
 
-/* Profile Content - Elegant design */
+
 .profile-content {
   padding: 0 2rem 2rem;
   width: 100%;
 }
 
-/* Info Sections - Enhanced typography */
+
 .info-sections {
   display: flex;
   flex-direction: column;
@@ -281,22 +264,18 @@
   position: relative;
 }
 
-/* Section Headers - Elegant typography */
+
 .info-section h2 {
   font-size: 1.5rem;
   font-weight: 600;
   color: var(--primary);
   margin-bottom: 2rem;
   padding-bottom: 1rem;
-<<<<<<< Updated upstream
  
-=======
-  border-bottom: 0.0625rem solid #eee;
->>>>>>> Stashed changes
   position: relative;
   display: flex;
   align-items: center;
-  font-family: var(--heading-font); /* Elegant font for headings */
+  font-family: var(--heading-font); 
   letter-spacing: 0.03125rem;
 }
 
@@ -311,7 +290,6 @@
   border-radius: 0.0625rem;
 }
 
-/* Info row styling */
 .info-row {
   display: flex;
   margin-bottom: 1.75rem;
@@ -752,10 +730,7 @@
 }
 
 @media (max-width: 48rem) {
-  .back-button {
-    top: 1rem;
-    left: 1rem;
-  }
+  
 
   .profile-name {
     font-size: 1.8rem;
