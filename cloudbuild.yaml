@@ -39,5 +39,18 @@ steps:
       - 'managed'
       - '--allow-unauthenticated'
 
+
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+    entrypoint: gcloud
+    args:
+      - 'run'
+      - 'services'
+      - 'add-iam-policy-binding'
+      - 'innsight'
+      - '--region=us-central1'
+      - '--platform=managed'
+      - '--member=allUsers'
+      - '--role=roles/run.invoker'
+
 images:
   - 'gcr.io/$PROJECT_ID/innsight:$COMMIT_SHA'
