@@ -460,6 +460,8 @@ body, html {
   .nav-menu.open {
     transform: translateX(0);
   }
+}
+
 .loading-spinner {
   width: 3rem;
   height: 3rem;

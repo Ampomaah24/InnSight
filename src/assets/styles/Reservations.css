@@ -1358,8 +1358,8 @@
   .reservations-table {
     width: 100%;
   }
-}4;
-  color: #5f6368;
+
+
 }
 
 .pending::before {
@@ -1995,4 +1995,5 @@
 }
 
 .cancel-button {
-  background-color: #f1f3f
+  background-color: #f1f3f4;
+}
