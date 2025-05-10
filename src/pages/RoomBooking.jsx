@@ -5,7 +5,11 @@ import { collection, getDocs, query, where, doc, getDoc } from "firebase/firesto
 import { getAuth, onAuthStateChanged } from "firebase/auth"; 
 import NavMenu from "../components/NavMenu";
 import "../assets/styles/RoomBooking.css";
-import { useBooking } from "../components/BookingContext"; // Import our custom hook
+import { useBooking } from "../components/BookingContext"; 
+import roomImage1 from "../assets/images/pixelcut-export-4.jpg";
+import roomImage2 from "../assets/images/ampomaah-hotel-2.jpg";
+import roomImage3 from "../assets/images/ampomaah-hotel-2.jpg"; 
+
 
 const RoomBooking = () => {
   const navigate = useNavigate();
@@ -14,17 +18,17 @@ const RoomBooking = () => {
   // Get booking data from context
   const { bookingData, setBookingData } = useBooking();
 
-  const roomPlaceholders = {
-    "single bed": "src/assets/images/pixelcut-export-4.jpg",
-    "double bed": "src/assets/images/Ampomaah-Hotel-Accra-Exterior-2.JPEG",
-    "twin bed": "src/assets/images/ampomaah-hotel-2.jpg"
+  const getRoomPlaceholder = (roomType) => {
+    switch (roomType?.toLowerCase()) {
+      case 'single bed':
+        return roomImage1;
+      case 'double bed':
+        return roomImage2;
+      case 'twin bed':
+        return roomImage3;
+    }
   };
 
-  const getRoomPlaceholder = (roomType) => {
-    const type = roomType?.toLowerCase();
-    return roomPlaceholders[type] || roomPlaceholders.default;
-  };
-  
   // App state variables
   const [rooms, setRooms] = useState([]);
   const [menuOpen, setMenuOpen] = useState(false);

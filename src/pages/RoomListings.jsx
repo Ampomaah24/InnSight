@@ -4,6 +4,10 @@ import { db } from "../config/firebase";
 import { collection, getDocs, query, where } from "firebase/firestore";
 import NavMenu from "../components/NavMenu";
 import "../assets/styles/RoomListings.css";
+import roomImage1 from "../assets/images/pixelcut-export-4.jpg";
+import roomImage2 from "../assets/images/Ampomaah-Hotel-Accra-Exterior-2.jpg";
+import roomImage3 from "../assets/images/ampomaah-hotel-2.jpg"; 
+
 
 const RoomListings = () => {
   const navigate = useNavigate();
@@ -19,15 +23,15 @@ const RoomListings = () => {
     "twin bed": "The Twin Room has two separate single beds, each with soft sheets and comfortable pillows. It’s a great option for friends, work colleagues, or family members traveling together. Each bed is designed to give you a good night’s sleep, and the room is set up so both guests can feel comfortable."
   };
 
- const roomPlaceholders = {
-    "single bed": "src/assets/images/pixelcut-export-4.jpg",
-    "double bed": "src/assets/images/Ampomaah-Hotel-Accra-Exterior-2.JPEG",
-    "twin bed": "src/assets/images/ampomaah-hotel-2.jpg"
-  };
-
   const getRoomPlaceholder = (roomType) => {
-    const type = roomType?.toLowerCase();
-    return roomPlaceholders[type] || roomPlaceholders.default;
+    switch (roomType?.toLowerCase()) {
+      case 'single bed':
+        return roomImage1;
+      case 'double bed':
+        return roomImage2;
+      case 'twin bed':
+        return roomImage3;
+    }
   };
 
   // Fix scroll position on page load and ensure content is visible
