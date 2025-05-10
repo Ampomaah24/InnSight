@@ -10,6 +10,7 @@ import { PaystackConsumer } from "react-paystack";
 import PhoneInput, { isValidPhoneNumber } from "react-phone-number-input";
 import "react-phone-number-input/style.css";
 import NavMenu from "../components/NavMenu";
+import "../assets/styles/BookingPage.css";
 import ConferenceBookingForm from "../components/ConferenceBookingForm"; 
 import { useBooking } from "../components/BookingContext";
 
@@ -911,61 +912,52 @@ const BookingPage = () => {
 
   if (loading) {
     return (
-      <>
-        <style>{embedded_css}</style>
-        <div className="booking-page">
-          <div className="loading">
-            <div className="loading__spinner" />
-            <p>Loading booking details...</p>
-          </div>
+      <div className="booking-page">
+        <div className="loading">
+          <div className="loading__spinner" />
+          <p>Loading booking details...</p>
         </div>
-      </>
+      </div>
     );
   }
 
   if (error) {
     return (
-      <>
-        <style>{embedded_css}</style>
-        <div className="booking-page">
-          <div className="error">
-            <h3 className="error__title">Error</h3>
-            <p>{error}</p>
-            <button 
-              onClick={() => navigate('/room-booking')}
-              className="button button--primary"
-            >
-              Back to Room Selection
-            </button>
-          </div>
+      <div className="booking-page">
+        <div className="error">
+          <h3 className="error__title">Error</h3>
+          <p>{error}</p>
+          <button 
+            onClick={() => navigate('/room-booking')}
+            className="button button--primary"
+          >
+            Back to Room Selection
+          </button>
         </div>
-      </>
+      </div>
     );
   }
 
   if (selectedRooms.length === 0) {
     return (
-      <>
-        <style>{embedded_css}</style>
-        <div className="booking-page">
-          <div className="error">
-            <h3 className="error__title">No Rooms Selected</h3>
-            <p>Please select rooms before proceeding to booking.</p>
-            <button 
-              onClick={() => navigate('/room-booking')}
-              className="button button--primary"
-            >
-              Go to Room Selection
-            </button>
-          </div>
+      <div className="booking-page">
+        <div className="error">
+          <h3 className="error__title">No Rooms Selected</h3>
+          <p>Please select rooms before proceeding to booking.</p>
+          <button 
+            onClick={() => navigate('/room-booking')}
+            className="button button--primary"
+          >
+            Go to Room Selection
+          </button>
         </div>
-      </>
+      </div>
     );
   }
 
   return (
     <>
-      <style>{embedded_css}</style>
+    
       <div className="nav-container" style={{ backgroundColor: "transparent", boxShadow: "none" }}>
         <NavMenu menuOpen={menuOpen} setMenuOpen={setMenuOpen} />
       </div>
@@ -1415,3 +1407,5 @@ const BookingPage = () => {
     </>
   );
 };
+
+export default BookingPage;
