@@ -14,6 +14,17 @@ const RoomBooking = () => {
   // Get booking data from context
   const { bookingData, setBookingData } = useBooking();
 
+  const roomPlaceholders = {
+    "single bed": "src/assets/images/pixelcut-export-4.jpg",
+    "double bed": "src/assets/images/Ampomaah-Hotel-Accra-Exterior-2.JPEG",
+    "twin bed": "src/assets/images/ampomaah-hotel-2.jpg"
+  };
+
+  const getRoomPlaceholder = (roomType) => {
+    const type = roomType?.toLowerCase();
+    return roomPlaceholders[type] || roomPlaceholders.default;
+  };
+  
   // App state variables
   const [rooms, setRooms] = useState([]);
   const [menuOpen, setMenuOpen] = useState(false);
@@ -457,7 +468,7 @@ const RoomBooking = () => {
                     onClick={() => changeRoomIndex(roomType, "prev")}
                   ></button>
                   <img 
-                    src={currentRoom.image || "/placeholder-room.jpg"} 
+                    src={getRoomPlaceholder(roomType)} 
                     alt={`${roomType} room`} 
                     className="room-image" 
                   />

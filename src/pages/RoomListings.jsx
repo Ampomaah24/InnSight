@@ -19,11 +19,15 @@ const RoomListings = () => {
     "twin bed": "The Twin Room has two separate single beds, each with soft sheets and comfortable pillows. It’s a great option for friends, work colleagues, or family members traveling together. Each bed is designed to give you a good night’s sleep, and the room is set up so both guests can feel comfortable."
   };
 
-  // Default display images for room types
-  const defaultImages = {
+ const roomPlaceholders = {
     "single bed": "src/assets/images/pixelcut-export-4.jpg",
     "double bed": "src/assets/images/Ampomaah-Hotel-Accra-Exterior-2.JPEG",
     "twin bed": "src/assets/images/ampomaah-hotel-2.jpg"
+  };
+
+  const getRoomPlaceholder = (roomType) => {
+    const type = roomType?.toLowerCase();
+    return roomPlaceholders[type] || roomPlaceholders.default;
   };
 
   // Fix scroll position on page load and ensure content is visible
@@ -72,7 +76,7 @@ const RoomListings = () => {
               type: data.t_room || 'Standard',
               title: `${data.t_room || 'Standard'} Room`,
               description: roomDescriptions[roomType] || "A comfortable room with modern amenities.",
-              image: defaultImages[roomType] || data.image || "https://images.unsplash.com/photo-1611892440504-42a792e24d32",
+              image: getRoomPlaceholder(roomType),
               price: data.price || 500,
               features: data.amenities || ["Free Wi-Fi", "Flat-screen TV"],
               count: 1,
