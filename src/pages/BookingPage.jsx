@@ -13,6 +13,8 @@ import NavMenu from "../components/NavMenu";
 import "../assets/styles/BookingPage.css";
 import ConferenceBookingForm from "../components/ConferenceBookingForm"; 
 import { useBooking } from "../components/BookingContext";
+import hotelImage from "../assets/images/IMG_0123.JPG";
+
 
 // Use environment variable directly from .env file
 const PAYSTACK_PUBLIC_KEY = import.meta.env.VITE_PAYSTACK_PUBLIC_KEY;
@@ -965,7 +967,7 @@ const BookingPage = () => {
       <div className="booking-page">
         <div className="booking-page__wrapper">
           <div className="booking-page__illustration">
-            <img src="src/assets/images/IMG_0123.JPG" alt="Booking" />
+            <img src={hotelImage} alt="Booking" />
           </div>
           <div className="booking-page__container">
             <h2 className="booking-page__title">Book Your {selectedRooms.length > 1 ? 'Rooms' : 'Room'}</h2>
