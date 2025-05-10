@@ -1,0 +1,133 @@
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=Poppins:wght@300;400;500;600;700&display=swap');
+
+.sidebar {
+  width: 17.5rem;
+  height: 100vh;
+  background-color: white;
+  box-shadow: 0 0.25rem 0.75rem rgba(0,0,0,0.1);
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 1000;
+  transition: all 0.3s ease;
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+}
+
+.sidebar-toggle {
+  display: none;
+  position: fixed;
+  top: 1rem;
+  left: 1rem;
+  background-color: #e05206;
+  color: white;
+  border: none;
+  border-radius: 0.25rem;
+  padding: 0.5rem 0.75rem;
+  font-size: 1.25rem;
+  cursor: pointer;
+  z-index: 1001;
+  transition: all 0.3s ease;
+}
+
+.sidebar-toggle:hover {
+  background-color: #c04400;
+}
+
+.sidebar-logo {
+  padding: 1.5rem;
+  text-align: center;
+  border-bottom: 0.0625rem solid #e0e0e0;
+}
+
+.sidebar-logo h2 {
+  font-family: 'Playfair Display', serif;
+  font-weight: 600;
+  font-size: 1.5rem;
+  color: #333;
+  margin: 0;
+  letter-spacing: 0.03125rem;
+}
+
+.sidebar-menu {
+  list-style: none;
+  padding: 1.5rem 0;
+  margin: 0;
+  flex: 1;
+}
+
+.sidebar-item {
+  padding: 0;
+  margin: 0.5rem 0;
+  transition: all 0.3s ease;
+}
+
+.sidebar-item a {
+  display: flex;
+  align-items: center;
+  padding: 0.875rem 1.5rem;
+  color: #666;
+  text-decoration: none;
+  font-family: 'Poppins', sans-serif;
+  font-weight: 500;
+  font-size: 0.95rem;
+  letter-spacing: 0.0125rem;
+  transition: all 0.3s ease;
+}
+
+.sidebar-item:hover a {
+  color: #e05206;
+  background-color: rgba(224, 82, 6, 0.05);
+}
+
+.sidebar-item.active a {
+  color: #e05206;
+  background-color: rgba(224, 82, 6, 0.1);
+  font-weight: 600;
+}
+
+.sidebar-icon {
+  margin-right: 1rem;
+  font-size: 1.125rem;
+  width: 1.5rem;
+  height: 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: inherit;
+}
+
+.sidebar-text {
+  font-family: 'Poppins', sans-serif;
+}
+
+.sidebar-footer {
+  padding: 1rem;
+  text-align: center;
+  border-top: 0.0625rem solid #e0e0e0;
+  font-family: 'Poppins', sans-serif;
+  font-size: 0.85rem;
+  color: #999;
+  letter-spacing: 0.0125rem;
+}
+
+/* Mobile Responsiveness */
+@media (max-width: 48rem) {
+  .sidebar-toggle {
+    display: block;
+  }
+  
+  .sidebar {
+    width: 16.25rem;
+    transform: translateX(-100%);
+  }
+  
+  .sidebar.open {
+    transform: translateX(0);
+  }
+  
+  .sidebar.closed {
+    transform: translateX(-100%);
+  }
+}

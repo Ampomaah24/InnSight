@@ -1,3 +1,6 @@
+
+
+
 import { collection, getDocs, doc, updateDoc, Timestamp, addDoc, 
   query, where, getDoc, deleteDoc } from "firebase/firestore";
 import { db } from "../config/firebase";
@@ -25,7 +28,7 @@ const Reservations = () => {
   const [confirmationModalOpen, setConfirmationModalOpen] = useState(false);
   const [confirmationAction, setConfirmationAction] = useState(null);
   const [confirmationMessage, setConfirmationMessage] = useState("");
-  
+  const [includePastReservations, setIncludePastReservations] = useState(false);
   // Enhanced extend stay states
   const [isRoomAvailable, setIsRoomAvailable] = useState(true);
   const [availableRooms, setAvailableRooms] = useState([]);
@@ -92,42 +95,33 @@ const Reservations = () => {
     // Define high season months: June-August (summer) and December (holiday season)
     return (month >= 5 && month <= 7) || month === 11;
   };
-
+  const normalizeToMidnight = (date) => {
+    const normalized = new Date(date);
+    normalized.setHours(0, 0, 0, 0);
+    return normalized;
+  };
+  
   // Helper function to calculate extension rate based on tiered pricing
   const calculateExtensionRate = (originalRate, days) => {
     // No discounts for extensions
     return originalRate;
   };
 
-  // Calculate extension cost for conference bookings
-  const calculateConferenceExtensionCost = useCallback((baseHourlyRate, extensionHours) => {
-    // Conference venues might have different pricing models
-    // For example, half-day and full-day rates, or discounts for longer bookings
-    
-    let adjustedRate = baseHourlyRate;
-    
-    // Apply any business rules for conference extensions
-    // For example, discount for longer extensions
-    if (extensionHours >= 8) {
-      // 10% discount for full-day extensions
-      adjustedRate = baseHourlyRate * 0.9;
-    } else if (extensionHours >= 4) {
-      // 5% discount for half-day extensions
-      adjustedRate = baseHourlyRate * 0.95;
-    }
-    
-    // Calculate total cost
-    const totalCost = adjustedRate * extensionHours;
-    
+  const calculateConferenceExtensionCost = useCallback((baseDailyRate, extendDays) => {
+    const adjustedRate = baseDailyRate;
+    const totalCost = adjustedRate * extendDays;
+  
     return {
-      baseRate: baseHourlyRate,
-      adjustedRate: adjustedRate,
-      hours: extensionHours,
-      totalCost: totalCost,
-      discount: baseHourlyRate * extensionHours - totalCost
+      baseRate: baseDailyRate,
+      adjustedRate,
+      days: extendDays,
+      totalCost,
+      discount: 0
     };
   }, []);
-
+  
+  
+  
   // Calculate extension cost for room bookings
   const calculateExtensionCost = useCallback((baseRate, currentCheckOut, extensionDays) => {
     let regularDays = 0;
@@ -162,18 +156,24 @@ const Reservations = () => {
     };
   }, []);
 
-  // Calculate new checkout date based on extension days
   const calculatedNewCheckoutDate = useMemo(() => {
     if (!selectedReservation) return null;
-    
-    const newDate = new Date(selectedReservation.checkOutDate);
+  
     if (activeTab === "room") {
-      newDate.setDate(newDate.getDate() + parseInt(extendDays));
+      const baseDate = normalizeToMidnight(selectedReservation.checkOutDate);
+      const newDate = new Date(baseDate);
+      newDate.setDate(baseDate.getDate() + parseInt(extendDays));
+      return newDate;
     } else {
-      newDate.setHours(newDate.getHours() + parseInt(extendDays));
+      // Fixed: Now adding days for conference bookings too
+      const newDate = new Date(selectedReservation.checkOutDate);
+      newDate.setDate(newDate.getDate() + parseInt(extendDays));
+      return newDate;
     }
-    return newDate;
   }, [selectedReservation, extendDays, activeTab]);
+  
+  
+  
   
   // Recalculate extension cost when days or base rate changes (without API calls)
   useEffect(() => {
@@ -189,12 +189,15 @@ const Reservations = () => {
       setExtensionRateDetails(costDetails);
     } else {
       // For conference bookings, we use hours instead of days
-      const extensionHours = extendDays * 8;
+      const extensionDays = extendDays;
+
       
       const costDetails = calculateConferenceExtensionCost(
         baseRate,
-        extensionHours
+        extendDays
       );
+      
+      
       
       setExtensionRateDetails(costDetails);
     }
@@ -603,21 +606,27 @@ const Reservations = () => {
           // Parse dates safely with error handling
           let checkInDate, checkOutDate, createdAt;
           try {
-            if (data.checkIn instanceof Timestamp) {
-              checkInDate = data.checkIn.toDate();
-            } else if (data.checkIn && data.checkIn.seconds) {
-              checkInDate = new Date(data.checkIn.seconds * 1000);
+            const rawCheckOut = data.extendedCheckOut || data.checkOut;
+          
+            // ✅ Add this block
+            const rawCheckIn = data.checkIn;
+            if (rawCheckIn instanceof Timestamp) {
+              checkInDate = rawCheckIn.toDate();
+            } else if (rawCheckIn?.seconds) {
+              checkInDate = new Date(rawCheckIn.seconds * 1000);
             } else {
-              checkInDate = new Date(data.checkIn);
+              checkInDate = new Date(rawCheckIn);
+            }
+          
+            // ✅ Existing logic for checkOut
+            if (rawCheckOut instanceof Timestamp) {
+              checkOutDate = rawCheckOut.toDate();
+            } else if (rawCheckOut && rawCheckOut.seconds) {
+              checkOutDate = new Date(rawCheckOut.seconds * 1000);
+            } else {
+              checkOutDate = new Date(rawCheckOut);
             }
             
-            if (data.checkOut instanceof Timestamp) {
-              checkOutDate = data.checkOut.toDate();
-            } else if (data.checkOut && data.checkOut.seconds) {
-              checkOutDate = new Date(data.checkOut.seconds * 1000);
-            } else {
-              checkOutDate = new Date(data.checkOut);
-            }
             
             if (data.createdAt instanceof Timestamp) {
               createdAt = data.createdAt.toDate();
@@ -711,9 +720,9 @@ const Reservations = () => {
           const eventLengthMs = checkOutDate - checkInDate;
           const eventLengthHours = Math.ceil(eventLengthMs / (1000 * 60 * 60));
           
-          // Get a readable venue name from the venue ID
           const venueId = data.room || data.venue;
-          const venueName = getVenueName(venueId);
+          const venueName = data.roomName || getVenueName(venueId) || "N/A";
+          
           
           // Get organizer/guest name using our helper function
           const guestName = getGuestNameFromBookingData(data);
@@ -721,8 +730,9 @@ const Reservations = () => {
           return {
             id: doc.id,
             ...data,
-            checkInFormatted: formatDate(checkInDate, true),
-            checkOutFormatted: formatDate(checkOutDate, true),
+            checkInFormatted: formatDate(checkInDate),
+            checkOutFormatted: formatDate(checkOutDate),
+            
             createdAtFormatted: formatDate(createdAt),
             checkInDate: checkInDate,
             checkOutDate: checkOutDate,
@@ -764,9 +774,17 @@ const setupExtensionModal = useCallback(async () => {
     setExtendDays(MIN_EXTENSION_DAYS);
     setNotes("");
     
-    // Calculate new checkout date for initial availability check
-    const newCheckoutDate = new Date(selectedReservation.checkOutDate);
-    newCheckoutDate.setDate(newCheckoutDate.getDate() + parseInt(MIN_EXTENSION_DAYS));
+// Calculate new checkout date
+let newCheckoutDate;
+if (activeTab === "room") {
+  const baseCheckOut = normalizeToMidnight(selectedReservation.checkOutDate);
+  newCheckoutDate = new Date(baseCheckOut);
+  newCheckoutDate.setDate(baseCheckOut.getDate() + parseInt(extendDays));
+} else {
+  newCheckoutDate = new Date(selectedReservation.checkOutDate);
+  newCheckoutDate.setDate(newCheckoutDate.getDate() + parseInt(extendDays));
+}
+    
     
     // For room bookings, check availability and find alternatives
     if (activeTab === "room") {
@@ -837,7 +855,9 @@ const setupExtensionModal = useCallback(async () => {
       let calculatedBaseRate = 0;
       if (selectedReservation.originalPrice && selectedReservation.eventLength) {
         // Calculate from the original booking
-        calculatedBaseRate = selectedReservation.originalPrice / selectedReservation.eventLength;
+        const totalDays = Math.ceil((new Date(selectedReservation.checkOutDate) - new Date(selectedReservation.checkInDate)) / (1000 * 60 * 60 * 24));
+calculatedBaseRate = selectedReservation.originalPrice / totalDays;
+
       } else {
         // Try to get venue price from database as fallback
         try {
@@ -861,10 +881,8 @@ const setupExtensionModal = useCallback(async () => {
       setBaseRate(calculatedBaseRate);
       
       // Use conference-specific pricing function
-      const costDetails = calculateConferenceExtensionCost(
-        calculatedBaseRate,
-        extensionHours
-      );
+      const costDetails = calculateConferenceExtensionCost(baseRate, extendDays);
+
       
       setExtensionRateDetails(costDetails);
     }
@@ -913,8 +931,9 @@ useEffect(() => {
       setIsProcessing(true);
       
       // Calculate new checkout date
-      const newCheckoutDate = new Date(selectedReservation.checkOutDate);
-      newCheckoutDate.setDate(newCheckoutDate.getDate() + parseInt(extendDays));
+      const baseCheckOut = normalizeToMidnight(selectedReservation.checkOutDate);
+      const newCheckoutDate = new Date(baseCheckOut);
+      newCheckoutDate.setDate(baseCheckOut.getDate() + parseInt(extendDays));
       
       // For conference bookings, we use hours instead of days
       const isConference = activeTab === "conference";
@@ -931,10 +950,11 @@ useEffect(() => {
         );
       }
       
-      // Get selected room/venue ID
-      let roomId = isConference ? 
-        (selectedReservation.venueId || selectedReservation.room) : 
-        selectedReservation.roomNumber;
+      let roomId = isConference 
+      ? (selectedReservation.venueId || selectedReservation.venue || selectedReservation.room || "unknown")
+      : selectedReservation.roomNumber;
+    
+    
       
       // If room is not available, use selected alternative (only for room bookings)
       if (!isConference && !roomAvailable && selectedNewRoom) {
@@ -950,36 +970,35 @@ useEffect(() => {
       
       // Format extension note with billing details
       const extensionNote = notes 
-        ? `${new Date().toLocaleString()}: Extended by ${extensionAmount} ${extensionUnit}. Additional charge: ${extensionCost.toFixed(2)}. ${notes}` 
-        : `${new Date().toLocaleString()}: Extended by ${extensionAmount} ${extensionUnit}. Additional charge: ${extensionCost.toFixed(2)}.`;
-      
+        ? `${new Date().toLocaleString()}: Extended by ${extendDays} day(s). Additional charge: ${extensionCost.toFixed(2)}. ${notes}` 
+        : `${new Date().toLocaleString()}: Extended by ${extendDays} day(s). Additional charge: ${extensionCost.toFixed(2)}.`;
+  
       // Get current timestamp
       const now = Timestamp.now();
       
       // Create extension history record
-      const extensionHistoryRecord = {
-        id: `ext-${Date.now()}`,
-        date: now,
-        originalCheckOut: selectedReservation.checkOutDate,
-        newCheckOut: newCheckoutDate,
-        days: isConference ? 0 : extendDays,
-        hours: isConference ? (extendDays * 8) : 0,
-        cost: extensionCost,
-        approvedBy: auth.currentUser?.uid || "unknown",
-        approvedByName: auth.currentUser?.displayName || "Staff",
-        roomChanged: roomId !== (isConference ? selectedReservation.venueId : selectedReservation.roomNumber),
-        oldRoomNumber: isConference ? selectedReservation.venueId : selectedReservation.roomNumber,
-        newRoomNumber: roomId,
-        notes: notes
-      };
+// Create extension history record
+const extensionHistoryRecord = {
+  id: `ext-${Date.now()}`,
+  date: now,
+  originalCheckOut: selectedReservation.checkOutDate || now, // fallback to now if undefined
+  newCheckOut: newCheckoutDate || now, // fallback to now if undefined
+  days: isConference ? 0 : (extendDays || 0), // default to 0 if undefined
+  hours: isConference ? (extendDays * 8 || 0) : 0, // default to 0 if undefined
+  cost: extensionCost || 0, // default to 0 if undefined
+  approvedBy: auth.currentUser?.uid || "unknown",
+  approvedByName: auth.currentUser?.displayName || "Staff",
+  roomChanged: roomId !== (isConference ? selectedReservation.venueId : selectedReservation.roomNumber),
+  oldRoomNumber: isConference ? (selectedReservation.venueId || "") : (selectedReservation.roomNumber || ""),
+  newRoomNumber: roomId || "",
+  notes: notes || ""
+};
       
       // Collection reference
       const collectionName = activeTab === "room" ? "bookings" : "conferenceBookings";
       const bookingsRef = collection(db, collectionName);
       
       // 1. Update original reservation 
-      // - Mark as extended but don't change checkout date
-      // - Add reference to the extension booking
       const originalReservationRef = doc(db, collectionName, selectedReservation.id);
       
       // Get extension history or create if it doesn't exist
@@ -987,34 +1006,32 @@ useEffect(() => {
         ? [...selectedReservation.extensionHistory, extensionHistoryRecord] 
         : [extensionHistoryRecord];
       
-      await updateDoc(originalReservationRef, {
-        hasBeenExtended: true,
-        lastUpdated: now,
-        extensionHistory: extensionHistory,
-        notes: selectedReservation.notes 
-          ? `${selectedReservation.notes}\n${extensionNote}`
-          : extensionNote
-      });
+        await updateDoc(originalReservationRef, {
+          hasBeenExtended: true,
+          lastUpdated: now,
+          extensionHistory: extensionHistory || [], // ensure array
+          notes: selectedReservation.notes 
+            ? `${selectedReservation.notes}\n${extensionNote}`
+            : extensionNote
+        });
       
-      // Create the extension booking data based on booking type
-      const extensionBookingData = {
-        // Core booking details
-        checkIn: Timestamp.fromDate(selectedReservation.checkOutDate),
-        checkOut: Timestamp.fromDate(newCheckoutDate),
-        status: "Confirmed", // Or match the original status
         
-        // Guest information - copy from original with null/undefined protection
-        primaryGuestFirstName: selectedReservation.primaryGuestFirstName || "",
-        primaryGuestLastName: selectedReservation.primaryGuestLastName || "",
+        const extensionBookingData = {
+          // Ensure all required fields have defaults
+          checkIn: Timestamp.fromDate(selectedReservation.checkOutDate || new Date()),
+          checkOut: Timestamp.fromDate(newCheckoutDate || new Date()),
+          status: "Confirmed",
+          primaryGuestFirstName: selectedReservation.primaryGuestFirstName || "",
+          primaryGuestLastName: selectedReservation.primaryGuestLastName || "",
         bookerFirstName: selectedReservation.bookerFirstName || "",
         bookerLastName: selectedReservation.bookerLastName || "",
         email: selectedReservation.email || "",
-        phone: selectedReservation.phone || "", // Fix: Add fallback for undefined phone
+        phone: selectedReservation.phone || "", 
         guests: selectedReservation.guests || [],
         
-        // Payment information
-        originalPrice: extensionRateDetails.totalCost,
-        remainderDue: extensionRateDetails.totalCost,
+        // Payment information - FIXED: Ensure these are never undefined
+        originalPrice: extensionRateDetails.totalCost || 0,
+        remainderDue: extensionRateDetails.totalCost || 0,
         deposit: 0, // No deposit for extension
         paymentMethod: selectedReservation.paymentMethod || "Unknown",
         
@@ -1034,15 +1051,113 @@ useEffect(() => {
         extensionBookingData.roomType = selectedReservation.roomType || "";
         extensionBookingData.extensionDays = extendDays;
       } else {
-        // Conference booking specific fields
+        // Conference booking specific fields - following same pattern as room bookings
         extensionBookingData.room = roomId; // or venue field
         extensionBookingData.venue = roomId;
-        extensionBookingData.extensionHours = extendDays * 8;
+        extensionBookingData.extensionDays = extendDays;
+  
+        // Add any additional fields that exist in the original conference booking
+        if (selectedReservation.packageType) {
+          extensionBookingData.packageType = selectedReservation.packageType;
+        }
+        if (typeof selectedReservation.attendees !== 'undefined') {
+          extensionBookingData.attendees = selectedReservation.attendees;
+        }
       }
       
-      // Add the new booking document
-      const newBookingRef = await addDoc(bookingsRef, extensionBookingData);
-      const newBookingId = newBookingRef.id;
+      // Validate critical fields before creating the booking
+      if (
+        extensionBookingData.originalPrice === undefined ||
+        extensionBookingData.remainderDue === undefined
+      ) {
+        console.error("❌ Prevented addDoc due to undefined field values:", {
+          originalPrice: extensionBookingData.originalPrice,
+          remainderDue: extensionBookingData.remainderDue
+        });
+        alert("Failed to extend stay due to pricing calculation error. Please try again.");
+        setIsProcessing(false);
+        return;
+      }
+      if (!roomId || roomId === "unknown") {
+        console.error("❌ Cannot create booking: roomId is undefined or invalid for conference.");
+        alert("Failed to extend booking due to missing venue information.");
+        setIsProcessing(false);
+        return;
+      }
+      
+      let newBookingId = null;
+      if (activeTab === "room" && roomId === selectedReservation.roomNumber) {
+        // Same room: DO NOT update 'checkOut', add 'extendedCheckOut' instead
+        await updateDoc(originalReservationRef, {
+          extendedCheckOut: Timestamp.fromDate(newCheckoutDate),
+          hasBeenExtended: true,
+          lastUpdated: now,
+          extensionHistory,
+          notes: selectedReservation.notes 
+            ? `${selectedReservation.notes}\n${extensionNote}`
+            : extensionNote
+        });
+      
+        newBookingId = selectedReservation.id; // reuse ID
+      
+        await updateSameRoomBookings(
+          roomId,
+          selectedReservation.id,
+          selectedReservation.id,
+          selectedReservation.checkOutDate,
+          newCheckoutDate,
+          selectedReservation.guestName
+        );
+      }
+      else if (activeTab === "conference" && roomId === selectedReservation.venueId) {
+        // Same conference venue: Just update extendedCheckOut + history
+        await updateDoc(originalReservationRef, {
+          extendedCheckOut: Timestamp.fromDate(newCheckoutDate),
+          hasBeenExtended: true,
+          lastUpdated: now,
+          extensionHistory,
+          notes: selectedReservation.notes 
+            ? `${selectedReservation.notes}\n${extensionNote}`
+            : extensionNote
+        });
+      
+        newBookingId = selectedReservation.id; // reuse ID
+      } else {
+        // Room change or different venue: create new booking
+        const newBookingRef = await addDoc(bookingsRef, extensionBookingData);
+        newBookingId = newBookingRef.id;
+      
+        await updateDoc(originalReservationRef, {
+          extensionBookingId: newBookingId,
+          hasBeenExtended: true,
+          lastUpdated: now,
+          extensionHistory,
+          notes: selectedReservation.notes 
+            ? `${selectedReservation.notes}\n${extensionNote}`
+            : extensionNote
+        });
+      
+        if (activeTab === "room") {
+          await updateRoomBookings(
+            selectedReservation.roomNumber,
+            roomId,
+            selectedReservation.id,
+            newBookingId,
+            selectedReservation.checkOutDate,
+            newCheckoutDate,
+            selectedReservation.guestName
+          );
+        }
+      }
+      
+      
+      // Validate before updating original booking
+      if (!newBookingId) {
+        console.error("❌ Failed to create extension booking");
+        alert("Failed to extend stay due to internal error. Please try again.");
+        setIsProcessing(false);
+        return;
+      }
       
       // 3. Update the original booking with reference to extension
       await updateDoc(originalReservationRef, {
@@ -1119,14 +1234,13 @@ useEffect(() => {
       
       // Prepare success message based on booking type
       let successMessage = "";
-      
       if (activeTab === "room") {
         successMessage = roomId !== selectedReservation.roomNumber
           ? `Stay extension created successfully! New booking #${newBookingId} in Room ${roomId}. Additional charge of GHS ${extensionCost.toFixed(2)} has been added to the guest's bill.`
           : `Stay extension created successfully! New booking #${newBookingId}. Additional charge of GHS ${extensionCost.toFixed(2)} has been added to the guest's bill.`;
       } else {
         // Conference booking success message
-        successMessage = `Venue booking extended successfully! Additional ${extendDays * 8} hours added. Additional charge of GHS ${extensionCost.toFixed(2)} has been added to the invoice.`;
+        successMessage = `Venue booking extended successfully! Additional ${extendDays} days added. Additional charge of GHS ${extensionCost.toFixed(2)} has been added to the invoice.`;
       }
       
       setSuccessMessage(successMessage);
@@ -1143,17 +1257,30 @@ useEffect(() => {
       alert("Failed to extend stay. Please try again.");
     }
   };
-  
 
 // Function to terminate a reservation
 const terminateReservation = async () => {
   if (!selectedReservation) return;
-  
+
   try {
     setIsProcessing(true);
     const collectionName = activeTab === "room" ? "bookings" : "conferenceBookings";
-    const reservationRef = doc(db, collectionName, selectedReservation.id);
     
+    // ✅ Move this line up and define it first
+    let reservationToTerminate = selectedReservation;
+
+    // ✅ Check if it's an extension
+    if (reservationToTerminate.isExtension && reservationToTerminate.originalBookingId) {
+      const originalRef = doc(db, collectionName, reservationToTerminate.originalBookingId);
+      const originalSnap = await getDoc(originalRef);
+      if (originalSnap.exists()) {
+        reservationToTerminate = { id: originalSnap.id, ...originalSnap.data() };
+      }
+    }
+
+    const reservationRef = doc(db, collectionName, reservationToTerminate.id);
+
+  
     // Get current timestamp
     const now = Timestamp.now();
     
@@ -1166,12 +1293,12 @@ const terminateReservation = async () => {
       terminationDate: now,
       terminatedBy: auth.currentUser?.uid || "unknown",
       terminatedByName: auth.currentUser?.displayName || "Staff",
-      notes: `${selectedReservation.notes || ''}\n${terminationNote}`
+      notes: `${reservationToTerminate.notes || ''}\n${terminationNote}`
     });
     
     // Update room availability if applicable
-    if (activeTab === "room" && selectedReservation.roomNumber) {
-      const roomRef = doc(db, "rooms", selectedReservation.roomNumber);
+    if (activeTab === "room" && reservationToTerminate.roomNumber) {
+      const roomRef = doc(db, "rooms", reservationToTerminate.roomNumber);
       
       try {
         const roomSnapshot = await getDoc(roomRef);
@@ -1181,7 +1308,7 @@ const terminateReservation = async () => {
           
           // Filter out this booking from the room's bookings array
           const updatedBookings = bookings.filter(booking => 
-            booking.bookingId !== selectedReservation.id
+            booking.bookingId !== reservationToTerminate.id
           );
           
           await updateDoc(roomRef, { 
@@ -1204,16 +1331,17 @@ const terminateReservation = async () => {
     // Add a record to terminations collection for tracking/reporting
     try {
       await addDoc(collection(db, "terminations"), {
-        bookingId: selectedReservation.id,
-        guestName: selectedReservation.guestName,
-        roomNumber: selectedReservation.roomNumber || selectedReservation.room || "N/A",
-        originalCheckIn: Timestamp.fromDate(selectedReservation.checkInDate),
-        originalCheckOut: Timestamp.fromDate(selectedReservation.checkOutDate),
+        bookingId: reservationToTerminate.id,
+        guestName: reservationToTerminate.guestName,
+        roomNumber: reservationToTerminate.roomNumber || reservationToTerminate.room || "N/A",
+        originalCheckIn: Timestamp.fromDate(reservationToTerminate.checkInDate),
+        originalCheckOut: Timestamp.fromDate(reservationToTerminate.checkOutDate),
         terminationDate: now,
         reason: "Manual termination by staff",
         terminatedBy: auth.currentUser?.uid || "unknown",
         terminatedByName: auth.currentUser?.displayName || "Staff"
       });
+      
     } catch (error) {
       console.error("Error adding termination record:", error);
     }
@@ -1299,44 +1427,60 @@ const getUniqueMonths = () => {
     });
 };
 
-// Filter data based on search terms, status, and date filters
 const filterData = (data) => {
   return data.filter(res => {
     // Name search
     const nameMatch = res.guestName ? 
       res.guestName.toLowerCase().includes(search.toLowerCase()) : 
       `${res.firstName || ''} ${res.lastName || ''}`.toLowerCase().includes(search.toLowerCase());
-    
+
     // Status filter
     const statusMatch = filterStatus ? 
       (res.status || '').toLowerCase() === filterStatus.toLowerCase() : 
       true;
-    
-    // Date filter (for specific date)
+
+    // Date filter
     let dateMatch = true;
     if (filterDate) {
       const filterDateObj = new Date(filterDate);
       filterDateObj.setHours(0, 0, 0, 0);
-      
+
       const checkInDate = new Date(res.checkInDate);
       checkInDate.setHours(0, 0, 0, 0);
-      
+
       const checkOutDate = new Date(res.checkOutDate);
       checkOutDate.setHours(0, 0, 0, 0);
-      
+
       dateMatch = (checkInDate <= filterDateObj && checkOutDate >= filterDateObj);
     }
-    
+
     // Month filter
     let monthMatch = true;
     if (filterMonth) {
       const [month, year] = filterMonth.split('-').map(Number);
       monthMatch = (res.month === month && res.year === year);
     }
+
+    // Past Reservation filter - Fixed logic
+    let pastMatch = true;
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const resCheckOut = new Date(res.checkOutDate);
+    resCheckOut.setHours(0, 0, 0, 0);
     
-    return nameMatch && statusMatch && dateMatch && monthMatch;
+    // If we want to show ONLY past reservations
+    if (includePastReservations === true) {
+      pastMatch = resCheckOut < today;
+    }
+    // If we want to show ONLY current/future reservations (default behavior)
+    else if (includePastReservations === false) {
+      pastMatch = resCheckOut >= today;
+    }
+
+    return nameMatch && statusMatch && dateMatch && monthMatch && pastMatch;
   });
 };
+
 
 // Get the active data based on the current tab
 const activeData = activeTab === "room" ? roomReservations : conferenceReservations;
@@ -1396,52 +1540,64 @@ return (
       </div>
 
       <div className="filters-container">
-        <div className="filters">
-          <div className="search-box">
-            <input
-              type="text"
-              placeholder="Search by guest name..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-            />
-          </div>
-          <div className="filter-box">
-            <select 
-              value={filterStatus} 
-              onChange={(e) => setFilterStatus(e.target.value)}
-            >
-              <option value="">All Statuses</option>
-              <option value="Confirmed">Confirmed</option>
-              <option value="Checked in">Checked in</option>
-              <option value="Checked out">Checked out</option>
-              <option value="Cancelled">Cancelled</option>
-              <option value="Terminated">Terminated</option>
-            </select>
-          </div>
-          <div className="filter-box">
-            <select 
-              value={filterMonth} 
-              onChange={(e) => setFilterMonth(e.target.value)}
-            >
-              <option value="">All Months</option>
-              {getUniqueMonths().map(month => (
-                <option key={month.value} value={month.value}>
-                  {month.label}
-                </option>
-              ))}
-            </select>
-          </div>
-          <div className="filter-box">
-            <input
-              type="date"
-              value={filterDate}
-              onChange={(e) => setFilterDate(e.target.value)}
-              placeholder="Filter by specific date"
-            />
-          </div>
-        </div>
-      </div>
+  <div className="filters-row">
+    <div className="search-box">
+      <input
+        type="text"
+        placeholder="Search by guest name..."
+        value={search}
+        onChange={(e) => setSearch(e.target.value)}
+      />
+    </div>
+    <div className="filter-box">
+      <select 
+        value={filterStatus} 
+        onChange={(e) => setFilterStatus(e.target.value)}
+      >
+        <option value="">All Statuses</option>
+        <option value="Confirmed">Confirmed</option>
+        <option value="Checked in">Checked in</option>
+        <option value="Checked out">Checked out</option>
+        <option value="Cancelled">Cancelled</option>
+        <option value="Terminated">Terminated</option>
+      </select>
+    </div>
+    <div className="filter-box">
+      <select 
+        value={filterMonth} 
+        onChange={(e) => setFilterMonth(e.target.value)}
+      >
+        <option value="">All Months</option>
+        {getUniqueMonths().map(month => (
+          <option key={month.value} value={month.value}>
+            {month.label}
+          </option>
+        ))}
+      </select>
+    </div>
+    <div className="filter-box">
+      <input
+        type="date"
+        value={filterDate}
+        onChange={(e) => setFilterDate(e.target.value)}
+        placeholder="Filter by specific date"
+      />
+    </div>
+    <div className="filter-box toggle-box">
+  <label className="toggle-label">
+    <span>Show Past Reservations</span>
+    <input
+      type="checkbox"
+      checked={includePastReservations}
+      onChange={(e) => setIncludePastReservations(e.target.checked)}
+    />
+    <span className="toggle-switch"></span>
+  </label>
+</div>
 
+
+  </div>
+</div>
       {/* Tab Selector */}
       <div className="tabs-container">
         <div 
@@ -1468,79 +1624,93 @@ return (
           <>
             <div className="table-responsive">
               <table className="reservations-table">
-                <thead>
-                  <tr>
-                    <th>Guest Name</th>
-                    <th>Check-in</th>
-                    <th>Check-out</th>
-                    <th>{activeTab === "room" ? "Room" : "Venue"}</th>
-                    <th>{activeTab === "room" ? "Stay" : "Duration"}</th>
-                    <th>Created</th>
-                    <th>Status</th>
-                    <th>Actions</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {filteredData.length > 0 ? (
-                    filteredData.map((res) => (
-                      <tr key={res.id}>
-                        <td>{res.guestName}</td>
-                        <td>{res.checkInFormatted}</td>
-                        <td>{res.checkOutFormatted}</td>
-                        <td>
-                          {activeTab === "room" 
-                            ? (res.roomNumber || res.room || "N/A") 
-                            : (res.venue || getVenueName(res.room || res.venueId))}
-                        </td>
-                        <td>
-                          {activeTab === "room" 
-                            ? `${res.stayLength} night${res.stayLength !== 1 ? 's' : ''}` 
-                            : `${res.eventLength} hour${res.eventLength !== 1 ? 's' : ''}`}
-                        </td>
-                        <td>{res.createdAtFormatted}</td>
-                        <td>
-                          <span className={`status ${getStatusClass(res.status)}`}>
-                            {res.status || "Pending"}
-                            {res.hasPendingExtensionRequest && 
-                              <span className="pending-tag"> (Extension Pending)</span>}
-                          </span>
-                        </td>
-                        <td className="actions-cell">
-                          {(res.status === "Confirmed" || res.status === "Checked in" || res.status === "Checked-in") && (
-                            <>
-                              <button 
-                                className="action-btn extend-btn"
-                                onClick={() => {
-                                  setSelectedReservation(res);
-                                  setIsModalOpen(true);
-                                }}
-                                title="Extend Stay"
-                                disabled={res.hasPendingExtensionRequest}
-                              >
-                                Extend
-                              </button>
-                              
-                              <button 
-                                className="action-btn cancel-btn"
-                                onClick={() => {
-                                  setSelectedReservation(res);
-                                  setConfirmationModalOpen(true);
-                                }}
-                                title="Terminate Reservation"
-                              >
-                                Terminate
-                              </button>
-                            </>
-                          )}
-                        </td>
-                      </tr>
-                    ))
-                  ) : (
-                    <tr className="empty-row">
-                      <td colSpan="8">No reservations found matching your criteria.</td>
-                    </tr>
-                  )}
-                </tbody>
+              <thead>
+  <tr>
+    <th>Guest Name</th>
+    <th>Check-in</th>
+    <th>Check-out</th>
+    <th>Extended Check-out</th> {/* <-- NEW */}
+    <th>{activeTab === "room" ? "Room" : "Venue"}</th>
+    <th>{activeTab === "room" ? "Stay" : "Duration"}</th>
+    <th>Created</th>
+    <th>Status</th>
+    <th>Actions</th>
+  </tr>
+</thead>
+<tbody>
+  {filteredData.length > 0 ? (
+    filteredData.map((res) => (
+      <tr key={res.id}>
+        <td>{res.guestName}</td>
+        <td>{res.checkInFormatted}</td>
+        <td>{res.checkOutFormatted}</td>
+        <td>
+          {res.extendedCheckOut
+            ? formatDate(
+                res.extendedCheckOut instanceof Timestamp
+                  ? res.extendedCheckOut.toDate()
+                  : new Date(res.extendedCheckOut)
+              )
+            : "—"}
+        </td>
+        <td>
+          {activeTab === "room"
+            ? res.roomNumber || res.room || "N/A"
+            : res.venue || getVenueName(res.room || res.venueId)}
+        </td>
+        <td>
+          {activeTab === "room"
+            ? `${res.stayLength} night${res.stayLength !== 1 ? "s" : ""}`
+            : `${res.eventLength} hour${res.eventLength !== 1 ? "s" : ""}`}
+        </td>
+        <td>{res.createdAtFormatted}</td>
+        <td>
+          <span className={`status ${getStatusClass(res.status)}`}>
+            {res.status || "Pending"}
+            {res.hasPendingExtensionRequest && (
+              <span className="pending-tag"> (Extension Pending)</span>
+            )}
+          </span>
+        </td>
+        <td className="actions-cell">
+          {(res.status === "Confirmed" ||
+            res.status === "Checked in" ||
+            res.status === "Checked-in") && (
+            <>
+              <button
+                className="action-btn extend-btn"
+                onClick={() => {
+                  setSelectedReservation(res);
+                  setIsModalOpen(true);
+                }}
+                title="Extend Stay"
+                disabled={res.hasPendingExtensionRequest}
+              >
+                Extend
+              </button>
+
+              <button
+                className="action-btn cancel-btn"
+                onClick={() => {
+                  setSelectedReservation(res);
+                  setConfirmationModalOpen(true);
+                }}
+                title="Terminate Reservation"
+              >
+                Terminate
+              </button>
+            </>
+          )}
+        </td>
+      </tr>
+    ))
+  ) : (
+    <tr className="empty-row">
+      <td colSpan="9">No reservations found matching your criteria.</td>
+    </tr>
+  )}
+</tbody>
+
               </table>
             </div>
             
@@ -1571,33 +1741,40 @@ return (
               </div>
             ) : (
               <>
-                <div className="guest-details">
-                  <h4>Reservation Details</h4>
-                  <div className="info-row">
-                    <span className="info-label">Guest:</span>
-                    <span className="info-value">{selectedReservation.guestName}</span>
-                  </div>
-                  <div className="info-row">
-                    <span className="info-label">{activeTab === "room" ? "Room:" : "Venue:"}</span>
-                    <span className="info-value">{selectedReservation.roomNumber || selectedReservation.room || selectedReservation.venue || "N/A"}</span>
-                  </div>
-                  <div className="info-row">
-                    <span className="info-label">Current Check-in:</span>
-                    <span className="info-value">{selectedReservation.checkInFormatted}</span>
-                  </div>
-                  <div className="info-row">
-                    <span className="info-label">Current Check-out:</span>
-                    <span className="info-value">{selectedReservation.checkOutFormatted}</span>
-                  </div>
-                  <div className="info-row">
-                    <span className="info-label">Current {activeTab === "room" ? "Stay:" : "Duration:"}</span>
-                    <span className="info-value">
-                      {activeTab === "room" 
-                        ? `${selectedReservation.stayLength} nights` 
-                        : `${selectedReservation.eventLength} hours`}
-                    </span>
-                  </div>
-                </div>
+<div className="reservation-summary-box">
+  <h4 className="summary-heading">Reservation Summary</h4>
+  <div className="summary-grid">
+    <div className="summary-item">
+      <span className="summary-label">Guest:</span>
+      <span className="summary-value">{selectedReservation.guestName}</span>
+    </div>
+    <div className="summary-item">
+      <span className="summary-label">{activeTab === "room" ? "Room:" : "Venue:"}</span>
+      <span className="summary-value">
+        {activeTab === "room"
+          ? (selectedReservation.roomNumber || selectedReservation.room || "N/A")
+          : (selectedReservation.venue || getVenueName(selectedReservation.venueId || selectedReservation.room) || "N/A")}
+      </span>
+    </div>
+    <div className="summary-item">
+      <span className="summary-label">Check-in:</span>
+      <span className="summary-value">{selectedReservation.checkInFormatted}</span>
+    </div>
+    <div className="summary-item">
+      <span className="summary-label">Check-out:</span>
+      <span className="summary-value">{selectedReservation.checkOutFormatted}</span>
+    </div>
+    <div className="summary-item">
+      <span className="summary-label">{activeTab === "room" ? "Stay:" : "Duration:"}</span>
+      <span className="summary-value">
+        {activeTab === "room"
+          ? `${selectedReservation.stayLength} night${selectedReservation.stayLength !== 1 ? 's' : ''}`
+          : `${selectedReservation.eventLength} hour${selectedReservation.eventLength !== 1 ? 's' : ''}`}
+      </span>
+    </div>
+  </div>
+</div>
+
               
                 <div className="extension-form">
                   <h4>Extension Details</h4>
@@ -1605,7 +1782,7 @@ return (
                   <div className="form-group">
                     <label>
                       {activeTab === "conference" 
-                        ? `Extend by (hours):` 
+                        ? `Extend by (days):` 
                         : `Extend by (days):`}
                     </label>
                     <input 
@@ -1621,25 +1798,18 @@ return (
                     />
                     <small className="form-help-text">
                       {activeTab === "conference" 
-                        ? `Minimum extension is 1 hour` 
+                        ? `Minimum extension is 1 day` 
                         : `Minimum extension is ${MIN_EXTENSION_DAYS} day`}
                     </small>
                   </div>
                   
                   <div className="new-checkout-preview">
-                    <label>New Check-out {activeTab === "room" ? "Date" : "Time"}:</label>
-                    <div className="preview-date">
-                      {(() => {
-                        const newDate = new Date(selectedReservation.checkOutDate);
-                        if (activeTab === "room") {
-                          newDate.setDate(newDate.getDate() + parseInt(extendDays));
-                        } else {
-                          newDate.setHours(newDate.getHours() + parseInt(extendDays));
-                        }
-                        return formatDate(newDate);
-                      })()}
-                    </div>
-                  </div>
+  <label>New Check-out Date:</label>
+  <div className="preview-date">
+    {calculatedNewCheckoutDate ? formatDate(calculatedNewCheckoutDate, false) : "N/A"}
+  </div>
+</div>
+
                   
                   {activeTab === "room" && !isRoomAvailable && (
                     <div className="room-unavailable-alert">
@@ -1682,18 +1852,19 @@ return (
                     <div className="cost-breakdown">
                       <div className="cost-row">
                         <span className="cost-label">
-                          {activeTab === "conference" ? "Base hourly rate:" : "Base daily rate:"}
+                          {activeTab === "conference" ? "Base daily rate:" : "Base daily rate:"}
                         </span>
                         <span className="cost-value">GHS {extensionRateDetails.baseRate.toFixed(2)}</span>
                       </div>
                       
                       {activeTab === "conference" ? (
-                        <div className="cost-row">
-                          <span className="cost-label">Hours:</span>
-                          <span className="cost-value">
-                            {extensionRateDetails.hours} hours × GHS {extensionRateDetails.adjustedRate.toFixed(2)}
-                          </span>
-                        </div>
+    <div className="cost-row">
+    <span className="cost-label">Days:</span>
+    <span className="cost-value">
+      {extensionRateDetails.days} day{extensionRateDetails.days !== 1 ? "s" : ""} × GHS {extensionRateDetails.adjustedRate.toFixed(2)}
+    </span>
+  </div>
+  
                       ) : (
                         <>
                           <div className="cost-row">
@@ -1805,13 +1976,12 @@ return (
       </div>
     )}
     
-{/* Success Popup - This should be inside your modal JSX structure */}
-{showSuccessPopup && (
-  <div className="success-popup">
-    <div className="success-icon">✓</div>
-    <div className="success-message">{successMessage}</div>
+    {showSuccessPopup && (
+  <div className="center-success-message">
+    {successMessage}
   </div>
 )}
+
   </div>
 );
 };

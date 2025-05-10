@@ -36,7 +36,9 @@ const ConferenceBookingForm = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [processingPayment, setProcessingPayment] = useState(false);
   const [discounts, setDiscounts] = useState({
-    conferenceAttendeeDiscount: 0
+    conferenceAttendeeDiscount: 0,
+    longStayDiscount: 0,
+    longStayMinNights: 7
   });
 
   // Check if we have the necessary data in the context
@@ -56,6 +58,8 @@ const ConferenceBookingForm = () => {
   const selectedRooms = bookingData?.selectedRooms || [];
   const checkInParam = bookingData?.startDate || "";
   const checkOutParam = bookingData?.endDate || "";
+  // Only use discountFromContext if it comes from a valid source
+  // (e.g., when redirected from a room booking with a conference discount applied)
   const discountFromContext = bookingData?.discount || 0;
   const discountType = bookingData?.discountType || "";
 
@@ -99,23 +103,8 @@ const ConferenceBookingForm = () => {
     setCsrfToken(generateToken());
   }, []);
 
-  // Fetch discounts if needed
+  // Fetch discounts if needed - but we won't apply them directly to conference bookings
   useEffect(() => {
-    if (discountFromContext > 0) {
-      setDiscounts(prev => ({ 
-        ...prev, 
-        conferenceAttendeeDiscount: discountFromContext 
-      }));
-      setLoading(false);
-      return;
-    }
-
-    if (!isLoggedIn) {
-      console.log("User not logged in, skipping discount fetch");
-      setLoading(false);
-      return;
-    }
-
     const fetchDiscounts = async () => {
       try {
         const discountsRef = doc(db, "settings", "discounts");
@@ -140,7 +129,7 @@ const ConferenceBookingForm = () => {
     };
 
     fetchDiscounts();
-  }, [discountFromContext, isLoggedIn]);
+  }, []);
 
   // Fix scroll to top on page load
   useEffect(() => {
@@ -152,9 +141,10 @@ const ConferenceBookingForm = () => {
   const checkOutDate = new Date(formData.checkOut);
   const numberOfDays = Math.max(1, (checkOutDate - checkInDate) / (1000 * 3600 * 24));
 
-  // Apply any applicable discount
-  const applicableDiscount = discountFromContext > 0 ? discountFromContext : (isLoggedIn ? discounts.conferenceAttendeeDiscount : 0);
-  const actualDiscountName = discountType || (applicableDiscount > 0 ? 'Conference Attendee' : '');
+  // Apply discount only if it came from an external context (e.g., navigating from room booking)
+  // Conference bookings by themselves shouldn't get discounts
+  const applicableDiscount = discountFromContext > 0 ? discountFromContext : 0;
+  const actualDiscountName = discountType || '';
 
   // Calculate total amount
   const totalAmount = selectedRooms.reduce((acc, room) => {
@@ -191,157 +181,145 @@ const ConferenceBookingForm = () => {
     formData.numberOfAttendees > 0;
 
   // Complete booking process
- // In your ConferenceBookingForm.jsx, update the completeBooking function:
-
-const completeBooking = async () => {
-  try {
-    const bookingPromises = [];
-    
-    // Process each conference room
-    for (const room of selectedRooms) {
-      const checkInFormatted = new Date(formData.checkIn);
-      checkInFormatted.setHours(12, 0, 0, 0);
+  const completeBooking = async () => {
+    try {
+      const bookingPromises = [];
       
-      const checkOutFormatted = new Date(formData.checkOut);
-      checkOutFormatted.setHours(12, 0, 0, 0);
-
-      // First, try to find the exact room type
-      let roomQuery = query(
-        collection(db, "conference_rooms"),
-        where("availability", "==", true),
-        where("type", "==", room.type)
-      );
-
-      let roomSnapshot = await getDocs(roomQuery);
-      
-      // If no rooms of exact type, show a specific error
-      if (roomSnapshot.empty) {
-        throw new Error(`No conference rooms of type "${room.type}" are available.`);
-      }
-
-      // Find a room without date conflicts
-      let roomBooked = false;
-      
-      for (const roomDoc of roomSnapshot.docs) {
-        if (roomBooked) break;
+      // Process each conference room
+      for (const room of selectedRooms) {
+        const checkInFormatted = new Date(formData.checkIn);
+        checkInFormatted.setHours(12, 0, 0, 0);
         
-        const roomRef = roomDoc.ref;
+        const checkOutFormatted = new Date(formData.checkOut);
+        checkOutFormatted.setHours(12, 0, 0, 0);
+
+        // First, try to find the exact room type
+        let roomQuery = query(
+          collection(db, "conference_rooms"),
+          where("availability", "==", true),
+          where("type", "==", room.type)
+        );
+
+        let roomSnapshot = await getDocs(roomQuery);
         
-        try {
-          // Use transaction to check and update room availability
-          await runTransaction(db, async (transaction) => {
-            const roomData = (await transaction.get(roomRef)).data();
-            const existingBookings = roomData.bookings || [];
-            
-            // Check for overlaps with any existing bookings
-            const hasOverlap = existingBookings.some(booking => {
-              // Support both naming conventions (checkIn/checkOut)
-              const existingCheckIn = new Date(booking.checkIn);
-              const existingCheckOut = new Date(booking.checkOut);
+        // If no rooms of exact type, show a specific error
+        if (roomSnapshot.empty) {
+          throw new Error(`No conference rooms of type "${room.type}" are available.`);
+        }
+
+        // Find a room without date conflicts
+        let roomBooked = false;
+        
+        for (const roomDoc of roomSnapshot.docs) {
+          if (roomBooked) break;
+          
+          const roomRef = roomDoc.ref;
+          
+          try {
+            // Use transaction to check and update room availability
+            await runTransaction(db, async (transaction) => {
+              const roomData = (await transaction.get(roomRef)).data();
+              const existingBookings = roomData.bookings || [];
               
-              // Check if there's an overlap between the requested dates and existing booking
-              return (checkInFormatted < existingCheckOut && checkOutFormatted > existingCheckIn);
+              // Check for overlaps with any existing bookings
+              const hasOverlap = existingBookings.some(booking => {
+                // Support both naming conventions (checkIn/checkOut)
+                const existingCheckIn = new Date(booking.checkIn);
+                const existingCheckOut = new Date(booking.checkOut);
+                
+                // Check if there's an overlap between the requested dates and existing booking
+                return (checkInFormatted < existingCheckOut && checkOutFormatted > existingCheckIn);
+              });
+              
+              if (hasOverlap) {
+                throw new Error(`Room ${roomData.name || roomRef.id} is already booked for these dates.`);
+              }
+              
+              // Update room with new booking
+              transaction.update(roomRef, {
+                bookings: [...existingBookings, {
+                  checkIn: checkInFormatted.toISOString(),
+                  checkOut: checkOutFormatted.toISOString()
+                }]
+              });
             });
             
-            if (hasOverlap) {
-              throw new Error(`Room ${roomData.name || roomRef.id} is already booked for these dates.`);
-            }
+            // If transaction successful, room is available - proceed with booking creation
+            roomBooked = true;
             
-            // Update room with new booking
-            transaction.update(roomRef, {
-              bookings: [...existingBookings, {
-                checkIn: checkInFormatted.toISOString(),
-                checkOut: checkOutFormatted.toISOString()
-              }]
-            });
-          });
-          
-          // If transaction successful, room is available - proceed with booking creation
-          roomBooked = true;
-          
-          // Calculate prices with discount
-          const originalPrice = Number(room.price || 0) * numberOfDays * formData.numberOfAttendees;
-          const discountedPrice = applicableDiscount ? 
-            originalPrice - (originalPrice * applicableDiscount / 100) : 
-            originalPrice;
-          
-          // Create booking document
-          const newBooking = {
-            // Main booker info
-            userId: auth.currentUser?.uid || "guest",
-            email: formData.email,
-            firstName: formData.firstName,
-            lastName: formData.lastName,
-            phone: formData.phone,
-            idType: formData.idType,
-            idNumber: formData.idNumber,
+            // Calculate prices with discount
+            const originalPrice = Number(room.price || 0) * numberOfDays * formData.numberOfAttendees;
+            const discountedPrice = applicableDiscount ? 
+              originalPrice - (originalPrice * applicableDiscount / 100) : 
+              originalPrice;
             
-            // Room details
-            roomType: room.type,
-            roomName: room.name || "Conference Room",
-            roomNumber: roomRef.id,
-            roomCategory: "conference",
+              const newBooking = {
+                userId: auth.currentUser?.uid || "guest",
+                email: formData.email,
+                firstName: formData.firstName,
+                lastName: formData.lastName,
+                phone: formData.phone,
+                idType: formData.idType,
+                idNumber: formData.idNumber,
+                
+                roomType: room.type,
+                roomName: room.name || "Conference Room",
+                roomNumber: roomRef.id,
+                roomCategory: "conference",
+              
+                numberOfAttendees: formData.numberOfAttendees,
+              
+                checkIn: formData.checkIn,
+                checkOut: formData.checkOut,
+              
+                originalPrice: originalPrice,
+                discountApplied: applicableDiscount,
+                discountType: actualDiscountName,
+                finalPrice: discountedPrice,
+                amountPaid: discountedPrice,
+                remainderDue: 0,
+                paymentStatus: "Paid in Full",
+                paymentOption: "Full Payment",
+              
+                alsoBookingStay: formData.alsoBookingStay,
+              
+                csrfToken: csrfToken,
+                specialRequests: formData.specialRequests,
+                status: "Confirmed",
+                createdAt: serverTimestamp(),
+              
+                bookingGroupId: csrfToken,
+                totalRoomsInBooking: selectedRooms.length
+              };
+              
             
-            // Conference specifics
-            numberOfAttendees: formData.numberOfAttendees,
+              const bookingRef = collection(db, "conferenceBookings");
+              await addDoc(bookingRef, newBooking);
+              
             
-            // Booking dates
-            checkIn: formData.checkIn,
-            checkOut: formData.checkOut,
+            break; // Found and booked a room, move to next room in selection
             
-            // Payment info
-            originalPrice: originalPrice,
-            discountApplied: applicableDiscount,
-            discountType: actualDiscountName,
-            finalPrice: discountedPrice,
-            amountPaid: discountedPrice, // Always full payment for conference
-            remainderDue: 0,
-            paymentStatus: "Paid in Full",
-            paymentOption: "Full Payment",
-            
-            // Follow-up info
-            alsoBookingStay: formData.alsoBookingStay,
-            
-            // Security
-            csrfToken: csrfToken,
-            
-            // Additional info
-            specialRequests: formData.specialRequests,
-            status: "Confirmed",
-            createdAt: serverTimestamp(),
-            
-            // Group booking info
-            bookingGroupId: csrfToken,
-            totalRoomsInBooking: selectedRooms.length
-          };
-          
-          // Create the booking document
-          const bookingRef = collection(db, "conferenceBookings");
-          bookingPromises.push(addDoc(bookingRef, newBooking));
-          
-          break; // Found and booked a room, move to next room in selection
-          
-        } catch (error) {
-          // This specific room was unavailable - try the next one
-          console.log(`Room ${roomRef.id} unavailable:`, error.message);
-          continue;
+          } catch (error) {
+            // This specific room was unavailable - try the next one
+            console.log(`Room ${roomRef.id} unavailable:`, error.message);
+            continue;
+          }
+        }
+        
+        // If we couldn't book any room, throw a specific error
+        if (!roomBooked) {
+          throw new Error(`All conference rooms of type "${room.type}" are already booked for these dates.`);
         }
       }
       
-      // If we couldn't book any room, throw a specific error
-      if (!roomBooked) {
-        throw new Error(`All conference rooms of type "${room.type}" are already booked for these dates.`);
-      }
+      // Wait for all booking documents to be created
+      await Promise.all(bookingPromises);
+      return true;
+    } catch (err) {
+      console.error("Conference booking failed:", err);
+      throw err;
     }
-    
-    // Wait for all booking documents to be created
-    await Promise.all(bookingPromises);
-    return true;
-  } catch (err) {
-    console.error("Conference booking failed:", err);
-    throw err;
-  }
-};
+  };
 
   // Paystack configuration
   const config = {
@@ -395,15 +373,17 @@ const completeBooking = async () => {
       // Complete booking with Firestore transaction
       await completeBooking();
             
-      // Prepare booking object for confirmation page or redirect to room booking
+      // If the user wants to book a room stay after conference
       if (formData.alsoBookingStay === "Yes") {
-        // Update booking context for room booking
+        // Prepare discount for room booking if user has conference booking
+        // This is where we apply the conference attendee discount for room bookings
+        // (but not for the conference booking itself)
         setBookingData({
           ...bookingData,
           checkIn: formData.checkIn,
           checkOut: formData.checkOut,
           fromConference: true,
-          discount: applicableDiscount,
+          discount: discounts.conferenceAttendeeDiscount, // Apply conference discount to rooms
           discountType: "Conference Attendee",
           csrfToken: csrfToken
         });
@@ -412,36 +392,40 @@ const completeBooking = async () => {
         return;
       }
       
-      // For normal flow, navigate to confirmation page
-      const bookingDetails = {
-        firstName: formData.firstName,
-        lastName: formData.lastName,
-        email: formData.email,
-        checkIn: formData.checkIn,
-        checkOut: formData.checkOut,
-        roomTypes: selectedRooms.map(r => r.type).join(", "),
-        numberOfAttendees: formData.numberOfAttendees,
-        numberOfRooms: selectedRooms.length,
-        paymentOption: "Full Payment",
-        amount: totalAmount,
-        totalAmount: totalAmount,
-        remainderDue: 0,
-        specialRequests: formData.specialRequests,
-        bookingReference: reference.reference,
-        bookingGroupId: csrfToken
-      };
-      
-      // Update booking context with confirmation details
-      setBookingData({
-        ...bookingData,
-        booking: bookingDetails,
-        totalAttendees: formData.numberOfAttendees,
-        totalRooms: selectedRooms.length,
-        isDeposit: false,
-        csrfToken
-      });
-      
-      navigate("/booking-confirmation");
+// Find this section in ConferenceBookingForm.jsx (around line 550)
+// and replace with this improved version:
+
+// For normal flow, navigate to confirmation page
+const bookingDetails = {
+  firstName: formData.firstName,
+  lastName: formData.lastName,
+  email: formData.email,
+  checkIn: formData.checkIn,
+  checkOut: formData.checkOut,
+  roomTypes: selectedRooms.map(r => r.type).join(", "),
+  numberOfAttendees: formData.numberOfAttendees,
+  numberOfRooms: selectedRooms.length,
+  paymentOption: "Full Payment",
+  amount: totalAmount,
+  totalAmount: totalAmount,
+  remainderDue: 0,
+  specialRequests: formData.specialRequests,
+  bookingGroupId: csrfToken
+};
+
+// Update booking context with confirmation details
+setBookingData({
+  booking: bookingDetails,
+  totalAttendees: formData.numberOfAttendees,
+  totalRooms: selectedRooms.length,
+  isDeposit: false,
+  csrfToken
+});
+
+// Save to session storage as well for redundancy
+sessionStorage.setItem('bookingData', JSON.stringify(bookingDetails));
+
+navigate("/booking-confirmation");
       
     } catch (error) {
       console.error("Error in payment processing:", error);
@@ -464,7 +448,6 @@ const completeBooking = async () => {
     return (
       <div className="booking-page">
         <div className="loading">
-          
           <p>Loading conference booking details...</p>
         </div>
       </div>
@@ -523,7 +506,7 @@ const completeBooking = async () => {
 
             {!isLoggedIn && (
               <div className="login-prompt">
-                <p className="login-prompt__text">Sign in to access exclusive discounts!</p>
+                <p className="login-prompt__text">Sign in for a better booking experience!</p>
                 <button className="login-button" onClick={goToLogin}>Log In</button>
               </div>
             )}
@@ -649,7 +632,7 @@ const completeBooking = async () => {
                         <option value="No">No</option>
                         <option value="Yes">Yes, I need to book rooms too</option>
                       </select>
-                      <small className="form-field__help">You'll be redirected to room booking after completing this form</small>
+                      <small className="form-field__help">Conference attendees receive special room rates</small>
                     </div>
                   </div>
                 </div>
@@ -704,11 +687,7 @@ const completeBooking = async () => {
                       <span className="booking-summary__value">GHS {totalAmount.toFixed(2)}</span>
                     </div>
                     
-                    {applicableDiscount > 0 && (
-                      <div className="booking-summary__discount">
-                        {applicableDiscount}% {actualDiscountName} discount applied
-                      </div>
-                    )}
+          
                   </div>
                 </div>
 
@@ -723,7 +702,6 @@ const completeBooking = async () => {
                           if (!isFormValid) {
                             alert("Please complete all required fields correctly.");
                           } else {
-                            
                             initializePayment();
                           }
                         }}

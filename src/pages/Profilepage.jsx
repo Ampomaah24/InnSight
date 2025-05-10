@@ -499,9 +499,7 @@ const ProfilePage = () => {
   if (!loading && !userData) {
     return (
       <div className="profile-page">
-        <div className="back-button" onClick={handleGoBack}>
-          <FaArrowLeft size={16} />
-        </div>
+   
         
         <div className="auth-prompt-container">
           <div className="auth-prompt">
@@ -530,10 +528,7 @@ const ProfilePage = () => {
 
   return (
     <div className="profile-page">
-      {/* Back Button */}
-      <div className="back-button" onClick={handleGoBack}>
-        <FaArrowLeft size={16} />
-      </div>
+    
       
       {/* Success Message */}
       {updateSuccess && (

@@ -29,11 +29,26 @@ const LoginPage = () => {
   const location = useLocation();
 
   useEffect(() => {
+    // Check for timeout parameter
     const params = new URLSearchParams(window.location.search);
     if (params.get('timeout') === 'true') {
       setTimeoutOccurred(true);
+      // Remove timeout parameter from URL without reloading the page
       window.history.replaceState({}, document.title, window.location.pathname);
+      
+      // Clear any saved redirects to prevent redirect loops
       localStorage.removeItem('redirectAfterLogin');
+      sessionStorage.removeItem('currentUser'); // Also clear any stored user data
+      
+      // Make sure we're not trying to use a stale auth state
+      // This ensures Firebase auth is properly reset
+      const unsubscribe = auth.onAuthStateChanged((user) => {
+        if (user) {
+          // If somehow the user is still logged in, sign them out
+          signOut(auth).catch(err => console.error("Error signing out after timeout:", err));
+        }
+        unsubscribe(); // Unsubscribe after checking once
+      });
     }
   }, []);
 
@@ -86,11 +101,18 @@ const LoginPage = () => {
         const isAdminUser = normalizedUser.role.includes('admin'); // This will match both "admin" and "super admin"
         
         if (timeoutOccurred) {
+          // If session timed out, always force a complete replacement of history
           navigate(isAdminUser ? "/admin-dashboard" : "/services", { replace: true });
         } else {
+          // For normal login, use saved redirect if available
           const redirectPath = localStorage.getItem('redirectAfterLogin') || 
                              (isAdminUser ? "/admin-dashboard" : "/services");
-          navigate(redirectPath);
+          
+          // Clear the saved redirect after using it
+          localStorage.removeItem('redirectAfterLogin');
+          
+          // Navigate to the destination
+          navigate(redirectPath, { replace: false });
         }
       }
     } catch (err) {

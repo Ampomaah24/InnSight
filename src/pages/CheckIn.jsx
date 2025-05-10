@@ -13,6 +13,8 @@ const CheckIn = () => {
   const [updatingStatus, setUpdatingStatus] = useState(false);
   const [updatedRoom, setUpdatedRoom] = useState(null);
   const [showExpiredOnly, setShowExpiredOnly] = useState(false);
+  const [categoryFilter, setCategoryFilter] = useState('');
+
   
   // Get today's date at midnight for accurate comparison
   const today = new Date();
@@ -47,6 +49,7 @@ const CheckIn = () => {
       const bookingsQuery = query(collection(db, "bookings"));
       const bookingsSnapshot = await getDocs(bookingsQuery);
       
+      // Looking at the Firestore database structure, direct field mapping
       const bookingsData = bookingsSnapshot.docs.map(doc => {
         const data = doc.data();
         
@@ -77,9 +80,15 @@ const CheckIn = () => {
         // Get room details if available
         const roomDetails = data.roomNumber ? roomsData[data.roomNumber] : null;
         
+        // Based on the Firestore structure, use booker information for guest name
+        const fullName = data.bookerFirstName && data.bookerLastName 
+          ? `${data.bookerFirstName} ${data.bookerLastName}`.trim()
+          : data.bookerFirstName || data.bookerLastName || 'Guest';
+        
         return {
           id: doc.id,
           ...data,
+          fullName: fullName,
           checkInFormatted: formatDate(checkInDate),
           checkOutFormatted: formatDate(checkOutDate),
           checkInDate: checkInDate,
@@ -368,21 +377,39 @@ const CheckIn = () => {
   
   // Filter guests based on search, time frame, and expired status
   const filteredGuests = bookedGuests.filter(guest => {
-    // Name search filter
-    const nameMatch = `${guest.firstName || ''} ${guest.lastName || ''}`.toLowerCase().includes(searchTerm.toLowerCase());
+    // Name search filter with null check to prevent toLowerCase errors
+    const guestName = (guest.fullName || '').toLowerCase();
+    const nameMatch = searchTerm ? guestName.includes(searchTerm.toLowerCase()) : true;
     
     // Time frame filter
     let timeFrameMatch = true;
-    if (timeFilter === 'today') {
-      timeFrameMatch = guest.isCheckingInToday || guest.isCheckingOutToday;
-    } else if (timeFilter === 'tomorrow') {
-      timeFrameMatch = guest.isCheckingInTomorrow;
+    if (!categoryFilter && !showExpiredOnly) {
+      if (timeFilter === 'today') {
+        timeFrameMatch = guest.isCheckingInToday || guest.isCheckingOutToday;
+      } else if (timeFilter === 'tomorrow') {
+        timeFrameMatch = guest.isCheckingInTomorrow;
+      }
     }
-    
+
+    let categoryMatch = true;
+    switch (categoryFilter) {
+      case "checked-in":
+        categoryMatch = guest.status?.toLowerCase() === "checked in" || guest.status?.toLowerCase() === "checked-in";
+        break;
+      case "confirmed":
+        categoryMatch = guest.status?.toLowerCase() === "confirmed";
+        break;
+      case "expired":
+        categoryMatch = guest.isExpired;
+        break;
+      default:
+        categoryMatch = true;
+    }
     // Expired reservation filter
     const expiredMatch = showExpiredOnly ? guest.isExpired : true;
     
-    return nameMatch && (showExpiredOnly ? guest.isExpired : timeFrameMatch);
+    return nameMatch && categoryMatch && (showExpiredOnly ? guest.isExpired : timeFrameMatch);
+
   });
   
   // Get counts for tabs
@@ -457,7 +484,21 @@ const CheckIn = () => {
                 onClick={() => { setShowExpiredOnly(!showExpiredOnly); }}
               >
                 Expired Stays ({expiredCount})
+
               </div>
+              <div className="category-filter">
+  <select
+    value={categoryFilter}
+    onChange={(e) => setCategoryFilter(e.target.value)}
+    className="category-dropdown"
+  >
+    <option value="">Category </option>
+    <option value="checked-in">Checked In</option>
+    <option value="confirmed">Confirmed Only</option>
+
+  </select>
+</div>
+
             </div>
           </div>
         </div>
@@ -490,7 +531,7 @@ const CheckIn = () => {
                     {filteredGuests.length > 0 ? (
                       filteredGuests.map((guest) => (
                         <tr key={guest.id} className={guest.isExpired ? 'expired-row' : ''}>
-                          <td>{guest.firstName || ''} {guest.lastName || ''}</td>
+                          <td>{guest.fullName}</td>
                           <td className={guest.isCheckingInToday ? 'highlight-cell' : ''}>
                             {guest.checkInFormatted}
                             {guest.isCheckingInToday && <span className="today-tag">Today</span>}
@@ -508,15 +549,24 @@ const CheckIn = () => {
                             </span>
                           </td>
                           <td className="actions-cell">
-                            {guest.status === "Confirmed" && (
-                              <button 
-                                className="action-btn check-in-btn"
-                                onClick={() => handleCheckIn(guest.id)}
-                                disabled={updatingStatus}
-                              >
-                                Check In
-                              </button>
-                            )}
+                          {guest.status === "Confirmed" && !guest.isExpired ? (
+  <button 
+    className="action-btn check-in-btn"
+    onClick={() => handleCheckIn(guest.id)}
+    disabled={updatingStatus}
+  >
+    Check In
+  </button>
+) : guest.status === "Confirmed" && guest.isExpired ? (
+  <button 
+    className="action-btn check-in-btn disabled"
+    disabled
+    title="This reservation is expired and cannot be checked in."
+  >
+    Expired
+  </button>
+) : null}
+
                             {(guest.status === "Checked in" || guest.status === "Checked-in") && (
                               <button 
                                 className="action-btn check-out-btn"

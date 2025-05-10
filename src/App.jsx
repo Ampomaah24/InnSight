@@ -1,9 +1,9 @@
 import React, { useEffect } from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { UserProvider } from "./context/UserContext.jsx";
-import { BookingProvider } from "./components/BookingContext.jsx"; // Import the BookingProvider
+import { BookingProvider } from "./components/BookingContext.jsx";
 import SessionTimeoutService from "./services/SessionTimeoutService"; 
-import RoomManagement from "./pages/RoomManagement";
+import SessionTimeoutWarning from "./components/SessionTimeoutWarning";
 
 // Import all your pages
 import Homepage from "./pages/Homepage";
@@ -34,31 +34,29 @@ import Bills from './pages/Bills';
 import Pickup from './pages/Pickup';
 import ContactUs from "./pages/ContactUs";
 import GuestBills from "./pages/GuestBills";
-import SessionTimeoutWarning from "./components/SessionTimeoutWarning";
+import RoomManagement from "./pages/RoomManagement";
 import UserRegistration from './pages/UserRegistration';
 import BookingHistory from './pages/BookingHistory';
 
 const App = () => {
   useEffect(() => {
-    // Initialize the SessionTimeoutService with custom values
-    // This is the ONLY timeout mechanism now - 20 minutes timeout, 1 minute warning
+    // Initialize the SessionTimeoutService with custom values (20 minutes timeout, 1 minute warning)
     const sessionTimeoutService = new SessionTimeoutService(20, 1);
     
-    // Modify the timeout behavior to prevent redirect to the previous page
-    const originalHandleSessionTimeout = sessionTimeoutService.handleSessionTimeout;
-    
-    // Override the timeout handler to clear stored redirect path
-    sessionTimeoutService.handleSessionTimeout = () => {
-      // Clear any stored redirect paths first
-      localStorage.removeItem('redirectAfterLogin');
-      
-      // Then call the original handler which will handle logout and redirect
-      originalHandleSessionTimeout.call(sessionTimeoutService);
-    };
+    // Store a reference to the service instance for cleanup
+    const serviceInstance = sessionTimeoutService;
     
     // Clean up on component unmount
     return () => {
-      sessionTimeoutService.clearTimeouts();
+      // Call the clearTimeouts method directly from the instance
+      if (serviceInstance) {
+        serviceInstance.clearTimeouts();
+        
+        // If you have a destroy method from our updated service, call it
+        if (typeof serviceInstance.destroy === 'function') {
+          serviceInstance.destroy();
+        }
+      }
     };
   }, []);
 
@@ -66,6 +64,7 @@ const App = () => {
     <UserProvider>
       <BookingProvider>
         <Router>
+          {/* The SessionTimeoutWarning component should be rendered here */}
           <SessionTimeoutWarning />
           
           <Routes>

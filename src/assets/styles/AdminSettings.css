@@ -1,465 +1,493 @@
-
-.main-content {
-    padding: 1.5rem;
-    background-color: #f8f9fa;
-  }
-  
-  .page-header {
-    margin-bottom: 1.5rem;
-  }
-  
-  .page-title {
-    font-size: 1.75rem;
-    font-weight: 700;
-    color: #333;
-    position: relative;
-    display: inline-block;
-    padding-bottom: 0.5rem;
-    margin-bottom: 0.25rem;
-  }
-  
-  .page-title::after {
-    content: '';
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    width: 3.125rem;
-    height: 0.1875rem;
-    background-color: #DB6C24;
-  }
-  
-  .page-subtitle {
-    color: #666;
-    margin-top: 0;
-    font-size: 1rem;
-  }
-  
-
-  .notification {
-    margin-bottom: 1rem;
-    padding: 0.75rem 1rem;
-    border-radius: 0.5rem;
-    font-weight: 500;
-    animation: fadeIn 0.3s ease-in-out;
-  }
-  
-  .notification.success {
-    background-color: #e6f4ea;
-    color: #34a853;
-  }
-  
-  .notification.error {
-    background-color: #fce8e6;
-    color: #ea4335;
-  }
-  
-  @keyframes fadeIn {
-    from { opacity: 0; transform: translateY(-0.5rem); }
-    to { opacity: 1; transform: translateY(0); }
-  }
-  
-  .settings-tabs {
-    display: flex;
-    overflow-x: auto;
-    border-bottom: 1px solid #e0e0e0;
-    margin-bottom: 1.5rem;
-  }
-  
-  .settings-tab {
-    padding: 0.75rem 1.5rem;
-    font-weight: 600;
-    color: #666;
-    cursor: pointer;
-    position: relative;
-    white-space: nowrap;
-    transition: color 0.2s ease;
-  }
-  
-  .settings-tab:hover {
-    color: #DB6C24;
-  }
-  
-  .settings-tab.active {
-    color: #DB6C24;
-  }
-  
-  .settings-tab.active::after {
-    content: '';
-    position: absolute;
-    bottom: -1px;
-    left: 0;
-    width: 100%;
-    height: 3px;
-    background-color: #DB6C24;
-  }
-  
-  
-  .settings-content {
-    background-color: white;
-    border-radius: 0.75rem;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-    overflow: hidden;
-  }
-  
-  .settings-loading {
-    text-align: center;
-    padding: 2rem;
-    color: #666;
-    font-style: italic;
-  }
-  
-
-  .settings-panel {
-    padding: 1.5rem;
-  }
-  
-  .panel-title {
-    font-size: 1.25rem;
-    font-weight: 600;
-    color: #333;
-    margin-bottom: 1.5rem;
-    padding-bottom: 0.75rem;
-    border-bottom: 1px solid #eee;
-  }
-  
-  .section-title {
-    font-weight: 600;
-    color: #555;
-    margin: 1.5rem 0 0.75rem 0;
-    font-size: 1rem;
-  }
-  
-
-  .settings-form {
-    margin-bottom: 1.5rem;
-  }
-  
-  .form-row {
-    display: flex;
-    gap: 1.5rem;
-    margin-bottom: 1rem;
-    flex-wrap: wrap;
-  }
-  
-  .form-group {
-    flex: 1;
-    min-width: 250px;
-  }
-  
-  .form-group.full-width {
-    width: 100%;
-    flex-basis: 100%;
-  }
-  
-  .form-group label {
-    display: block;
-    margin-bottom: 0.5rem;
-    font-weight: 500;
-    color: #555;
-  }
-  
-  .form-group small {
-    display: block;
-    color: #888;
-    font-size: 0.8rem;
-    margin-top: 0.25rem;
-  }
-  
-  .form-group input:not([type="checkbox"]),
-  .form-group select,
-  .form-group textarea {
-    width: 100%;
-    padding: 0.75rem 1rem;
-    border: 1px solid #e0e0e0;
-    border-radius: 0.5rem;
-    font-size: 0.95rem;
-    color: #333;
-    background-color: white;
-    transition: border-color 0.2s ease, box-shadow 0.2s ease;
-  }
-  
-  .form-group input:focus,
-  .form-group select:focus,
-  .form-group textarea:focus {
-    outline: none;
-    border-color: #DB6C24;
-    box-shadow: 0 0 0 3px rgba(219, 108, 36, 0.1);
-  }
-  
-  .form-group textarea {
-    resize: vertical;
-    min-height: 80px;
-  }
-  
-
-  .checkbox-group {
-    display: flex;
-    align-items: center;
-  }
-  
-  .checkbox-group label {
-    display: flex;
-    align-items: center;
-    cursor: pointer;
-    margin-bottom: 0;
-  }
-  
-  .checkbox-group input[type="checkbox"] {
-    width: 1.125rem;
-    height: 1.125rem;
-    margin-right: 0.5rem;
-    cursor: pointer;
-  }
-  
-
-  .settings-actions {
-    display: flex;
-    justify-content: flex-end;
-    gap: 1rem;
-    margin-top: 1.5rem;
-    padding-top: 1rem;
-    border-top: 1px solid #eee;
-  }
-  
-  .save-button,
-  .add-button {
-    padding: 0.75rem 1.25rem;
-    border-radius: 0.5rem;
-    font-size: 0.95rem;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    border: none;
-  }
-  
-  .save-button {
-    background-color: #DB6C24;
-    color: white;
-  }
-  
-  .save-button:hover:not(:disabled) {
-    background-color: #c45c1c;
-  }
-  
-  .save-button:disabled {
-    background-color: #e9c3a8;
-    cursor: not-allowed;
-  }
-  
-  .add-button {
-    background-color: #f1f3f4;
-    color: #555;
-  }
-  
-  .add-button:hover {
-    background-color: #e8eaed;
-  }
-  
- 
-  .promotions-list,
-  .seasonal-list {
-    display: flex;
-    flex-direction: column;
-    gap: 1.5rem;
-    margin-bottom: 1.5rem;
-  }
-  
-  .promotion-card,
-  .season-card {
-    border: 1px solid #e0e0e0;
-    border-radius: 0.75rem;
-    overflow: hidden;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-  }
-  
-  .promotion-header,
-  .season-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    background-color: #f5f7fa;
-    padding: 1rem;
-    border-bottom: 1px solid #e0e0e0;
-  }
-  
-  .promotion-name,
-  .season-name {
-    font-weight: 600;
-    font-size: 1.1rem;
-    border: none;
-    background: transparent;
-    color: #333;
-    padding: 0.25rem;
-    border-radius: 0.25rem;
-    flex: 1;
-  }
-  
-  .promotion-name:focus,
-  .season-name:focus {
-    outline: none;
-    background-color: white;
-    box-shadow: 0 0 0 2px rgba(219, 108, 36, 0.2);
-  }
-  
-  .promotion-body,
-  .season-body {
-    padding: 1rem;
-  }
-  
-  .remove-btn {
-    background-color: #fce8e6;
-    color: #ea4335;
-    border: none;
-    padding: 0.5rem 0.75rem;
-    border-radius: 0.375rem;
-    font-size: 0.85rem;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.2s ease;
-  }
-  
-  .remove-btn:hover {
-    background-color: #ea4335;
-    color: white;
-  }
-  
-
-  .empty-state {
-    text-align: center;
-    padding: 2rem;
-    color: #888;
-    font-style: italic;
-    background-color: #f9f9f9;
-    border-radius: 0.5rem;
-    border: 1px dashed #ddd;
-  }
-
-
-.database-error-banner {
-    background-color: #fff3cd;
-    color: #856404;
-    padding: 10px 15px;
-    border-radius: 4px;
-    margin-bottom: 15px;
-    border-left: 4px solid #ffeeba;
-    font-weight: 500;
-  }
-  
-  .user-role-indicator {
-    position: absolute;
-    top: 10px;
-    right: 15px;
-    font-size: 14px;
-    color: #6c757d;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-  }
-  
-  .permission-badge {
-    font-size: 12px;
-    padding: 2px 8px;
-    border-radius: 10px;
-    font-weight: 600;
-  }
-  
-  .permission-badge.success {
-    background-color: #d4edda;
-    color: #155724;
-  }
-  
-  .permission-badge.warning {
-    background-color: #fff3cd;
-    color: #856404;
-  }
-  
-  .permission-notice {
-    color: #721c24;
-    font-size: 14px;
-    margin-left: 15px;
-    font-style: italic;
-    align-self: center;
-  }
-  
-  .settings-actions {
-    display: flex;
-    align-items: center;
-    margin-top: 20px;
-  }
-  
-  .save-button {
-    background-color: #e4822a;
-    color: white;
-    border: none;
-    padding: 10px 20px;
-    border-radius: 5px;
-    cursor: pointer;
-    font-weight: 500;
-    transition: background-color 0.2s ease;
-  }
-  
-  .save-button:hover:not(:disabled) {
-    background-color: #d16f18;
-  }
-  
-  .save-button:disabled {
-    background-color: #f0cca5;
-    cursor: not-allowed;
-  }
-  
-  .add-button {
-    background-color: #6c757d;
-    color: white;
-    border: none;
-    padding: 10px 15px;
-    border-radius: 5px;
-    cursor: pointer;
-    margin-right: 10px;
-    transition: background-color 0.2s ease;
-  }
-  
-  .add-button:hover:not(:disabled) {
-    background-color: #5a6268;
-  }
-  
-  .add-button:disabled {
-    background-color: #d8dbe0;
-    cursor: not-allowed;
-  }
-  
-
-  input:disabled, 
-  select:disabled, 
-  textarea:disabled {
-    background-color: #f8f9fa;
-    cursor: not-allowed;
-    opacity: 0.8;
-    border-color: #dee2e6;
-  }
-  
-  .promotion-card input:disabled,
-  .promotion-card textarea:disabled,
-  .season-card input:disabled {
-    background-color: #f8f9fa;
-    cursor: not-allowed;
-  }
-  
-  .remove-btn:disabled {
-    background-color: #e9ecef;
-    color: #adb5bd;
-    cursor: not-allowed;
-  }
-
-.view-only-banner {
-  background-color: #f8f9fa;
-  border-left: 4px solid #6c757d;
-  padding: 10px 15px;
-  margin-bottom: 20px;
-  color: #495057;
-  font-size: 0.9rem;
-  border-radius: 4px;
+.dashboard-container {
+  display: flex;
+  min-height: 100vh;
+  font-family: 'Poppins', sans-serif;
+  color: #333;
+margin-left: 9rem;
+  position: relative;
+  width: 100%;
+  overflow-x: hidden; 
 }
 
+.sidebar {
+  width: 14.5rem;
+  height: 100vh;
+  background: white;
+  padding: 1.5rem 0;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 0 0.625rem rgba(0, 0, 0, 0.05);
+  position: fixed;
+  left: 0;
+  top: 0;
+  overflow-y: auto;
+  z-index: 100;
+  transform: translateX(0);
+  transition: transform 0.3s ease;
+  flex-shrink: 0; /* Prevent sidebar from shrinking */
+}
+
+.main-content {
+  flex: 1;
+  margin-left: 14.5rem; /* Match sidebar width */
+  padding: 1.75rem 2rem;
+  width: calc(100% - 14.5rem); /* Set exact width accounting for sidebar */
+  max-width: 100%; /* Prevent overflow beyond container width */
+  box-sizing: border-box; /* Include padding in width calculation */
+  background-color: #fff;
+  overflow-x: hidden; /* Prevent content from overflowing */
+}
+
+/* Admin Settings Page Header */
+.page-header {
+  margin-bottom: 2rem;
+  position: relative;
+}
+
+.page-title {
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: #333;
+  position: relative;
+  display: inline-block;
+  padding-bottom: 0.5rem;
+  margin-bottom: 0.375rem;
+}
+
+.page-title::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 3.125rem;
+  height: 0.1875rem;
+  background-color: #DB6C24;
+  border-radius: 0.125rem;
+}
+
+.page-subtitle {
+  color: #666;
+  margin-top: 0;
+  font-size: 1rem;
+  max-width: 36rem;
+}
+
+/* View-Only Banner */
+.view-only-banner {
+  background-color: #f8f9fa;
+  border-left: 0.25rem solid #6c757d;
+  padding: 0.875rem 1.25rem;
+  margin: 1.5rem 0;
+  color: #495057;
+  font-size: 0.9375rem;
+  border-radius: 0.375rem;
+  display: flex;
+  align-items: center;
+  box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.03);
+}
+
+.view-only-banner strong {
+  margin-right: 0.5rem;
+  color: #4a5568;
+}
+
+/* Database Error Banner */
+.database-error-banner {
+  background-color: #fff3cd;
+  color: #856404;
+  padding: 0.875rem 1.25rem;
+  border-radius: 0.375rem;
+  margin: 1.5rem 0;
+  border-left: 0.25rem solid #ffeeba;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+}
+
+/* Notifications */
+.notification {
+  margin-bottom: 1.5rem;
+  padding: 0.875rem 1.25rem;
+  border-radius: 0.5rem;
+  font-weight: 500;
+  font-size: 0.9375rem;
+  animation: fadeIn 0.3s ease-in-out;
+  box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.05);
+  display: flex;
+  align-items: center;
+}
+
+.notification.success {
+  background-color: #e6f4ea;
+  color: #34a853;
+  border-left: 0.25rem solid #34a853;
+}
+
+.notification.error {
+  background-color: #fce8e6;
+  color: #ea4335;
+  border-left: 0.25rem solid #ea4335;
+}
+
+.notification.warning {
+  background-color: #fff3cd;
+  color: #856404;
+  border-left: 0.25rem solid #f5c518;
+}
+
+.notification.info {
+  background-color: #e8f0fe;
+  color: #1a73e8;
+  border-left: 0.25rem solid #1a73e8;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-0.5rem); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Tabs Navigation */
+.settings-tabs {
+  display: flex;
+  overflow-x: auto;
+  border-bottom: 0.0625rem solid #e0e0e0;
+  margin-bottom: 1.5rem;
+  padding-bottom: 0;
+  scrollbar-width: none; /* Firefox */
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+.settings-tabs::-webkit-scrollbar {
+  display: none; /* Chrome, Safari, Edge */
+}
+
+.settings-tab {
+  padding: 0.875rem 1.5rem;
+  font-weight: 600;
+  font-size: 0.9375rem;
+  color: #666;
+  cursor: pointer;
+  position: relative;
+  white-space: nowrap;
+  transition: color 0.2s ease;
+  margin-right: 0.5rem;
+}
+
+.settings-tab:hover {
+  color: #DB6C24;
+}
+
+.settings-tab.active {
+  color: #DB6C24;
+}
+
+.settings-tab.active::after {
+  content: '';
+  position: absolute;
+  bottom: -0.0625rem;
+  left: 0;
+  width: 100%;
+  height: 0.1875rem;
+  background-color: #DB6C24;
+  border-radius: 0.125rem 0.125rem 0 0;
+}
+
+/* Settings Content Container */
+.settings-content {
+  background-color: white;
+  border-radius: 0.75rem;
+  box-shadow: 0 0.125rem 0.5rem rgba(0, 0, 0, 0.05);
+  overflow: hidden;
+  max-width: 100%; /* Ensure it doesn't overflow its container */
+  box-sizing: border-box; /* Include padding in width calculation */
+}
+
+.settings-loading {
+  text-align: center;
+  padding: 3rem;
+  color: #666;
+  font-style: italic;
+}
+
+/* Panel Styling */
+.settings-panel {
+  padding: 1.75rem;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+  overflow-x: hidden; /* Prevent content from overflowing */
+}
+
+.panel-title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 1.75rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 0.0625rem solid #eeeeee;
+}
+
+.section-title {
+  font-weight: 600;
+  color: #555;
+  margin: 1.75rem 0 0.875rem 0;
+  font-size: 1rem;
+}
+
+/* Form Styling */
+.settings-form {
+  margin-bottom: 1.75rem;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+.form-row {
+  display: flex;
+  gap: 1.5rem;
+  margin-bottom: 1.25rem;
+  flex-wrap: wrap;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+.form-group {
+  flex: 1;
+  min-width: 15.625rem;
+  max-width: 100%; /* Prevent overflow */
+  box-sizing: border-box;
+}
+
+.form-group.full-width {
+  width: 100%;
+  flex-basis: 100%;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-weight: 500;
+  color: #555;
+  font-size: 0.9375rem;
+}
+
+.form-group small {
+  display: block;
+  color: #888;
+  font-size: 0.8125rem;
+  margin-top: 0.375rem;
+}
+
+.form-group input:not([type="checkbox"]),
+.form-group select,
+.form-group textarea {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  border: 0.0625rem solid #e0e0e0;
+  border-radius: 0.5rem;
+  font-size: 0.9375rem;
+  color: #333;
+  background-color: white;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus {
+  outline: none;
+  border-color: #DB6C24;
+  box-shadow: 0 0 0 0.1875rem rgba(219, 108, 36, 0.1);
+}
+
+.form-group textarea {
+  resize: vertical;
+  min-height: 5rem;
+}
+
+/* Checkbox Styling */
+.checkbox-group {
+  display: flex;
+  align-items: center;
+  margin-top: 0.5rem;
+}
+
+.checkbox-group label {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  margin-bottom: 0;
+}
+
+.checkbox-group input[type="checkbox"] {
+  width: 1.125rem;
+  height: 1.125rem;
+  margin-right: 0.5rem;
+  cursor: pointer;
+  position: relative;
+  top: -0.0625rem;
+}
+
+/* Button Styling */
+.settings-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 1rem;
+  margin-top: 1.75rem;
+  padding-top: 1.25rem;
+  border-top: 0.0625rem solid #eee;
+}
+
+.save-button,
+.add-button {
+  padding: 0.75rem 1.5rem;
+  border-radius: 0.5rem;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: none;
+}
+
+.save-button {
+  background-color: #DB6C24;
+  color: white;
+}
+
+.save-button:hover:not(:disabled) {
+  background-color: #c45c1c;
+}
+
+.save-button:disabled {
+  background-color: #e9c3a8;
+  cursor: not-allowed;
+}
+
+.add-button {
+  background-color: #f1f3f4;
+  color: #555;
+}
+
+.add-button:hover {
+  background-color: #e8eaed;
+}
+
+/* Card Styling for Promotions and Seasonal */
+.promotions-list,
+.seasonal-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  margin-bottom: 1.75rem;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+.promotion-card,
+.season-card {
+  border: 0.0625rem solid #e0e0e0;
+  border-radius: 0.75rem;
+  overflow: hidden;
+  box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.05);
+  transition: box-shadow 0.2s ease;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+.promotion-card:hover,
+.season-card:hover {
+  box-shadow: 0 0.25rem 0.5rem rgba(0, 0, 0, 0.08);
+}
+
+.promotion-header,
+.season-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background-color: #f5f7fa;
+  padding: 1rem 1.25rem;
+  border-bottom: 0.0625rem solid #e0e0e0;
+}
+
+.promotion-name,
+.season-name {
+  font-weight: 600;
+  font-size: 1.1rem;
+  border: none;
+  background: transparent;
+  color: #333;
+  padding: 0.25rem;
+  border-radius: 0.25rem;
+  flex: 1;
+}
+
+.promotion-name:focus,
+.season-name:focus {
+  outline: none;
+  background-color: white;
+  box-shadow: 0 0 0 0.125rem rgba(219, 108, 36, 0.2);
+}
+
+.promotion-body,
+.season-body {
+  padding: 1.25rem;
+}
+
+.remove-btn {
+  background-color: #fce8e6;
+  color: #ea4335;
+  border: none;
+  padding: 0.5rem 0.75rem;
+  border-radius: 0.375rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.remove-btn:hover {
+  background-color: #ea4335;
+  color: white;
+}
+
+/* Empty State Styling */
+.empty-state {
+  text-align: center;
+  padding: 3rem 2rem;
+  color: #888;
+  font-style: italic;
+  background-color: #f9f9f9;
+  border-radius: 0.5rem;
+  border: 0.0625rem dashed #ddd;
+  margin: 1rem 0;
+}
+
+/* View-Only Styling */
+input:disabled, 
+select:disabled, 
+textarea:disabled {
+  background-color: #f8f9fa;
+  cursor: not-allowed;
+  opacity: 0.8;
+  border-color: #dee2e6;
+}
+
+.promotion-card input:disabled,
+.promotion-card textarea:disabled,
+.season-card input:disabled {
+  background-color: #f8f9fa;
+  cursor: not-allowed;
+}
+
+.remove-btn:disabled {
+  background-color: #e9ecef;
+  color: #adb5bd;
+  cursor: not-allowed;
+}
 
 .readonly {
   background-color: #f8f9fa !important;
@@ -488,23 +516,88 @@ textarea.readonly {
 .readonly:hover {
   border-color: #dee2e6 !important;
   box-shadow: none !important;
-} 
-  .checkbox-group input:disabled + span {
-    color: #6c757d;
+}
+
+.checkbox-group input:disabled + span {
+  color: #6c757d;
+}
+
+/* Responsive Styling */
+@media (max-width: 62rem) {
+  .main-content {
+    padding: 1.5rem;
   }
- 
-  @media (max-width: 768px) {
-    .settings-tabs {
-      flex-wrap: nowrap;
-      overflow-x: auto;
-    }
-    
-    .form-row {
-      flex-direction: column;
-      gap: 1rem;
-    }
-    
-    .form-group {
-      min-width: 100%;
-    }
+  
+  .settings-panel {
+    padding: 1.5rem;
   }
+}
+
+@media (max-width: 48rem) {
+  .sidebar {
+    transform: translateX(-100%);
+  }
+  
+  .sidebar.open {
+    transform: translateX(0);
+  }
+  
+  .main-content {
+    margin-left: 0;
+    padding: 1.25rem;
+    width: 100%; /* Full width when sidebar is hidden */
+  }
+  
+  .settings-tabs {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    margin-bottom: 1.25rem;
+  }
+  
+  .settings-tab {
+    padding: 0.75rem 1rem;
+  }
+  
+  .form-row {
+    flex-direction: column;
+    gap: 1rem;
+  }
+  
+  .form-group {
+    min-width: 100%;
+  }
+  
+  .settings-panel {
+    padding: 1.25rem;
+  }
+}
+
+/* Sidebar Toggle Button */
+.sidebar-toggle {
+  position: fixed;
+  top: 1rem;
+  left: 1rem;
+  z-index: 200;
+  background: #DB6C24;
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 2.5rem;
+  height: 2.5rem;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.1);
+  transition: background-color 0.2s ease;
+}
+
+.sidebar-toggle:hover {
+  background: #c45c1c;
+}
+
+@media (max-width: 48rem) {
+  .sidebar-toggle {
+    display: flex;
+  }
+}

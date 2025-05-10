@@ -1,0 +1,213 @@
+/* Notifications.css - Styling for the notifications component */
+
+.notifications-wrapper {
+    position: relative;
+    display: inline-block;
+  }
+  
+  .notification-bell {
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    position: relative;
+    font-size: 1.5rem;
+    padding: 0.25rem;
+    border-radius: 50%;
+    width: 2.5rem;
+    height: 2.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background-color 0.2s;
+  }
+  
+  .notification-bell:hover {
+    background-color: rgba(0, 0, 0, 0.05);
+  }
+  
+  .notification-bell.has-notifications {
+    animation: bell-shake 2s ease infinite;
+  }
+  
+  .notification-icon {
+    font-style: normal;
+  }
+  
+  .notification-badge {
+    position: absolute;
+    top: 0;
+    right: 0;
+    background-color: #e53e3e;
+    color: white;
+    font-size: 0.75rem;
+    border-radius: 50%;
+    width: 1.25rem;
+    height: 1.25rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  .notifications-dropdown {
+    position: absolute;
+    top: calc(100% + 0.5rem);
+    right: 0;
+    width: 20rem;
+    max-height: 25rem;
+    overflow-y: auto;
+    background-color: white;
+    border-radius: 0.5rem;
+    box-shadow: 0 0.25rem 1rem rgba(0, 0, 0, 0.1);
+    z-index: 100;
+    border: 1px solid #e2e8f0;
+  }
+  
+  .notifications-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.75rem 1rem;
+    border-bottom: 1px solid #e2e8f0;
+  }
+  
+  .notifications-header h3 {
+    font-size: 1rem;
+    font-weight: 600;
+    margin: 0;
+    color: #1a202c;
+  }
+  
+  .mark-all-read {
+    background: transparent;
+    border: none;
+    color: #4f46e5;
+    font-size: 0.75rem;
+    cursor: pointer;
+    padding: 0.25rem 0.5rem;
+    border-radius: 0.25rem;
+    transition: background-color 0.2s;
+  }
+  
+  .mark-all-read:hover {
+    background-color: rgba(79, 70, 229, 0.1);
+  }
+  
+  .notifications-content {
+    padding: 0.75rem 0;
+  }
+  
+  .loading-spinner-small {
+    border: 0.125rem solid #e2e8f0;
+    border-radius: 50%;
+    border-top: 0.125rem solid #4f46e5;
+    width: 1.25rem;
+    height: 1.25rem;
+    animation: spin 1s linear infinite;
+    margin: 1rem auto;
+  }
+  
+  .empty-notifications {
+    padding: 1.5rem;
+    text-align: center;
+    color: #718096;
+  }
+  
+  .reminders-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+  
+  .reminder-item {
+    padding: 0.75rem 1rem;
+    border-bottom: 1px solid #f3f4f6;
+    cursor: pointer;
+    transition: background-color 0.2s;
+    position: relative;
+  }
+  
+  .reminder-item:last-child {
+    border-bottom: none;
+  }
+  
+  .reminder-item:hover {
+    background-color: #f8fafc;
+  }
+  
+  .reminder-time-badge {
+    position: absolute;
+    top: 0.75rem;
+    right: 1rem;
+    background-color: #fee2e2;
+    color: #b91c1c;
+    font-size: 0.75rem;
+    font-weight: 500;
+    padding: 0.25rem 0.5rem;
+    border-radius: 0.25rem;
+  }
+  
+  .reminder-content {
+    padding-right: 5rem;
+  }
+  
+  .reminder-content h4 {
+    font-size: 0.875rem;
+    font-weight: 600;
+    margin: 0 0 0.5rem;
+    color: #1a202c;
+  }
+  
+  .reminder-content p {
+    font-size: 0.75rem;
+    margin: 0.25rem 0;
+    color: #4a5568;
+  }
+  
+  @keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+  }
+  
+  @keyframes bell-shake {
+    0% { transform: rotate(0); }
+    5% { transform: rotate(10deg); }
+    10% { transform: rotate(-10deg); }
+    15% { transform: rotate(5deg); }
+    20% { transform: rotate(-5deg); }
+    25% { transform: rotate(0); }
+    100% { transform: rotate(0); }
+  }
+  
+  /* Responsive styles */
+  @media (max-width: 768px) {
+    .notifications-dropdown {
+      width: 100%;
+      max-width: 18rem;
+      right: -3rem;
+    }
+    
+    .reminder-content {
+      padding-right: 4rem;
+    }
+    
+    .reminder-time-badge {
+      font-size: 0.7rem;
+      padding: 0.2rem 0.4rem;
+    }
+  }
+  
+  @media (max-width: 480px) {
+    .notifications-dropdown {
+      width: 90vw;
+      max-width: none;
+      right: -5rem;
+    }
+    
+    .reminder-content h4 {
+      font-size: 0.8rem;
+    }
+    
+    .reminder-content p {
+      font-size: 0.7rem;
+    }
+  }

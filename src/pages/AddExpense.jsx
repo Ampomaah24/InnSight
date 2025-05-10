@@ -175,9 +175,7 @@ const AddExpense = () => {
               </button>
             </form>
             
-            <div className="form-help-text">
-              <p>All expenses are recorded in Ghana Cedis (GHS) and will appear in the inflow and outflow report.</p>
-            </div>
+         
           </div>
         </div>
       </div>

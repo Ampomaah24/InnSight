@@ -7,7 +7,6 @@ const PaymentModal = ({ show, onHide, guest, paymentType, amount, onPaymentCompl
   const [paymentMethod, setPaymentMethod] = useState('Cash');
   const [reference, setReference] = useState('');
   const [processingPayment, setProcessingPayment] = useState(false);
-  const [printReceipt, setPrintReceipt] = useState(true);
   const [emailReceipt, setEmailReceipt] = useState(false);
   const [guestEmail, setGuestEmail] = useState('');
   
@@ -100,40 +99,64 @@ const PaymentModal = ({ show, onHide, guest, paymentType, amount, onPaymentCompl
         // Commit the batch
         await batch.commit();
       } else if (paymentType === 'extension') {
-        // Update extension charges
-        // First, get all extension orders
-        const extensionOrders = guest.foodOrders.filter(order => 
+        const extensionOrders = guest.foodOrders.filter(order =>
           order.type === "extension" || 
           (order.description && order.description.toLowerCase().includes("extension"))
         );
-        
-        // Update each order to mark as paid
+      
+        const db = getFirestore();
+        const bookingRef = doc(db, "bookings", guest.id);
+        const transactionIds = new Set();
+      
+        // Collect all related transaction IDs
         for (const order of extensionOrders) {
-          if (order.id) {
-            const orderRef = doc(db, "orders", order.id);
-            batch.update(orderRef, { 
-              paid: true, 
-              paymentId: paymentRef.id,
-              paidAt: new Date(),
-              paymentMethod: paymentMethod
+          if (order.transactionId) {
+            transactionIds.add(order.transactionId);
+          }
+        }
+      
+        // ✅ Update each transaction
+        for (const transactionId of transactionIds) {
+          const transRef = doc(db, "transactions", transactionId);
+          batch.update(transRef, {
+            paymentStatus: "Paid",
+            paidDate: new Date(),
+            paymentId: paymentRef.id,
+            paymentMethod: paymentMethod
+          });
+        }
+      
+        // ✅ Clear inline extensionCharges from booking
+        batch.update(bookingRef, {
+          extensionCharges: [],
+          lastPaymentDate: new Date(),
+          lastPaymentId: paymentRef.id
+        });
+      
+        // ✅ Optionally mark extensionHistory as paid
+        const bookingDocSnap = await getDocs(query(collection(db, "bookings"), where("id", "==", guest.id)));
+        if (!bookingDocSnap.empty) {
+          const bookingDoc = bookingDocSnap.docs[0];
+          const bookingData = bookingDoc.data();
+      
+          if (bookingData.extensionHistory?.length > 0) {
+            const updatedHistory = bookingData.extensionHistory.map(entry => ({
+              ...entry,
+              paid: true,
+              paidDate: new Date(),
+              paymentId: paymentRef.id
+            }));
+      
+            batch.update(bookingRef, {
+              extensionHistory: updatedHistory
             });
           }
         }
-        
-        // Clear extension charges from booking document
-        const bookingRef = doc(db, "bookings", guest.id);
-        batch.update(bookingRef, {
-          extensionCharges: []
-        });
-        
-        // Commit the batch
+      
         await batch.commit();
       }
       
-      // Handle receipt printing if selected
-      if (printReceipt) {
-        generateReceipt(guest, paymentType, amount, paymentMethod, reference);
-      }
+      
       
       // Handle email receipt if selected
       if (emailReceipt) {
@@ -195,95 +218,7 @@ const PaymentModal = ({ show, onHide, guest, paymentType, amount, onPaymentCompl
     }
   };
   
-  const generateReceipt = (guest, type, amount, method, reference) => {
-    const printWindow = window.open('', '_blank');
-    const hotelName = "Ampomaah Tourist Hotel"; // Hotel name
-    
-    const content = `
-      <html>
-      <head>
-        <title>Payment Receipt - ${guest.name}</title>
-        <style>
-          body { font-family: Arial, sans-serif; margin: 0; padding: 20px; }
-          .header { text-align: center; margin-bottom: 30px; }
-          .hotel-name { font-size: 24px; font-weight: bold; }
-          .document-title { font-size: 18px; text-transform: uppercase; margin-top: 5px; }
-          .details { margin-bottom: 20px; }
-          .details-row { display: flex; justify-content: space-between; padding: 5px 0; }
-          .details-label { font-weight: bold; }
-          .payment-info { border: 1px solid #ddd; padding: 15px; margin: 20px 0; }
-          .payment-title { font-weight: bold; margin-bottom: 10px; }
-          .footer { margin-top: 40px; font-size: 12px; text-align: center; }
-        </style>
-      </head>
-      <body>
-        <div class="header">
-          <div class="hotel-name">${hotelName}</div>
-          <div class="document-title">Payment Receipt</div>
-        </div>
-        
-        <div class="details">
-          <div class="details-row">
-            <span class="details-label">Guest Name:</span>
-            <span>${guest.name}</span>
-          </div>
-          <div class="details-row">
-            <span class="details-label">Room:</span>
-            <span>${guest.room} ${guest.roomName ? `(${guest.roomName})` : ''}</span>
-          </div>
-          <div class="details-row">
-            <span class="details-label">Receipt Date:</span>
-            <span>${new Date().toLocaleDateString()}</span>
-          </div>
-          <div class="details-row">
-            <span class="details-label">Receipt #:</span>
-            <span>REC-${Math.floor(Math.random() * 10000)}</span>
-          </div>
-        </div>
-        
-        <div class="payment-info">
-          <div class="payment-title">Payment Information</div>
-          <div class="details-row">
-            <span class="details-label">Payment Type:</span>
-            <span>${formatPaymentType(type)}</span>
-          </div>
-          <div class="details-row">
-            <span class="details-label">Payment Method:</span>
-            <span>${method}</span>
-          </div>
-          <div class="details-row">
-            <span class="details-label">Amount Paid:</span>
-            <span>$${amount.toFixed(2)}</span>
-          </div>
-          ${reference ? `
-          <div class="details-row">
-            <span class="details-label">Reference:</span>
-            <span>${reference}</span>
-          </div>
-          ` : ''}
-          <div class="details-row">
-            <span class="details-label">Status:</span>
-            <span>Paid</span>
-          </div>
-        </div>
-        
-        <div class="footer">
-          Thank you for your payment!<br>
-          ${hotelName} - Your comfort is our priority.
-        </div>
-      </body>
-      </html>
-    `;
-    
-    printWindow.document.open();
-    printWindow.document.write(content);
-    printWindow.document.close();
-    
-    // Wait for content to load before printing
-    printWindow.onload = function() {
-      printWindow.print();
-    };
-  };
+
   
   const backdropStyle = {
     position: 'fixed',
@@ -332,7 +267,7 @@ const PaymentModal = ({ show, onHide, guest, paymentType, amount, onPaymentCompl
             </div>
             <div className="summary-row total">
               <span>Amount Due:</span>
-              <span>${amount.toFixed(2)}</span>
+              <span>GHS{amount.toFixed(2)}</span>
             </div>
           </div>
           
@@ -365,16 +300,6 @@ const PaymentModal = ({ show, onHide, guest, paymentType, amount, onPaymentCompl
             </div>
             
             <div className="receipt-options">
-              <div className="form-group checkbox">
-                <input 
-                  type="checkbox" 
-                  id="printReceipt"
-                  checked={printReceipt}
-                  onChange={(e) => setPrintReceipt(e.target.checked)}
-                  disabled={processingPayment}
-                />
-                <label htmlFor="printReceipt">Print receipt</label>
-              </div>
               
               <div className="form-group checkbox">
                 <input 

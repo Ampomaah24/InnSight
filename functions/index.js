@@ -10,7 +10,7 @@ const transporter = nodemailer.createTransport({
   auth: {
     user: "juniorantwi95@gmail.com", // Replace with your actual Gmail address
     pass: "urlm gebm hskt okfw", // Replace with the app password you generated
-  },
+  }, 
 });
 
 exports.sendContactEmail = functions.https.onCall(async (data, context) => {
@@ -53,3 +53,50 @@ exports.sendContactEmail = functions.https.onCall(async (data, context) => {
     };
   }
 });
+exports.notifyMissedCheckIns = functions.pubsub.schedule("every day 07:00").timeZone("Africa/Accra").onRun(async (context) => {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  try {
+    const snapshot = await admin.firestore()
+      .collection("bookings")
+      .where("status", "==", "Confirmed")
+      .get();
+
+    const missed = snapshot.docs
+      .map(doc => ({ id: doc.id, ...doc.data() }))
+      .filter(b => {
+        let checkInDate;
+        try {
+          checkInDate = b.checkIn?.toDate?.() || new Date(b.checkIn.seconds * 1000);
+        } catch {
+          return false;
+        }
+        return checkInDate < today;
+      });
+
+    if (missed.length > 0) {
+      const emailContent = missed.map(b => {
+        const name = `${b.bookerFirstName || ""} ${b.bookerLastName || ""}`.trim();
+        const room = b.roomNumber || "Not assigned";
+        const date = b.checkIn?.toDate?.().toLocaleDateString() || "Unknown";
+        return `<li>${name} — Room: ${room} — Scheduled: ${date}</li>`;
+      }).join("");
+
+      const mailOptions = {
+        from: "juniorantwi95@gmail.com",
+        to: "juniorantwi95@gmail.com",
+        subject: "⚠️ Missed Check-ins Notification",
+        html: `<p>The following guests missed their check-in as of today:</p><ul>${emailContent}</ul>`,
+      };
+
+      await transporter.sendMail(mailOptions);
+      console.log("✅ Missed check-in notification sent.");
+    } else {
+      console.log("✅ No missed check-ins found today.");
+    }
+  } catch (error) {
+    console.error("❌ Failed to check missed check-ins:", error);
+  }
+});
+

@@ -15,6 +15,7 @@ class SessionTimeoutService {
     this.warningTimer = null;
     this.lastActivity = new Date();
     this.isActive = true; // Track if user session is active
+    this.isLoggingOut = false; // Track if logout is in progress
     
     this.setupListeners();
     SessionTimeoutService.instance = this;
@@ -66,16 +67,14 @@ class SessionTimeoutService {
   }
 
   handleUserActivity() {
-    if (!this.isActive) return; // Skip if session is already inactive
+    if (!this.isActive || this.isLoggingOut) return; // Skip if session is already inactive
     
     this.lastActivity = new Date();
-    // Add a debug log to verify activity is being tracked (can remove in production)
-    console.debug("User activity detected, resetting timeout timer");
     this.resetTimer();
   }
 
   handleVisibilityChange() {
-    if (!this.isActive) return; // Skip if session is already inactive
+    if (!this.isActive || this.isLoggingOut) return; // Skip if session is already inactive
     
     if (document.visibilityState === 'visible') {
       // When tab becomes visible again, check if session should be expired
@@ -97,7 +96,7 @@ class SessionTimeoutService {
   }
 
   checkSession() {
-    if (!this.isActive) return; // Skip if session is already inactive
+    if (!this.isActive || this.isLoggingOut) return; // Skip if session is already inactive
     
     const now = new Date();
     const inactiveTime = (now - this.lastActivity) / 1000 / 60; // in minutes
@@ -111,14 +110,13 @@ class SessionTimeoutService {
   }
 
   resetTimer() {
-    if (!this.isActive) return; // Skip if session is already inactive
+    if (!this.isActive || this.isLoggingOut) return; // Skip if session is already inactive
     
     // Update last activity time
     this.lastActivity = new Date();
     
     // Clear the existing timers
-    if (this.timer) clearTimeout(this.timer);
-    if (this.warningTimer) clearTimeout(this.warningTimer);
+    this.clearTimeouts();
     
     // Set warning timer (make sure conversion to milliseconds is correct)
     const warningTime = (this.timeoutInMinutes - this.warningInMinutes) * 60 * 1000;
@@ -138,39 +136,40 @@ class SessionTimeoutService {
   }
 
   showWarning() {
-    if (!this.isActive) return; // Skip if session is already inactive
+    if (!this.isActive || this.isLoggingOut) return; // Skip if session is already inactive
     
-    // Create and show a warning dialog
-    const warningEvent = new CustomEvent('sessionTimeout:warning', {
-      detail: {
-        timeRemaining: this.warningInMinutes * 60,
-        logoutTime: new Date(this.lastActivity.getTime() + (this.timeoutInMinutes * 60 * 1000))
-      }
-    });
-    
-    console.debug("Dispatching warning event");
-    document.dispatchEvent(warningEvent);
+    try {
+      // Create and show a warning dialog
+      const warningEvent = new CustomEvent('sessionTimeout:warning', {
+        detail: {
+          timeRemaining: this.warningInMinutes * 60,
+          logoutTime: new Date(this.lastActivity.getTime() + (this.timeoutInMinutes * 60 * 1000))
+        }
+      });
+      
+      console.debug("Dispatching warning event");
+      document.dispatchEvent(warningEvent);
+    } catch (error) {
+      console.error("Error showing warning:", error);
+      // If warning fails, proceed to logout when timeout is reached
+    }
   }
 
   async logout() {
-    if (!this.isActive) return; // Prevent multiple logouts
+    if (!this.isActive || this.isLoggingOut) return; // Prevent multiple logouts
     
-    // Mark session as inactive
+    // Mark session as inactive and logging out in progress
     this.isActive = false;
+    this.isLoggingOut = true;
     
     // Clear all timers
-    if (this.timer) clearTimeout(this.timer);
-    if (this.warningTimer) clearTimeout(this.warningTimer);
-    if (this.checkIntervalId) clearInterval(this.checkIntervalId);
+    this.clearTimeouts();
     
     try {
-      // IMPORTANT CHANGE: For timeout-based logouts, we DON'T save the current path
-      // This prevents the login page from redirecting back to previous page after timeout
+      console.debug("Logging out due to inactivity");
       
-      // We can completely remove this redirect storage for timeout-based logouts
+      // Make sure to clear any stored redirect paths
       localStorage.removeItem('redirectAfterLogin');
-      
-      console.debug("Logging out due to inactivity - no path saved for redirect");
       
       // Sign out from Firebase
       await signOut(auth);
@@ -179,51 +178,59 @@ class SessionTimeoutService {
       const logoutEvent = new CustomEvent('sessionTimeout:loggedOut');
       document.dispatchEvent(logoutEvent);
       
-      // Redirect to login page with timeout parameter
-      window.location.href = "/login?timeout=true";
+      // Add a small delay before redirecting to ensure all event listeners have processed
+      setTimeout(() => {
+        // Redirect to login page with timeout parameter
+        window.location.href = "/login?timeout=true";
+      }, 100);
     } catch (error) {
       console.error("Error signing out:", error);
+      
+      // Even if there's an error, redirect to login
+      setTimeout(() => {
+        window.location.href = "/login?timeout=true";
+      }, 100);
     }
   }
   
   // Method to manually extend session (can be called from components)
   extendSession() {
-    if (!this.isActive) return;
+    if (!this.isActive || this.isLoggingOut) return;
     console.debug("Manually extending session");
     this.resetTimer();
   }
-  // Add this method to your SessionTimeoutService
-clearTimeouts() {
-  // Clear the warning timeout
-  if (this.warningTimer) {
-    clearTimeout(this.warningTimer);
-    this.warningTimer = null;
-  }
-  
-  // Clear the logout timeout
-  if (this.timer) {
-    clearTimeout(this.timer);
-    this.timer = null;
-  }
-  
-  // Clear check interval if it exists
-  if (this.checkIntervalId) {
-    clearInterval(this.checkIntervalId);
-    this.checkIntervalId = null;
-  }
-}
-  // Method to handle regular user-initiated logouts (not timeout)
-  // This can be called from your logout buttons to preserve redirect behavior
-  async regularLogout() {
-    if (!this.isActive) return;
+
+  // Clean up all timers
+  clearTimeouts() {
+    // Clear the warning timeout
+    if (this.warningTimer) {
+      clearTimeout(this.warningTimer);
+      this.warningTimer = null;
+    }
     
-    // Mark session as inactive
+    // Clear the logout timeout
+    if (this.timer) {
+      clearTimeout(this.timer);
+      this.timer = null;
+    }
+    
+    // Clear check interval if it exists
+    if (this.checkIntervalId) {
+      clearInterval(this.checkIntervalId);
+      this.checkIntervalId = null;
+    }
+  }
+  
+  // Method to handle regular user-initiated logouts (not timeout)
+  async regularLogout() {
+    if (!this.isActive || this.isLoggingOut) return;
+    
+    // Mark session as inactive and logging out
     this.isActive = false;
+    this.isLoggingOut = true;
     
     // Clear all timers
-    if (this.timer) clearTimeout(this.timer);
-    if (this.warningTimer) clearTimeout(this.warningTimer);
-    if (this.checkIntervalId) clearInterval(this.checkIntervalId);
+    this.clearTimeouts();
     
     try {
       // For regular logouts, we don't need to store the current path
@@ -234,11 +241,33 @@ clearTimeouts() {
       // Sign out from Firebase
       await signOut(auth);
       
-      // Redirect to login page (no timeout parameter)
-      window.location.href = "/login";
+      // Add a small delay before redirecting
+      setTimeout(() => {
+        // Redirect to login page (no timeout parameter)
+        window.location.href = "/login";
+      }, 100);
     } catch (error) {
       console.error("Error signing out:", error);
+      
+      // Even if there's an error, redirect to login
+      setTimeout(() => {
+        window.location.href = "/login";
+      }, 100);
     }
+  }
+  
+  // Clean up method - should be called when the app unmounts
+  destroy() {
+    // Clear all timers
+    this.clearTimeouts();
+    
+    // Remove event listeners (only the ones we can access here)
+    document.removeEventListener('sessionTimeout:stayLoggedIn', this.resetTimer);
+    document.removeEventListener('sessionTimeout:logoutNow', this.logout);
+    document.removeEventListener('visibilitychange', this.handleVisibilityChange);
+    
+    // Reset the singleton instance
+    SessionTimeoutService.instance = null;
   }
 }
 

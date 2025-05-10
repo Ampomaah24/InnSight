@@ -10,20 +10,25 @@ const BookingConfirmation = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   
-  // Get booking info from context instead of location state
+  // Get booking info from context
   const { bookingData } = useBooking();
   
   // If no booking data in context, try to get from session storage
   const [booking, setBooking] = useState({});
   const [totalGuests, setTotalGuests] = useState(0);
   const [isDeposit, setIsDeposit] = useState(false);
+  const [isConference, setIsConference] = useState(false);
   
   useEffect(() => {
     // First check if we have booking data in context
     if (bookingData) {
-      setBooking(bookingData);
-      setTotalGuests(bookingData.numberOfGuests || 0);
-      setIsDeposit(bookingData.paymentOption === "Deposit for Reservation");
+      // Handle different data structures from room vs conference booking
+      const bookingDetails = bookingData.booking || bookingData;
+      
+      setIsConference(!!bookingData.totalAttendees || bookingDetails.numberOfAttendees > 0);
+      setBooking(bookingDetails);
+      setTotalGuests(bookingDetails.numberOfGuests || bookingData.totalAttendees || 0);
+      setIsDeposit(bookingDetails.paymentOption === "Deposit for Reservation");
       console.log("Booking data from context:", bookingData);
     } else {
       // Try to get booking data from session storage
@@ -32,7 +37,10 @@ const BookingConfirmation = () => {
       if (storedBooking) {
         const parsedBooking = JSON.parse(storedBooking);
         setBooking(parsedBooking);
-        setTotalGuests(parsedBooking.numberOfGuests || 0);
+        
+        // Check if this is a conference booking
+        setIsConference(!!parsedBooking.numberOfAttendees);
+        setTotalGuests(parsedBooking.numberOfGuests || parsedBooking.numberOfAttendees || 0);
         setIsDeposit(parsedBooking.paymentOption === "Deposit for Reservation");
       } else {
         // No booking data found
@@ -42,15 +50,18 @@ const BookingConfirmation = () => {
         return;
       }
     }
+    
+    setLoading(false);
   }, [bookingData]);
   
   useEffect(() => {
-    // Check if we have booking data, if not don't proceed
-    if (!booking.email || !booking.checkIn) {
-      if (!loading) { // Only set error if initial loading is complete
-        console.error("Missing booking information");
-        setError("Missing booking information. Please try again.");
-      }
+    // Only proceed with email if we've completed the initial loading
+    if (loading) return;
+    
+    // Check if we have minimum required booking data
+    if (!booking.email) {
+      console.error("Missing email information");
+      setError("Missing booking information. Please try again.");
       return;
     }
     
@@ -59,17 +70,27 @@ const BookingConfirmation = () => {
     
     const templateParams = {
       guest_name: `${booking.firstName || ''} ${booking.lastName || ''}`.trim() || 'Guest',
-      room_name: booking.roomNames || 'Your room',
-      room_type: booking.roomTypes || 'Standard',
+      // Handle different field names for room vs conference bookings
+      room_name: isConference ? 
+        (booking.roomTypes || 'Conference Room') : 
+        (booking.roomNames || 'Your room'),
+      room_type: isConference ? 
+        'Conference Booking' : 
+        (booking.roomTypes || 'Standard'),
       check_in: booking.checkIn ? new Date(booking.checkIn).toLocaleDateString() : 'as scheduled',
       check_out: booking.checkOut ? new Date(booking.checkOut).toLocaleDateString() : 'as scheduled',
-      guests: booking.numberOfGuests || totalGuests || 1,
+      guests: isConference ? 
+        (booking.numberOfAttendees || totalGuests || 1) + ' attendees' : 
+        (booking.numberOfGuests || totalGuests || 1) + ' guests',
       email: booking.email,
       to_email: booking.email, // this is the recipient
       amount_paid: booking.amount ? `GHS ${booking.amount.toFixed(2)}` : '',
       is_deposit: isDeposit ? 'Yes' : 'No',
-      remainder_due: isDeposit && booking.remainderDue ? `GHS ${booking.remainderDue.toFixed(2)}` : 'None'
+      remainder_due: isDeposit && booking.remainderDue ? `GHS ${booking.remainderDue.toFixed(2)}` : 'None',
+      booking_type: isConference ? 'Conference' : 'Room'
     };
+    
+    console.log("Sending email with params:", templateParams);
     
     emailjs
       .send(
@@ -82,16 +103,14 @@ const BookingConfirmation = () => {
         (result) => {
           console.log("✅ Email sent!", result.text);
           setEmailSent(true);
-          setLoading(false);
         },
         (error) => {
           console.error("❌ Email failed:", error.text);
           setEmailSent(false);
-          setLoading(false);
           // Don't show error to user, just log it - they still have their booking
         }
       );
-  }, [booking, totalGuests, isDeposit, loading]);
+  }, [booking, totalGuests, isDeposit, loading, isConference]);
   
   if (loading) {
     return (
@@ -131,10 +150,21 @@ const BookingConfirmation = () => {
         
         <div className="booking-details">
           <p><strong>Name:</strong> {booking.firstName} {booking.lastName}</p>
-          <p><strong>Room:</strong> {booking.roomNames || 'Standard Room'}</p>
+          
+          {isConference ? (
+            <>
+              <p><strong>Conference Room:</strong> {booking.roomTypes || 'Conference Room'}</p>
+              <p><strong>Attendees:</strong> {booking.numberOfAttendees || totalGuests || 1}</p>
+            </>
+          ) : (
+            <>
+              <p><strong>Room:</strong> {booking.roomNames || 'Standard Room'}</p>
+              <p><strong>Guests:</strong> {booking.numberOfGuests || totalGuests || 1}</p>
+            </>
+          )}
+          
           <p><strong>Check-in:</strong> {booking.checkIn ? new Date(booking.checkIn).toLocaleDateString() : 'As scheduled'}</p>
           <p><strong>Check-out:</strong> {booking.checkOut ? new Date(booking.checkOut).toLocaleDateString() : 'As scheduled'}</p>
-          <p><strong>Guests:</strong> {booking.numberOfGuests || totalGuests || 1}</p>
           
           {/* Payment information */}
           <p><strong>Amount Paid:</strong> GHS {booking.amount ? booking.amount.toFixed(2) : '0.00'}</p>
@@ -150,6 +180,8 @@ const BookingConfirmation = () => {
           {booking.specialRequests && (
             <p><strong>Special Requests:</strong> {booking.specialRequests}</p>
           )}
+          
+    
         </div>
         
         <div className="action-buttons">

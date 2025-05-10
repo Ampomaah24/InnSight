@@ -1,11 +1,12 @@
+// Updated Dashboard.jsx
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { collection, getDocs, query, where, Timestamp } from "firebase/firestore";
-import { db } from "../config/firebase";
+import { collection, getDocs, query, where, Timestamp, doc, getDoc } from "firebase/firestore";
+import { db, auth } from "../config/firebase";
 import Sidebar from "../components/Sidebar";
-import TopRightProfile from "../components/TopRightProfile";
+import ProfileSection from "../components/ProfileSection"; 
 import "../assets/styles/Dashboard.css";
-import "../assets/styles/TopRightProfile.css";
+
 
 // Total rooms in the hotel
 const TOTAL_ROOMS = 53;
@@ -21,6 +22,72 @@ const Dashboard = () => {
     totalRooms: TOTAL_ROOMS
   });
   const [loading, setLoading] = useState(true);
+  const [user, setUser] = useState(null); // Add user state for ProfileSection
+
+  // Fetch user data for ProfileSection
+  useEffect(() => {
+    const fetchUserProfile = async () => {
+      try {
+        // Check sessionStorage first
+        const sessionUser = sessionStorage.getItem('currentUser');
+        if (sessionUser) {
+          const parsedUser = JSON.parse(sessionUser);
+          console.log("Using user from sessionStorage:", parsedUser);
+          setUser(parsedUser);
+          return;
+        }
+        
+        // Otherwise use current auth user
+        const currentUser = auth.currentUser;
+        if (currentUser) {
+          const userDocRef = doc(db, "users", currentUser.uid);
+          const userDoc = await getDoc(userDocRef);
+          
+          if (userDoc.exists()) {
+            const userData = userDoc.data();
+            const userObj = {
+              id: currentUser.uid,
+              fname: userData.firstName || userData.fname || currentUser.displayName?.split(' ')[0] || "User",
+              lname: userData.lastName || userData.lname || currentUser.displayName?.split(' ').slice(1).join(' ') || "",
+              fullName: userData.fullName || `${userData.firstName || userData.fname || ""} ${userData.lastName || userData.lname || ""}`.trim(),
+              photoURL: userData.photoURL || currentUser.photoURL || "/images/profile-placeholder.png",
+              avatar: userData.avatar || null,
+              email: userData.email || currentUser.email
+            };
+            
+            console.log("Created user object from Firestore:", userObj);
+            setUser(userObj);
+            sessionStorage.setItem('currentUser', JSON.stringify(userObj));
+          } else {
+            // No user document, create from auth
+            const userObj = {
+              id: currentUser.uid,
+              fname: currentUser.displayName?.split(' ')[0] || "User",
+              lname: currentUser.displayName?.split(' ').slice(1).join(' ') || "",
+              fullName: currentUser.displayName || "User",
+              photoURL: currentUser.photoURL || "/images/profile-placeholder.png",
+              email: currentUser.email
+            };
+            
+            setUser(userObj);
+            sessionStorage.setItem('currentUser', JSON.stringify(userObj));
+          }
+        } else {
+          // No auth user
+          setUser({
+            fname: "Guest",
+            lname: "User",
+            fullName: "Guest User",
+            photoURL: "/images/profile-placeholder.png"
+          });
+        }
+      } catch (error) {
+        console.error("Error fetching user profile:", error);
+      }
+    };
+    
+    fetchUserProfile();
+  }, []);
 
   useEffect(() => {
     const fetchReservations = async () => {
@@ -289,10 +356,27 @@ const Dashboard = () => {
   return (
     <div className="dashboard-container">
       <Sidebar />
-      <TopRightProfile />
+      
+      {/* Add Profile Section at the top right */}
+      <div className="top-right-profile">
+        {user && (
+          <ProfileSection
+            user={user}
+            onLogout={() => {
+              auth.signOut()
+                .then(() => {
+                  sessionStorage.removeItem('currentUser');
+                  navigate('/login');
+                })
+                .catch(error => console.error("Error signing out:", error));
+            }}
+          />
+        )}
+      </div>
+      
       <div className="main-content">
         <div className="dashboard-header">
-          <h1 className="dashboard-title">InnSight</h1>
+          
           <p className="dashboard-subtitle">Overview of Activities</p>
         </div>
         

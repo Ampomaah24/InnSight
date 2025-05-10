@@ -23,7 +23,44 @@
   --spacing-lg: 2rem;
   --spacing-xl: 3rem;
 }
+/* Add these styles to your ServicesPage.css file */
 
+.availability-error {
+  color: var(--error-color);
+  background-color: rgba(231, 76, 60, 0.1);
+  border-left: 0.1875rem solid var(--error-color);
+  padding: 0.6rem 0.8rem;
+  margin: 0.5rem 0;
+  border-radius: var(--radius-sm);
+  font-size: 0.85rem;
+}
+
+.dropdown button.checking {
+  background-color: #cccccc;
+  cursor: not-allowed;
+  opacity: 0.8;
+}
+
+button.learn-more {
+  transition: var(--transition);
+}
+
+button.learn-more:disabled {
+  background-color: #cccccc;
+  cursor: not-allowed;
+  opacity: 0.8;
+}
+
+/* Animation for the checking state */
+@keyframes pulse {
+  0% { opacity: 0.6; }
+  50% { opacity: 1; }
+  100% { opacity: 0.6; }
+}
+
+.checking {
+  animation: pulse 1.5s infinite ease-in-out;
+}
 body, html {
   margin: 0;
   padding: 0;

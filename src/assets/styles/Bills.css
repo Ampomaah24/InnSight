@@ -1,7 +1,7 @@
 
 .bills-container {
   width: 100%;
-  max-width: 1400px;
+  max-width: 87.5rem;
   margin: 0 auto;
   padding: 2rem;
 }
@@ -9,14 +9,14 @@
 .bills-card {
   background-color: white;
   border-radius: 0.75rem;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  box-shadow: 0 0.25rem 0.75rem rgba(0, 0, 0, 0.08);
   overflow: hidden;
   margin-bottom: 2rem;
 }
 
 .bills-header {
   padding: 2rem 2.5rem;
-  border-bottom: 1px solid #e5e7eb;
+  border-bottom: 0.0625rem solid #e5e7eb;
   background-color: #f9fafb;
 }
 
@@ -47,7 +47,7 @@
 .search-input {
   width: 100%;
   padding: 0.75rem 1rem;
-  border: 1px solid #d1d5db;
+  border: 0.0625rem solid #d1d5db;
   border-radius: 0.5rem;
   margin-bottom: 1.5rem;
   font-size: 1rem;
@@ -57,7 +57,7 @@
 .search-input:focus {
   outline: none;
   border-color: #3b82f6;
-  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.25);
+  box-shadow: 0 0 0 0.1875rem rgba(59, 130, 246, 0.25);
 }
 
 
@@ -69,22 +69,22 @@
 }
 
 .guest-list::-webkit-scrollbar {
-  width: 8px;
+  width: 0.5rem;
 }
 
 .guest-list::-webkit-scrollbar-track {
   background: #f3f4f6;
-  border-radius: 4px;
+  border-radius: 0.25rem;
 }
 
 .guest-list::-webkit-scrollbar-thumb {
   background-color: #d1d5db;
-  border-radius: 4px;
+  border-radius: 0.25rem;
 }
 
 .guest-card {
   padding: 1.25rem;
-  border: 1px solid #e5e7eb;
+  border: 0.0625rem solid #e5e7eb;
   border-radius: 0.5rem;
   margin-bottom: 1rem;
   cursor: pointer;
@@ -94,12 +94,12 @@
 
 .guest-card:hover {
   background-color: #f9fafb;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  box-shadow: 0 0.125rem 0.5rem rgba(0, 0, 0, 0.05);
 }
 
 .guest-card.selected {
-  border: 2px solid #3b82f6;
-  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.25);
+  border: 0.125rem solid #3b82f6;
+  box-shadow: 0 0 0 0.125rem rgba(59, 130, 246, 0.25);
 }
 
 .guest-info {
@@ -124,7 +124,7 @@
 .status-badge {
   font-size: 0.75rem;
   padding: 0.35rem 0.7rem;
-  border-radius: 9999px;
+  border-radius: 624.9375rem;
   font-weight: 500;
   letter-spacing: 0.02em;
 }
@@ -172,7 +172,7 @@
 
 .bill-details {
   background-color: white;
-  border: 1px solid #e5e7eb;
+  border: 0.0625rem solid #e5e7eb;
   border-radius: 0.5rem;
   overflow: hidden;
   height: 100%;
@@ -180,7 +180,7 @@
 
 .guest-header {
   padding: 1.75rem 2rem;
-  border-bottom: 1px solid #e5e7eb;
+  border-bottom: 0.0625rem solid #e5e7eb;
   background-color: #f9fafb;
 }
 
@@ -192,7 +192,7 @@
 
 .tab-nav {
   display: flex;
-  border-bottom: 1px solid #e5e7eb;
+  border-bottom: 0.0625rem solid #e5e7eb;
 }
 
 .tab-button {
@@ -201,7 +201,7 @@
   font-weight: 500;
   color: #6b7280;
   cursor: pointer;
-  border-bottom: 2px solid transparent;
+  border-bottom: 0.125rem solid transparent;
   transition: all 0.2s ease;
 }
 
@@ -238,14 +238,14 @@
   padding: 1.5rem;
   border-radius: 0.5rem;
   margin-bottom: 2rem;
-  border: 1px solid #e5e7eb;
+  border: 0.0625rem solid #e5e7eb;
 }
 
 .charge-item {
   display: flex;
   justify-content: space-between;
   padding: 0.75rem 0;
-  border-bottom: 1px solid #eaeaea;
+  border-bottom: 0.0625rem solid #eaeaea;
 }
 
 .charge-item:last-of-type {
@@ -257,7 +257,7 @@
   justify-content: space-between;
   padding-top: 1rem;
   margin-top: 0.5rem;
-  border-top: 1px solid #d1d5db;
+  border-top: 0.0625rem solid #d1d5db;
   font-size: 1.25rem;
   font-weight: 600;
   color: #111827;
@@ -280,7 +280,7 @@
 }
 
 .btn-outline {
-  border: 1px solid #d1d5db;
+  border: 0.0625rem solid #d1d5db;
   background-color: white;
   color: #4b5563;
 }
@@ -293,7 +293,7 @@
 .btn-primary {
   background-color: #3b82f6;
   color: white;
-  border: 1px solid transparent;
+  border: 0.0625rem solid transparent;
 }
 
 .btn-primary:hover {
@@ -302,7 +302,7 @@
 
 
 .table-container {
-  border: 1px solid #e5e7eb;
+  border: 0.0625rem solid #e5e7eb;
   border-radius: 0.5rem;
   overflow: hidden;
   margin-bottom: 2rem;
@@ -323,14 +323,14 @@
   text-transform: uppercase;
   letter-spacing: 0.05em;
   background-color: #f9fafb;
-  border-bottom: 1px solid #e5e7eb;
+  border-bottom: 0.0625rem solid #e5e7eb;
 }
 
 .food-orders-table td {
   padding: 1.25rem 1.5rem;
   font-size: 0.95rem;
   color: #4b5563;
-  border-bottom: 1px solid #e5e7eb;
+  border-bottom: 0.0625rem solid #e5e7eb;
 }
 
 .food-orders-table tr:last-child td {
@@ -356,7 +356,7 @@
   justify-content: center;
   padding: 4rem 2rem;
   background-color: white;
-  border: 1px solid #e5e7eb;
+  border: 0.0625rem solid #e5e7eb;
   border-radius: 0.5rem;
 }
 
@@ -388,8 +388,8 @@
 .loading-spinner {
   width: 4rem;
   height: 4rem;
-  border: 4px solid #f3f4f6;
-  border-top: 4px solid #3b82f6;
+  border: 0.25rem solid #f3f4f6;
+  border-top: 0.25rem solid #3b82f6;
   border-radius: 50%;
   animation: spin 1s linear infinite;
   margin-bottom: 1rem;
@@ -409,7 +409,7 @@
   width: 100%;
   padding: 2rem;
   background-color: #fee2e2;
-  border: 1px solid #fecaca;
+  border: 0.0625rem solid #fecaca;
   border-radius: 0.5rem;
   text-align: center;
   color: #b91c1c;
@@ -417,15 +417,15 @@
 
 .view-selector {
   display: flex;
-  margin-bottom: 20px;
+  margin-bottom: 1.25rem;
   background-color: #f5f5f5;
-  border-radius: 8px;
+  border-radius: 0.5rem;
   overflow: hidden;
 }
 
 .view-button {
   flex: 1;
-  padding: 12px;
+  padding: 0.75rem;
   background-color: transparent;
   border: none;
   cursor: pointer;
@@ -446,32 +446,32 @@
 
 
 .payments-table-container {
-  max-height: 600px;
+  max-height: 37.5rem;
   overflow-y: auto;
-  margin-bottom: 20px;
+  margin-bottom: 1.25rem;
 }
 
 .payments-table {
   width: 100%;
   border-collapse: collapse;
-  margin-top: 15px;
+  margin-top: 0.9375rem;
 }
 
 .payments-table th {
   background-color: #f5f5f5;
-  padding: 12px;
+  padding: 0.75rem;
   text-align: left;
   font-weight: 600;
   color: #333;
-  border-bottom: 2px solid #ddd;
+  border-bottom: 0.125rem solid #ddd;
   position: sticky;
   top: 0;
   z-index: 1;
 }
 
 .payments-table td {
-  padding: 10px 12px;
-  border-bottom: 1px solid #eee;
+  padding: 0.625rem 0.75rem;
+  border-bottom: 0.0625rem solid #eee;
   font-size: 0.95rem;
 }
 
@@ -486,12 +486,12 @@
 
 .payment-status-pill {
   display: inline-block;
-  padding: 4px 8px;
-  border-radius: 12px;
+  padding: 0.25rem 0.5rem;
+  border-radius: 0.75rem;
   font-size: 0.8rem;
   font-weight: 500;
   text-align: center;
-  min-width: 80px;
+  min-width: 5rem;
 }
 
 .payment-status-pill.completed {
@@ -514,8 +514,8 @@
   border: none;
   cursor: pointer;
   font-size: 1.2rem;
-  padding: 4px;
-  border-radius: 4px;
+  padding: 0.25rem;
+  border-radius: 0.25rem;
   transition: background-color 0.2s;
 }
 
@@ -524,7 +524,7 @@
 }
 
 .email-sent-icon {
-  margin-left: 8px;
+  margin-left: 0.5rem;
   font-size: 1rem;
   opacity: 0.7;
   cursor: help;
@@ -533,13 +533,13 @@
 .export-controls {
   display: flex;
   justify-content: flex-start;
-  gap: 15px;
-  margin-top: 20px;
+  gap: 0.9375rem;
+  margin-top: 1.25rem;
 }
 
 .search-input.wide {
-  max-width: 500px;
-  margin-bottom: 15px;
+  max-width: 31.25rem;
+  margin-bottom: 0.9375rem;
 }
 .retry-button {
   margin-top: 1rem;
@@ -557,7 +557,7 @@
 }
 
 
-@media (max-width: 1200px) {
+@media (max-width: 75rem) {
   .bills-container {
     padding: 1.5rem;
   }
@@ -567,7 +567,7 @@
   }
 }
 
-@media (max-width: 768px) {
+@media (max-width: 48rem) {
   .layout-grid {
     grid-template-columns: 1fr;
   }

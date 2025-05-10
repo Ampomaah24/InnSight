@@ -171,6 +171,13 @@
 .filter-tab.warning.active::after {
   background-color: #ea4335;
 }
+.category-dropdown {
+  padding: 0.5rem;
+  font-size: 0.9rem;
+  border-radius: 6px;
+  border: 1px solid var(--gray-300);
+  margin-left: 1rem;
+}
 
 
 .table-container {

@@ -12,8 +12,9 @@ const ConferenceBooking = () => {
   const [conference_rooms, setConferenceRooms] = useState([]);
   const [menuOpen, setMenuOpen] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [currentIndex, setCurrentIndex] = useState(0);
-  console.log("Booking data:", bookingData);
+  
   // Get dates from context instead of URL
   const startDate = bookingData?.startDate ? new Date(bookingData.startDate) : null;
   const endDate = bookingData?.endDate ? new Date(bookingData.endDate) : null;
@@ -30,6 +31,13 @@ const ConferenceBooking = () => {
 
   const duration = calculateDuration();
 
+  // Redirect to services page if missing date information
+  useEffect(() => {
+    if (!startDate || !endDate) {
+      navigate('/services');
+    }
+  }, [startDate, endDate, navigate]);
+
   useEffect(() => {
     // Fix any scrolling issues
     window.scrollTo(0, 0);
@@ -44,51 +52,51 @@ const ConferenceBooking = () => {
       return;
     }
 
-// In your ConferenceBooking.jsx, update the fetchAvailableConferenceRooms function:
+    const fetchAvailableConferenceRooms = async () => {
+      try {
+        setError(null);
+        const roomsCollection = collection(db, "conference_rooms");
+        const q = query(roomsCollection, where("availability", "==", true));
+        const querySnapshot = await getDocs(q);
+        let availableRooms = [];
 
-const fetchAvailableConferenceRooms = async () => {
-  try {
-    const roomsCollection = collection(db, "conference_rooms");
-    const q = query(roomsCollection, where("availability", "==", true));
-    const querySnapshot = await getDocs(q);
-    let availableRooms = [];
+        querySnapshot.forEach((doc) => {
+          let room = { id: doc.id, ...doc.data() };
 
-    querySnapshot.forEach((doc) => {
-      let room = { id: doc.id, ...doc.data() };
+          if (!room.bookings || room.bookings.length === 0) {
+            availableRooms.push(room);
+            return;
+          }
 
-      if (!room.bookings || room.bookings.length === 0) {
-        availableRooms.push(room);
-        return;
-      }
+          const selectedStartDate = new Date(startDate);
+          const selectedEndDate = new Date(endDate);
 
-      const selectedStartDate = new Date(startDate);
-      const selectedEndDate = new Date(endDate);
+          // Check for booking conflicts, accounting for both naming conventions
+          const isBooked = room.bookings.some((booking) => {
+            // Support both naming conventions (startDate/endDate and checkIn/checkOut)
+            const bookedStart = booking.startDate ? new Date(booking.startDate) : 
+                            (booking.checkIn ? new Date(booking.checkIn) : null);
+                            
+            const bookedEnd = booking.endDate ? new Date(booking.endDate) : 
+                          (booking.checkOut ? new Date(booking.checkOut) : null);
+            
+            // Skip invalid bookings
+            if (!bookedStart || !bookedEnd) return false;
+            
+            // Check for date overlap
+            return selectedStartDate < bookedEnd && selectedEndDate > bookedStart;
+          });
 
-      // Check for booking conflicts, accounting for both naming conventions
-      const isBooked = room.bookings.some((booking) => {
-        // Support both naming conventions (startDate/endDate and checkIn/checkOut)
-        const bookedStart = booking.startDate ? new Date(booking.startDate) : 
-                          (booking.checkIn ? new Date(booking.checkIn) : null);
-                          
-        const bookedEnd = booking.endDate ? new Date(booking.endDate) : 
-                        (booking.checkOut ? new Date(booking.checkOut) : null);
-        
-        // Skip invalid bookings
-        if (!bookedStart || !bookedEnd) return false;
-        
-        // Check for date overlap
-        return selectedStartDate < bookedEnd && selectedEndDate > bookedStart;
-      });
-
-      if (!isBooked) {
-        availableRooms.push(room);
-      }
-    });
+          if (!isBooked) {
+            availableRooms.push(room);
+          }
+        });
 
         setConferenceRooms(availableRooms);
         setLoading(false);
       } catch (error) {
         console.error("Error fetching conference rooms:", error);
+        setError("Failed to load conference rooms. Please try again later.");
         setConferenceRooms([]);
         setLoading(false);
       }
@@ -100,6 +108,10 @@ const fetchAvailableConferenceRooms = async () => {
   const prevRoom = () => setCurrentIndex((prevIndex) => (prevIndex === 0 ? conference_rooms.length - 1 : prevIndex - 1));
   const nextRoom = () => setCurrentIndex((prevIndex) => (prevIndex === conference_rooms.length - 1 ? 0 : prevIndex + 1));
 
+  const goToServices = () => {
+    navigate('/services');
+  };
+
   if (loading) {
     return (
       <div className="loading-container">
@@ -109,10 +121,33 @@ const fetchAvailableConferenceRooms = async () => {
     );
   }
 
+  if (error) {
+    return (
+      <div className="croom-booking-container">
+        <div className="nav-container" style={{ backgroundColor: "transparent", boxShadow: "none" }}>
+          <NavMenu menuOpen={menuOpen} setMenuOpen={setMenuOpen} />
+        </div>
+        
+        <div className="no-rooms-container">
+          <div className="no-rooms-content">
+            <h2>Error</h2>
+            <p>{error}</p>
+            <button 
+              className="book-now"
+              onClick={goToServices}
+            >
+              Return to Booking Services
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   if (conference_rooms.length === 0) {
     return (
-      <div className="croom-booking-container" >
-        <div className="nav-container"  style={{ backgroundColor: "transparent", boxShadow: "none" }}>
+      <div className="croom-booking-container">
+        <div className="nav-container" style={{ backgroundColor: "transparent", boxShadow: "none" }}>
           <NavMenu menuOpen={menuOpen} setMenuOpen={setMenuOpen} />
         </div>
         
@@ -120,13 +155,12 @@ const fetchAvailableConferenceRooms = async () => {
           <div className="no-rooms-content">
             <h2>No Conference Rooms Available</h2>
             <p>We couldn't find any available conference rooms for your selected dates.</p>
- 
- {/*            <button 
-              className="back-button" 
-              onClick={() => navigate('/')}
+            <button 
+              className="book-now"
+              onClick={goToServices}
             >
-              Return to Search
-            </button> */}
+              Select Different Dates
+            </button>
           </div>
         </div>
       </div>
@@ -142,14 +176,7 @@ const fetchAvailableConferenceRooms = async () => {
         <NavMenu menuOpen={menuOpen} setMenuOpen={setMenuOpen} />
       </div>
 
-      <div className="back-button-container">
-        <button 
-          className="back-button"
-          onClick={() => navigate(-1)}
-        >
-          ← 
-        </button>
-      </div>
+
 
       <h2 className="title">Conference Rooms Available</h2>
 
@@ -169,12 +196,12 @@ const fetchAvailableConferenceRooms = async () => {
 
       <div className="croom-content">
         <div className="croom-image-section">
-          <button className="nav-button left" onClick={prevRoom}>&#10094;</button>
+          <button className="nav-button left" onClick={prevRoom} aria-label="Previous room">&#10094;</button>
           <div className="croom-image">
-            <img src={currentRoom.image} alt={currentRoom.name || "Conference Room"} />
+            <img src={currentRoom.image || "/placeholder-conference-room.jpg"} alt={currentRoom.name || "Conference Room"} />
             <div className="croom-pagination">{currentIndex + 1} of {conference_rooms.length}</div>
           </div>
-          <button className="nav-button right" onClick={nextRoom}>&#10095;</button>
+          <button className="nav-button right" onClick={nextRoom} aria-label="Next room">&#10095;</button>
         </div>
 
         <div className="croom-details">
@@ -195,8 +222,8 @@ const fetchAvailableConferenceRooms = async () => {
             )}
           </div>
           
-          <h3 className="price">GHS {currentRoom.price.toFixed(2)} <span>per day</span></h3>
-          <p className="total-price">Total: GHS {totalPrice.toFixed(2)} for {duration} {duration === 1 ? 'day' : 'days'}</p>
+          <h3 className="price">GHS {currentRoom.price?.toFixed(2) || "0.00"} <span>per day</span></h3>
+          <p className="total-price">Total: GHS {totalPrice?.toFixed(2) || "0.00"} for {duration} {duration === 1 ? 'day' : 'days'}</p>
           
           {currentRoom.description && (
             <div className="conference-details">
@@ -208,9 +235,13 @@ const fetchAvailableConferenceRooms = async () => {
           <div className="includes">
             <h4>Facilities Included:</h4>
             <ul>
-              {currentRoom.amenities && currentRoom.amenities.map((item, index) => (
-                <li key={index}>{item}</li>
-              ))}
+              {currentRoom.amenities && currentRoom.amenities.length > 0 ? (
+                currentRoom.amenities.map((item, index) => (
+                  <li key={index}>{item}</li>
+                ))
+              ) : (
+                <li>Standard conference amenities</li>
+              )}
             </ul>
           </div>
 

@@ -1,20 +1,41 @@
-/* Reset */
+/* Import the Google Fonts from ProfilePage */
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=Poppins:wght@300;400;500;600;700&display=swap');
+
 * {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
 }
 
+:root {
+  --primary: #e67e22; /* Keep original color or change to #e05206 to match profile */
+  --primary-dark: #d35400; /* Or #c04400 to match profile */
+  --primary-light: #ff7a3c;
+  --secondary: #343377;
+  --dark: #333;
+  --light: #fff;
+  --gray: #666;
+  --light-gray: #f7f7f7;
+  --border: #e0e0e0;
+  --success: #2ecc71;
+  --error: #e74c3c;
+  --shadow: 0 0.25rem 0.75rem rgba(0,0,0,0.1);
+  --transition: all 0.3s ease;
+  
+  --heading-font: 'Playfair Display', serif;
+  --body-font: 'Poppins', sans-serif;
+  --accent-font: 'Cormorant Garamond', serif;
+}
+
 html, body {
   width: 100%;
   height: 100%;
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  font-size: 16px;
+  font-family: var(--body-font);
+  font-size: 1rem;
   overflow-x: hidden;
   color: #333;
   background-color: #f8f9fa;
 }
-
 
 .nav-container {
   display: flex;
@@ -25,15 +46,12 @@ html, body {
   z-index: 100;
 }
 
-
 .croom-booking-container {
   width: 100%;
   min-height: 100vh;
   padding: 0 0 5rem 0;
-  background-color: #f8f9fa;
   position: relative;
 }
-
 
 .title {
   font-size: 2.2rem;
@@ -42,6 +60,8 @@ html, body {
   text-align: center;
   margin: 2.5rem 0 2rem;
   position: relative;
+  font-family: var(--heading-font);
+  letter-spacing: 0.03125rem;
 }
 
 .title:after {
@@ -49,13 +69,12 @@ html, body {
   display: block;
   width: 5rem;
   height: 0.1875rem;
-  background-color: #e67e22;
+  background-color: var(--primary);
   position: absolute;
   bottom: -0.625rem;
   left: 50%;
   transform: translateX(-50%);
 }
-
 
 .croom-content {
   display: flex;
@@ -69,7 +88,6 @@ html, body {
   overflow: hidden;
   padding-bottom: 1.5rem;
 }
-
 
 .croom-image-section {
   position: relative;
@@ -96,7 +114,6 @@ html, body {
   object-fit: cover;
 }
 
-
 .nav-button {
   position: absolute;
   top: 50%;
@@ -114,20 +131,23 @@ html, body {
   font-size: 1.2rem;
   transition: all 0.2s ease;
   color: #333;
+  background-color: white;
 }
 
 .nav-button:hover {
-  color: #e67e22;
+  color: #e05206; 
 }
 
 .nav-button.left {
   left: 1rem;
+  background-color: white; 
 }
 
 .nav-button.right {
   right: 1rem;
+ 
+  background-color: white; 
 }
-
 
 .croom-pagination {
   position: absolute;
@@ -140,36 +160,45 @@ html, body {
   border-radius: 1.25rem;
   font-size: 0.85rem;
   font-weight: 500;
+  font-family: var(--body-font);
 }
-
 
 .croom-details {
   padding: 0 1.5rem 1rem;
   width: 100%;
 }
 
-
 .room-name {
   font-size: 1.6rem;
   font-weight: 600;
   color: #333;
   margin-bottom: 1rem;
+  font-family: var(--heading-font);
+  letter-spacing: 0.03125rem;
 }
-
 
 .price {
   font-size: 1.5rem;
   margin-bottom: 1rem;
   color: #333;
   font-weight: 600;
+  font-family: var(--heading-font);
 }
 
 .price span {
   font-size: 1rem;
   font-weight: normal;
   color: #666;
+  font-family: var(--body-font);
 }
 
+.total-price {
+  font-family: var(--body-font);
+  font-size: 1.1rem;
+  margin-bottom: 1.2rem;
+  color: var(--primary);
+  font-weight: 500;
+}
 
 .includes {
   margin-bottom: 1.5rem;
@@ -180,6 +209,7 @@ html, body {
   font-weight: 600;
   font-size: 1.15rem;
   color: #444;
+  font-family: var(--heading-font);
 }
 
 .includes ul {
@@ -188,6 +218,7 @@ html, body {
   grid-template-columns: repeat(auto-fill, minmax(12.5rem, 1fr));
   gap: 0.7rem;
   padding: 0;
+  font-family: var(--body-font);
 }
 
 .includes li {
@@ -197,11 +228,10 @@ html, body {
 
 .includes li:before {
   content: "✓";
-  color: #e67e22;
+  color: var(--primary);
   margin-right: 0.5rem;
   font-weight: bold;
 }
-
 
 .conference-details {
   background-color: #f9f9f9;
@@ -214,16 +244,18 @@ html, body {
   margin-bottom: 0.8rem;
   font-weight: 600;
   color: #444;
+  font-family: var(--heading-font);
+  letter-spacing: 0.03125rem;
 }
 
 .conference-details p {
   color: #666;
   line-height: 1.5;
+  font-family: var(--body-font);
 }
 
-
 .book-now {
-  background-color: #e67e22;
+  background-color: var(--primary);
   color: white;
   border: none;
   border-radius: 0.25rem;
@@ -239,12 +271,12 @@ html, body {
   width: 100%;
   max-width: 12.5rem;
   text-align: center;
+  font-family: var(--body-font);
 }
 
 .book-now:hover {
-  background-color: #d35400;
+  background-color: var(--primary-dark);
 }
-
 
 .date-info {
   background-color: white; 
@@ -257,6 +289,7 @@ html, body {
   justify-content: space-between;
   max-width: 75rem;
   width: 90%;
+  font-family: var(--body-font);
 }
 
 .date-info p {
@@ -271,7 +304,6 @@ html, body {
   margin-right: 0.5rem;
 }
 
-
 .room-specs {
   display: flex;
   gap: 1.5rem;
@@ -285,14 +317,14 @@ html, body {
 }
 
 .spec-icon {
-  color: #e67e22;
+  color: var(--primary);
   font-size: 1.1rem;
 }
 
 .spec-text {
   color: #555;
+  font-family: var(--body-font);
 }
-
 
 .special-offer {
   background-color: rgba(39, 174, 96, 0.1);
@@ -305,13 +337,14 @@ html, body {
   color: #27ae60;
   margin-bottom: 0.5rem;
   font-weight: 600;
+  font-family: var(--heading-font);
 }
 
 .special-offer p {
   color: #444;
   font-size: 0.95rem;
+  font-family: var(--body-font);
 }
-
 
 .loading-container {
   display: flex;
@@ -328,7 +361,7 @@ html, body {
   width: 3.5rem;
   height: 3.5rem;
   border: 0.25rem solid rgba(0, 0, 0, 0.1);
-  border-left-color: #e67e22;
+  border-left-color: var(--primary);
   border-radius: 50%;
   animation: spin 1s linear infinite;
 }
@@ -342,8 +375,9 @@ html, body {
 .loading-text {
   font-size: 1.2rem;
   color: #555;
+  font-family: var(--heading-font);
+  letter-spacing: 0.03125rem;
 }
-
 
 .no-rooms-container {
   display: flex;
@@ -368,56 +402,83 @@ html, body {
   margin-bottom: 1rem;
   color: #333;
   font-size: 1.8rem;
+  font-family: var(--heading-font);
+  letter-spacing: 0.03125rem;
 }
 
 .no-rooms-content p {
   margin-bottom: 1.5rem;
   color: #666;
   font-size: 1.1rem;
+  font-family: var(--body-font);
 }
-
-
-
 
 .back-button-container {
   max-width: 75rem;
   width: 90%;
-  margin: 0 auto;
-  padding: 0 0 1rem;
+  margin: 1.5rem auto;
   display: flex;
   justify-content: flex-start;
 }
 
-
 .back-button {
-  background-color: white;
+  background-color: #fff;
   color: #333;
-  border: 1px solid #ddd;
-  border-radius: 0.25rem;
-  padding: 0.6rem 1.2rem;
-  font-size: 0.95rem;
-  font-weight: 500;
-  cursor: pointer;
+  border: 0.0625rem solid #ddd;
+  border-radius: 50%;
+  width: 2.8125rem;
+  height: 2.8125rem;
   display: flex;
   align-items: center;
+  justify-content: center;
+  cursor: pointer;
   transition: all 0.2s ease;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  font-size: 1.5rem;
+  box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.05);
 }
 
 .back-button:hover {
   background-color: #f8f8f8;
   border-color: #ccc;
-  color: #e67e22;
+  color: var(--primary);
 }
-
 
 .no-rooms-content .back-button {
   margin-top: 1rem;
 }
 
+/* Add availability error styles */
+.availability-error {
+  color: var(--error);
+  background-color: rgba(231, 76, 60, 0.1);
+  border-left: 0.1875rem solid var(--error);
+  padding: 0.6rem 0.8rem;
+  margin: 0.5rem 0;
+  border-radius: 0.25rem;
+  font-size: 0.85rem;
+  font-family: var(--body-font);
+}
+
 @media (max-width: 47.9375rem) {
   .back-button-container {
     padding: 0 0 0.5rem;
+  }
+  
+  .title {
+    font-size: 1.8rem;
+  }
+  
+  .date-info {
+    flex-direction: column;
+  }
+  
+  .date-info p {
+    margin: 0.3rem 0;
+  }
+  
+  .room-specs {
+    flex-direction: column;
+    gap: 0.7rem;
   }
 }
 
@@ -436,24 +497,5 @@ html, body {
   .croom-details {
     width: 40%;
     padding: 1.5rem;
-  }
-}
-
-@media (max-width: 47.9375rem) {
-  .room-specs {
-    flex-direction: column;
-    gap: 0.7rem;
-  }
-  
-  .title {
-    font-size: 1.8rem;
-  }
-  
-  .date-info {
-    flex-direction: column;
-  }
-  
-  .date-info p {
-    margin: 0.3rem 0;
   }
 }

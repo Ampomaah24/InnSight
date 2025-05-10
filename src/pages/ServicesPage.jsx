@@ -3,7 +3,16 @@ import { useNavigate } from "react-router-dom";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { db, auth } from "../config/firebase";
-import { collection, addDoc, doc, getDoc, serverTimestamp } from "firebase/firestore";
+import { 
+  collection, 
+  addDoc, 
+  doc, 
+  getDoc, 
+  serverTimestamp, 
+  query, 
+  where, 
+  getDocs 
+} from "firebase/firestore";
 import NavMenu from "../components/NavMenu";
 import ChatWidget from "../components/ChatWidget";
 import "../assets/styles/ServicesPage.css";
@@ -27,6 +36,15 @@ const ServicesPage = () => {
     startDate: null,
     endDate: null,
   });
+
+  // Loading states for availability checks
+  const [checkingRoomAvailability, setCheckingRoomAvailability] = useState(false);
+  const [checkingConferenceAvailability, setCheckingConferenceAvailability] = useState(false);
+  
+  // Error messages for availability
+  const [roomAvailabilityError, setRoomAvailabilityError] = useState("");
+  const [conferenceAvailabilityError, setConferenceAvailabilityError] = useState("");
+  
   // State for user profile data
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -139,6 +157,8 @@ const ServicesPage = () => {
     if (event.currentTarget === event.target.closest('.service-item')) {
       setConferenceDropdownOpen(false);
       setRoomDropdownOpen(prev => !prev);
+      // Clear any previous errors when opening/closing dropdown
+      setRoomAvailabilityError("");
     }
   };
 
@@ -147,6 +167,8 @@ const ServicesPage = () => {
     if (event.currentTarget === event.target.closest('.service-item')) {
       setRoomDropdownOpen(false);
       setConferenceDropdownOpen(prev => !prev);
+      // Clear any previous errors when opening/closing dropdown
+      setConferenceAvailabilityError("");
     }
   };
 
@@ -176,6 +198,149 @@ const ServicesPage = () => {
     };
   }, [roomDropdownOpen, conferenceDropdownOpen]);
 
+  // New function to check room availability
+  const checkRoomAvailability = async (checkIn, checkOut) => {
+    if (!checkIn || !checkOut) {
+      setRoomAvailabilityError("Please select both check-in and check-out dates");
+      return false;
+    }
+    
+    try {
+      setCheckingRoomAvailability(true);
+      setRoomAvailabilityError("");
+      
+      // Format dates for comparison
+      const selectedCheckIn = new Date(checkIn);
+      const selectedCheckOut = new Date(checkOut);
+      
+      // Verify dates are valid
+      if (selectedCheckOut <= selectedCheckIn) {
+        setRoomAvailabilityError("Check-out date must be after check-in date");
+        return false;
+      }
+      
+      // Query rooms collection
+      const roomsCollection = collection(db, "rooms");
+      const q = query(roomsCollection, where("availability", "==", true));
+      const querySnapshot = await getDocs(q);
+      
+      // Check if any rooms are available for these dates
+      let availableRoomsCount = 0;
+      
+      querySnapshot.forEach((doc) => {
+        const room = doc.data();
+        
+        // If no bookings array or empty bookings, room is available
+        if (!room.bookings || room.bookings.length === 0) {
+          availableRoomsCount++;
+          return;
+        }
+        
+        // Check for date conflicts
+        const hasConflict = room.bookings.some(booking => {
+          if (!booking.checkIn || !booking.checkOut) return false;
+          
+          const bookedCheckIn = new Date(booking.checkIn);
+          const bookedCheckOut = new Date(booking.checkOut);
+          
+          // Check if there's an overlap
+          return selectedCheckIn < bookedCheckOut && selectedCheckOut > bookedCheckIn;
+        });
+        
+        if (!hasConflict) {
+          availableRoomsCount++;
+        }
+      });
+      
+      if (availableRoomsCount === 0) {
+        setRoomAvailabilityError("No rooms available for these dates. Please try different dates.");
+        return false;
+      }
+      
+      return true;
+    } catch (error) {
+      console.error("Error checking room availability:", error);
+      setRoomAvailabilityError("Error checking availability. Please try again.");
+      return false;
+    } finally {
+      setCheckingRoomAvailability(false);
+    }
+  };
+
+  // New function to check conference room availability
+  const checkConferenceAvailability = async (startDate, endDate) => {
+    if (!startDate || !endDate) {
+      setConferenceAvailabilityError("Please select both start and end dates");
+      return false;
+    }
+    
+    try {
+      setCheckingConferenceAvailability(true);
+      setConferenceAvailabilityError("");
+      
+      // Format dates for comparison
+      const selectedStartDate = new Date(startDate);
+      const selectedEndDate = new Date(endDate);
+      
+      // Verify dates are valid
+      if (selectedEndDate <= selectedStartDate) {
+        setConferenceAvailabilityError("End date must be after start date");
+        return false;
+      }
+      
+      // Query conference rooms collection
+      const roomsCollection = collection(db, "conference_rooms");
+      const q = query(roomsCollection, where("availability", "==", true));
+      const querySnapshot = await getDocs(q);
+      
+      // Check if any conference rooms are available for these dates
+      let availableRoomsCount = 0;
+      
+      querySnapshot.forEach((doc) => {
+        const room = doc.data();
+        
+        // If no bookings array or empty bookings, room is available
+        if (!room.bookings || room.bookings.length === 0) {
+          availableRoomsCount++;
+          return;
+        }
+        
+        // Check for date conflicts
+        const hasConflict = room.bookings.some(booking => {
+          // Support both naming conventions
+          const bookedStart = booking.startDate ? new Date(booking.startDate) : 
+                            (booking.checkIn ? new Date(booking.checkIn) : null);
+          
+          const bookedEnd = booking.endDate ? new Date(booking.endDate) : 
+                          (booking.checkOut ? new Date(booking.checkOut) : null);
+          
+          // Skip invalid bookings
+          if (!bookedStart || !bookedEnd) return false;
+          
+          // Check if there's an overlap
+          return selectedStartDate < bookedEnd && selectedEndDate > bookedStart;
+        });
+        
+        if (!hasConflict) {
+          availableRoomsCount++;
+        }
+      });
+      
+      if (availableRoomsCount === 0) {
+        setConferenceAvailabilityError("No conference rooms available for these dates. Please try different dates.");
+        return false;
+      }
+      
+      return true;
+    } catch (error) {
+      console.error("Error checking conference availability:", error);
+      setConferenceAvailabilityError("Error checking availability. Please try again.");
+      return false;
+    } finally {
+      setCheckingConferenceAvailability(false);
+    }
+  };
+
   const handleRoomBooking = async (event) => {
     // Prevent event propagation to parent elements
     event.preventDefault();
@@ -183,7 +348,13 @@ const ServicesPage = () => {
     
     const { checkIn, checkOut } = roomBookingDetails;
     if (!checkIn || !checkOut) {
-      alert("Please select check-in and check-out dates!");
+      setRoomAvailabilityError("Please select check-in and check-out dates!");
+      return;
+    }
+    
+    // Check availability first
+    const isAvailable = await checkRoomAvailability(checkIn, checkOut);
+    if (!isAvailable) {
       return;
     }
     
@@ -210,7 +381,7 @@ const ServicesPage = () => {
       navigate('/room-booking');
     } catch (error) {
       console.error("Error saving room booking:", error.message);
-      alert(`Failed to save room booking: ${error.message}`);
+      setRoomAvailabilityError(`Failed to save room booking: ${error.message}`);
     }
   };
 
@@ -221,7 +392,13 @@ const ServicesPage = () => {
     
     const { startDate, endDate } = conferenceBookingDetails;
     if (!startDate || !endDate) {
-      alert("Please select a start date and end date!");
+      setConferenceAvailabilityError("Please select a start date and end date!");
+      return;
+    }
+    
+    // Check availability first
+    const isAvailable = await checkConferenceAvailability(startDate, endDate);
+    if (!isAvailable) {
       return;
     }
     
@@ -251,7 +428,7 @@ const ServicesPage = () => {
       navigate('/conference-booking');
     } catch (error) {
       console.error("Error saving conference booking:", error);
-      alert("Failed to save conference booking. Please try again.");
+      setConferenceAvailabilityError("Failed to save conference booking. Please try again.");
     }
   };
 
@@ -317,11 +494,18 @@ const ServicesPage = () => {
                 minDate={roomBookingDetails.checkIn || today}
                 placeholderText="Select check-out date"
               />
+              
+              {/* Display room availability error */}
+              {roomAvailabilityError && (
+                <div className="availability-error">{roomAvailabilityError}</div>
+              )}
+              
               <button 
-                className="learn-more" 
+                className={`learn-more ${checkingRoomAvailability ? 'checking' : ''}`} 
                 onClick={handleRoomBooking}
+                disabled={checkingRoomAvailability}
               >
-                Proceed to Room Booking
+                {checkingRoomAvailability ? 'Checking Availability...' : 'Proceed to Room Booking'}
               </button>
             </div>
           </div>
@@ -365,11 +549,18 @@ const ServicesPage = () => {
                 minDate={conferenceBookingDetails.startDate || today}
                 placeholderText="Select end date"
               />
+              
+              {/* Display conference availability error */}
+              {conferenceAvailabilityError && (
+                <div className="availability-error">{conferenceAvailabilityError}</div>
+              )}
+              
               <button 
-                className="learn-more" 
+                className={`learn-more ${checkingConferenceAvailability ? 'checking' : ''}`} 
                 onClick={handleConferenceBooking}
+                disabled={checkingConferenceAvailability}
               >
-                Proceed to Conference Booking
+                {checkingConferenceAvailability ? 'Checking Availability...' : 'Proceed to Conference Booking'}
               </button>
             </div>
           </div>

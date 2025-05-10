@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from "react";
 import { collection, query, where, getDocs, doc, updateDoc, deleteDoc, orderBy } from "firebase/firestore";
 import { db } from "../config/firebase";
-import { format, parseISO, isAfter, isBefore } from "date-fns";
+import { format, parseISO, isAfter, isBefore, addHours } from "date-fns";
 import "../assets/styles/BookingHistory.css";
 import { FaCalendarAlt, FaBed, FaDoorOpen, FaUsers, FaTrash, FaHistory, 
-         FaMoneyBillWave, FaClock, FaMapMarkerAlt, FaInfoCircle, FaEdit } from "react-icons/fa";
+         FaMoneyBillWave, FaClock, FaMapMarkerAlt, FaInfoCircle } from "react-icons/fa";
 import NavMenu from "../components/NavMenu";
 
 const BookingHistory = () => {
@@ -12,10 +12,10 @@ const BookingHistory = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [cancellingId, setCancellingId] = useState(null);
-  const [modifyingId, setModifyingId] = useState(null);
+
   const [menuOpen, setMenuOpen] = useState(false);
   const [refreshTrigger, setRefreshTrigger] = useState(0);
-  const [modifyingBooking, setModifyingBooking] = useState(null);
+ 
   
   useEffect(() => {
     fetchUserBookings();
@@ -159,6 +159,39 @@ const BookingHistory = () => {
         return false;
       }
     }
+    return false;
+  };
+
+  // NEW FUNCTION: Check if booking is within 48 hours of check-in
+  const isWithin48HoursOfCheckIn = (booking) => {
+    const now = new Date();
+    
+    try {
+      if (booking.bookingType === "room") {
+        const checkInDate = processFirebaseDate(booking.checkInDate || booking.checkIn);
+        if (!checkInDate) return false;
+        
+        // Calculate the difference in milliseconds
+        const diffMs = checkInDate.getTime() - now.getTime();
+        const diffHours = diffMs / (1000 * 60 * 60);
+        
+        // Return true if less than 48 hours until check-in
+        return diffHours < 48;
+      } else if (booking.bookingType === "conference") {
+        const bookingDate = new Date(booking.date);
+        if (!bookingDate) return false;
+        
+        // Calculate the difference in milliseconds
+        const diffMs = bookingDate.getTime() - now.getTime();
+        const diffHours = diffMs / (1000 * 60 * 60);
+        
+        // Return true if less than 48 hours until conference
+        return diffHours < 48;
+      }
+    } catch (err) {
+      console.error("Error checking 48-hour window:", err);
+    }
+    
     return false;
   };
 
@@ -398,18 +431,16 @@ const BookingHistory = () => {
     }
   };
   
-  const handleTerminateBooking = () => {
-    alert("Please contact reception to terminate your active booking. Early termination fees may apply.");
-  };
-  
-  const handleShortenBooking = () => {
-    alert("Please contact reception to shorten your active booking. Modification fees may apply.");
-  };
-
   const handleCancelBooking = async (booking) => {
     // Only allow cancellation for future bookings
     if (!isBookingFuture(booking)) {
       alert("Only future bookings can be cancelled. Please contact reception for modifications to active bookings.");
+      return;
+    }
+    
+    // NEW CONDITION: Check if booking is within 48 hours of check-in
+    if (isWithin48HoursOfCheckIn(booking)) {
+      alert("Cancellations are only allowed up to 48 hours before check-in. Please contact reception for assistance.");
       return;
     }
     
@@ -449,269 +480,10 @@ const BookingHistory = () => {
     }
   };
 
-  // New function to handle modifying bookings
-  const handleModifyBooking = async (booking) => {
-    // Only allow modification for future bookings
-    if (!isBookingFuture(booking)) {
-      alert("Only future bookings can be modified online. Please contact reception for modifications to active bookings.");
-      return;
-    }
-    
-    // Set the booking to be modified
-    setModifyingBooking(booking);
+  // Function to check if booking can be cancelled based on 48-hour rule
+  const canCancel = (booking) => {
+    return isBookingFuture(booking) && !isWithin48HoursOfCheckIn(booking);
   };
-
-  // Function to save modifications
-  const handleSaveModifications = async (e) => {
-    e.preventDefault();
-    
-    if (!modifyingBooking) return;
-    
-    try {
-      setModifyingId(modifyingBooking.id);
-      
-      // Get the form data
-      const formData = new FormData(e.target);
-      
-      // Create update object based on booking type
-      let updateData = {
-        updatedAt: new Date().toISOString()
-      };
-      
-      // Get today's date and reset to start of day for comparison
-      const today = new Date();
-      today.setHours(0, 0, 0, 0);
-      
-      if (modifyingBooking.bookingType === "room") {
-        // For room bookings
-        const checkInDate = new Date(formData.get("checkInDate"));
-        const checkOutDate = new Date(formData.get("checkOutDate"));
-        
-        // Set hours to 0 for date comparison
-        checkInDate.setHours(0, 0, 0, 0);
-        checkOutDate.setHours(0, 0, 0, 0);
-        
-        // Validate check-in date is not in the past
-        if (checkInDate < today) {
-          alert("Check-in date cannot be in the past. Please select a future date.");
-          setModifyingId(null);
-          return;
-        }
-        
-        // Validate check-out date is after check-in date
-        if (checkInDate >= checkOutDate) {
-          alert("Check-out date must be after check-in date.");
-          setModifyingId(null);
-          return;
-        }
-        
-        updateData = {
-          ...updateData,
-          checkInDate: formData.get("checkInDate"),
-          checkOutDate: formData.get("checkOutDate"),
-          guests: parseInt(formData.get("guests")) || 1
-        };
-      } else {
-        // For conference bookings
-        const bookingDate = new Date(formData.get("date"));
-        bookingDate.setHours(0, 0, 0, 0);
-        
-        // Validate conference date is not in the past
-        if (bookingDate < today) {
-          alert("Conference date cannot be in the past. Please select a future date.");
-          setModifyingId(null);
-          return;
-        }
-        
-        // Validate start time is before end time if on the same day
-        const startTime = formData.get("startTime");
-        const endTime = formData.get("endTime");
-        
-        if (startTime >= endTime) {
-          alert("End time must be after start time.");
-          setModifyingId(null);
-          return;
-        }
-        
-        updateData = {
-          ...updateData,
-          date: formData.get("date"),
-          startTime: formData.get("startTime"),
-          endTime: formData.get("endTime"),
-          attendees: parseInt(formData.get("attendees")) || 0
-        };
-      }
-      
-      // Update in Firestore
-      const bookingRef = doc(db, "bookings", modifyingBooking.id);
-      await updateDoc(bookingRef, updateData);
-      
-      // Refresh the bookings list and reset state
-      setRefreshTrigger(prev => prev + 1);
-      setModifyingBooking(null);
-      
-      // Show success message
-      alert("Booking modified successfully!");
-    } catch (err) {
-      console.error("Error modifying booking:", err);
-      
-      // More specific error messages
-      if (!navigator.onLine) {
-        alert("You appear to be offline. Please check your internet connection and try again.");
-      } else if (err.code === "permission-denied") {
-        alert("You don't have permission to modify this booking. Please contact support.");
-      } else {
-        alert("Failed to modify booking. Please try again later.");
-      }
-    } finally {
-      setModifyingId(null);
-    }
-  };
-  const handleCancelModification = () => {
-    setModifyingBooking(null);
-  };
-  // Render booking modification form
-  const renderModificationForm = () => {
-    if (!modifyingBooking) return null;
-    
-    // Get today's date in YYYY-MM-DD format for min attribute
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    const todayFormatted = today.toISOString().split('T')[0];
-    
-    if (modifyingBooking.bookingType === "room") {
-      // Form for room bookings
-      return (
-        <div className="modify-booking-modal">
-          <div className="modify-booking-content">
-            <h2>Modify Room Booking</h2>
-            <form onSubmit={handleSaveModifications}>
-              <div className="form-group">
-                <label htmlFor="checkInDate">Check-in Date:</label>
-                <input 
-                  type="date" 
-                  id="checkInDate" 
-                  name="checkInDate" 
-                  required
-                  min={todayFormatted} // Prevent selecting dates before today
-                  defaultValue={new Date(modifyingBooking.checkInDate).toISOString().split('T')[0]}
-                />
-              </div>
-              <div className="form-group">
-                <label htmlFor="checkOutDate">Check-out Date:</label>
-                <input 
-                  type="date" 
-                  id="checkOutDate" 
-                  name="checkOutDate" 
-                  required
-                  min={todayFormatted} // Prevent selecting dates before today
-                  defaultValue={new Date(modifyingBooking.checkOutDate).toISOString().split('T')[0]}
-                />
-              </div>
-              <div className="form-group">
-                <label htmlFor="guests">Number of Guests:</label>
-                <input 
-                  type="number" 
-                  id="guests" 
-                  name="guests" 
-                  min="1" 
-                  max="4" 
-                  required
-                  defaultValue={modifyingBooking.guests || 1}
-                />
-              </div>
-              <div className="form-actions">
-                <button 
-                  type="button" 
-                  onClick={handleCancelModification} 
-                  className="cancel-modify-btn"
-                >
-                  Cancel
-                </button>
-                <button 
-                  type="submit" 
-                  className="save-modify-btn" 
-                  disabled={modifyingId === modifyingBooking.id}
-                >
-                  {modifyingId === modifyingBooking.id ? "Saving..." : "Save Changes"}
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      );
-    } else {
-      // Form for conference bookings
-      return (
-        <div className="modify-booking-modal">
-          <div className="modify-booking-content">
-            <h2>Modify Conference Booking</h2>
-            <form onSubmit={handleSaveModifications}>
-              <div className="form-group">
-                <label htmlFor="date">Date:</label>
-                <input 
-                  type="date" 
-                  id="date" 
-                  name="date" 
-                  required
-                  min={todayFormatted} // Prevent selecting dates before today
-                  defaultValue={new Date(modifyingBooking.date).toISOString().split('T')[0]}
-                />
-              </div>
-              <div className="form-group">
-                <label htmlFor="startTime">Start Time:</label>
-                <input 
-                  type="time" 
-                  id="startTime" 
-                  name="startTime" 
-                  required
-                  defaultValue={modifyingBooking.startTime}
-                />
-              </div>
-              <div className="form-group">
-                <label htmlFor="endTime">End Time:</label>
-                <input 
-                  type="time" 
-                  id="endTime" 
-                  name="endTime" 
-                  required
-                  defaultValue={modifyingBooking.endTime}
-                />
-              </div>
-              <div className="form-group">
-                <label htmlFor="attendees">Number of Attendees:</label>
-                <input 
-                  type="number" 
-                  id="attendees" 
-                  name="attendees" 
-                  min="1" 
-                  required
-                  defaultValue={modifyingBooking.attendees || 0}
-                />
-              </div>
-              <div className="form-actions">
-                <button 
-                  type="button" 
-                  onClick={handleCancelModification} 
-                  className="cancel-modify-btn"
-                >
-                  Cancel
-                </button>
-                <button 
-                  type="submit" 
-                  className="save-modify-btn" 
-                  disabled={modifyingId === modifyingBooking.id}
-                >
-                  {modifyingId === modifyingBooking.id ? "Saving..." : "Save Changes"}
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      );
-    }
-  };
-  
 
   const renderBookingActionButtons = (booking) => {
     // If booking is cancelled, no actions to show
@@ -729,29 +501,26 @@ const BookingHistory = () => {
           <div className="booking-fee-notice">
             <FaInfoCircle /> <span>Active bookings can be modified at reception.</span>
           </div>
-          <div className="action-buttons">
-      
-
-          </div>
         </div>
       );
     }
     
-    // If booking is in the future, allow modification and cancellation
+    // If booking is in the future, allow cancellation
     if (isBookingFuture(booking)) {
+      // NEW CONDITION: Check if booking can be cancelled (48-hour rule)
+      const canAct = canCancel(booking);
+      
       return (
         <div className="booking-actions">
+          {!canAct && (
+            <div className="booking-fee-notice">
+              <FaInfoCircle /> <span>Cancellations are only allowed up to 48 hours before check-in.</span>
+            </div>
+          )}
           <div className="action-buttons">
             <button 
-              onClick={() => handleModifyBooking(booking)} 
-              className="modify-btn"
-              disabled={modifyingBooking !== null}
-            >
-              <FaEdit /> Modify Booking
-            </button>
-            <button 
               onClick={() => handleCancelBooking(booking)}
-              disabled={cancellingId === booking.id}
+              disabled={cancellingId === booking.id || !canAct}
               className="cancel-btn"
             >
               {cancellingId === booking.id ? "Cancelling..." : "Cancel Booking"} <FaTrash />
@@ -926,7 +695,6 @@ const BookingHistory = () => {
           
         </div>
       )}
-      {renderModificationForm()}
     </div>
   );
 };

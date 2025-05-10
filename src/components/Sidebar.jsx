@@ -1,3 +1,4 @@
+// Sidebar.jsx
 import React, { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { 
@@ -11,16 +12,18 @@ import {
   FaSignOutAlt,
   FaEdit,
   FaUserPlus,
-  FaTags,
   FaPlaneDeparture,
   FaFileInvoiceDollar
 } from "react-icons/fa";
 import { auth } from "../config/firebase";
 import { useNavigate } from "react-router-dom";
+import { useUser } from "../context/UserContext"; // Using your existing context
+import "../assets/styles/Sidebar.css"; 
 
 const Sidebar = () => {
   const location = useLocation();
   const navigate = useNavigate();
+  const { currentUser, isAdmin, isSuperAdmin } = useUser(); // Using your enhanced context
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
   const [isSidebarOpen, setIsSidebarOpen] = useState(!isMobile);
 
@@ -54,8 +57,6 @@ const Sidebar = () => {
   const handleLogout = () => {
     auth.signOut()
       .then(() => {
-        // Clear session storage
-        sessionStorage.removeItem('currentUser');
         // Redirect to login page
         navigate("/login");
       })
@@ -78,7 +79,7 @@ const Sidebar = () => {
       
       <aside className={`sidebar ${isMobile ? (isSidebarOpen ? 'open' : 'closed') : ''}`}>
         <div className="sidebar-logo">
-          <h2>InnSight</h2>
+          <h2>Ampomaah Tourist Hotel</h2>
         </div>
         
         <ul className="sidebar-menu">
@@ -110,7 +111,6 @@ const Sidebar = () => {
             </Link>
           </li>
           
-          {/* Room Management Link */}
           <li className={`sidebar-item ${isActive('/room-management') ? 'active' : ''}`}>
             <Link to="/room-management">
               <span className="sidebar-icon"><FaEdit /></span>
@@ -118,16 +118,15 @@ const Sidebar = () => {
             </Link>
           </li>
           
-         
-      
-          
-          {/* User Registration Link */}
-          <li className={`sidebar-item ${isActive('/user-registration') ? 'active' : ''}`}>
-            <Link to="/user-registration">
-              <span className="sidebar-icon"><FaUserPlus /></span>
-              <span className="sidebar-text">User Registration</span>
-            </Link>
-          </li>
+          {/* User Registration - Only for admin and superadmin */}
+          {isAdmin && (
+            <li className={`sidebar-item ${isActive('/user-registration') ? 'active' : ''}`}>
+              <Link to="/user-registration">
+                <span className="sidebar-icon"><FaUserPlus /></span>
+                <span className="sidebar-text">User Registration</span>
+              </Link>
+            </li>
+          )}
           
           <li className={`sidebar-item ${isActive('/pickup') ? 'active' : ''}`}>
             <Link to="/pickup">
@@ -150,12 +149,15 @@ const Sidebar = () => {
             </Link>
           </li>
           
-          <li className={`sidebar-item ${isActive('/freports') ? 'active' : ''}`}>
-            <Link to="/freports">
-              <span className="sidebar-icon"><FaChartBar /></span>
-              <span className="sidebar-text">Reports & Analytics</span>
-            </Link>
-          </li>
+          {/* Financial Reports - Only for superadmin */}
+          {isSuperAdmin && (
+            <li className={`sidebar-item ${isActive('/freports') ? 'active' : ''}`}>
+              <Link to="/freports">
+                <span className="sidebar-icon"><FaChartBar /></span>
+                <span className="sidebar-text">Financial Reports</span>
+              </Link>
+            </li>
+          )}
           
           <li className={`sidebar-item ${isActive('/ad_settings') ? 'active' : ''}`}>
             <Link to="/ad_settings">
@@ -164,16 +166,16 @@ const Sidebar = () => {
             </Link>
           </li>
           
-  {/*         <li className="sidebar-item" onClick={handleLogout}>
+          <li className="sidebar-item" onClick={handleLogout}>
             <Link to="#">
               <span className="sidebar-icon"><FaSignOutAlt /></span>
               <span className="sidebar-text">Logout</span>
             </Link>
-          </li> */}
+          </li>
         </ul>
         
         <div className="sidebar-footer">
-          <p>Ampomaah Tourist Hotel</p>
+          <p>powered by InnSight</p>
         </div>
       </aside>
     </>

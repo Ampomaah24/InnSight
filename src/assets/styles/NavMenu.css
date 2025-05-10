@@ -1,17 +1,25 @@
 /* NavMenu.css - Improved styling */
 
 :root {
-  --primary-color: #3a6ea5;
-  --primary-light: #5284c0;
-  --primary-dark: #2c5380;
-  --accent-color: #f39c12;
-  --text-dark: #2c3e50;
-  --shadow-sm: 0 2px 5px rgba(0, 0, 0, 0.05);
-  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.08);
-  --shadow-lg: 0 8px 20px rgba(0, 0, 0, 0.12);
-  --transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
-  --border-radius: 0.5rem;
+  --primary: #e05206;
+  --primary-dark: #c04400;
+  --primary-light: #ff7a3c;
+  --secondary: #343377;
+  --dark: #333;
+  --light: #fff;
+  --gray: #666;
+  --light-gray: #f7f7f7;
+  --border: #e0e0e0;
+  --success: #2ecc71;
+  --error: #e74c3c;
+  --shadow: 0 0.25rem 0.75rem rgba(0,0,0,0.1);
+  --transition: all 0.3s ease;
+  
+  --heading-font: 'Playfair Display', serif;
+  --body-font: 'Lato', sans-serif;
+  --accent-font: 'Cormorant Garamond', serif;
 }
+
 
 /* Navbar Container - Fix visibility issue */
 .nav-container {

@@ -60,11 +60,13 @@ const Checkout = () => {
   const navigate = useNavigate();
   const { cartItems = [] } = location.state || {};
 
-  // Tax rates state - initialize with default values
+  // Tax rates state - initialize with default values but will fetch from DB
   const [taxRates, setTaxRates] = useState({
     vatRate: 12.5,
-    nhilRate: 3.0,
-    serviceTaxRate: 8.0
+    nhilRate: 2.5,
+    serviceTaxRate: 5,
+    cityTaxRate: 2,
+    taxIncluded: false
   });
   
   // Order totals
@@ -73,6 +75,8 @@ const Checkout = () => {
     vat: 0,
     nhil: 0,
     serviceTax: 0,
+    cityTax: 0,
+    roomServiceFee: 0,
     total: 0
   });
 
@@ -107,6 +111,38 @@ const Checkout = () => {
   const [menuOpen, setMenuOpen] = useState(false);
   const [orderReference, setOrderReference] = useState("");
   const [isLoading, setIsLoading] = useState(true);
+
+  // Add the fetchTaxRates function to get tax rates from Firestore
+  useEffect(() => {
+    const fetchTaxRates = async () => {
+      try {
+        const taxRatesRef = doc(db, "settings", "taxes");
+        const taxDoc = await getDoc(taxRatesRef);
+        
+        if (taxDoc.exists()) {
+          const taxData = taxDoc.data();
+          
+          // Update tax rates with values from the database
+          setTaxRates({
+            vatRate: taxData.vatRate || 12.5, // Fallback to defaults if value not found
+            nhilRate: taxData.nhilRate || 2.5,
+            serviceTaxRate: taxData.serviceTaxRate || 5,
+            cityTaxRate: taxData.cityTaxRate || 2,
+            taxIncluded: taxData.taxIncluded || false
+          });
+          
+          console.log("Fetched tax rates from database:", taxData);
+        } else {
+          console.warn("Tax rates document doesn't exist in Firestore");
+        }
+      } catch (error) {
+        console.error("Error fetching tax rates:", error);
+        // Continue with default values if there's an error
+      }
+    };
+    
+    fetchTaxRates();
+  }, []); // Run once on component mount
 
   const checkRoomServiceEligibility = async (roomNumber) => {
     if (!roomNumber || !roomNumber.trim()) {
@@ -172,28 +208,67 @@ const Checkout = () => {
       0
     );
     
-    const vat = subtotal * (taxRates.vatRate / 100);
-    const nhil = subtotal * (taxRates.nhilRate / 100);
-    const serviceTax = subtotal * (taxRates.serviceTaxRate / 100);
+    // Calculate taxes based on whether they're included in the price or not
+    let calculatedVat, calculatedNhil, calculatedServiceTax, calculatedCityTax;
     
-    // Add delivery fee for room service
-    let total = subtotal + vat + nhil + serviceTax;
-    
-    // Add room service fee if applicable
-    if (formData.deliveryMethod === "roomService") {
-      // Add a 10% service charge for room delivery
-      const roomServiceFee = subtotal * 0.1;
-      total += roomServiceFee;
+    if (taxRates.taxIncluded) {
+      // If taxes are included in the price, extract them
+      const taxFactor = 1 + ((taxRates.vatRate + taxRates.nhilRate + 
+                            taxRates.serviceTaxRate + taxRates.cityTaxRate) / 100);
+      const preTaxSubtotal = subtotal / taxFactor;
+      
+      calculatedVat = preTaxSubtotal * (taxRates.vatRate / 100);
+      calculatedNhil = preTaxSubtotal * (taxRates.nhilRate / 100);
+      calculatedServiceTax = preTaxSubtotal * (taxRates.serviceTaxRate / 100);
+      calculatedCityTax = preTaxSubtotal * (taxRates.cityTaxRate / 100);
+      
+      // Total doesn't change as taxes are already included
+      let total = subtotal;
+      
+      // Add room service fee if applicable
+      if (formData.deliveryMethod === "roomService") {
+        const roomServiceFee = subtotal * 0.1;
+        total += roomServiceFee;
+      }
+      
+      setOrderTotals({
+        subtotal,
+        preTaxSubtotal, // Store the pre-tax amount
+        vat: calculatedVat,
+        nhil: calculatedNhil,
+        serviceTax: calculatedServiceTax,
+        cityTax: calculatedCityTax,
+        roomServiceFee: formData.deliveryMethod === "roomService" ? subtotal * 0.1 : 0,
+        total,
+        taxesIncluded: true
+      });
+    } else {
+      // Standard calculation - add taxes on top
+      calculatedVat = subtotal * (taxRates.vatRate / 100);
+      calculatedNhil = subtotal * (taxRates.nhilRate / 100);
+      calculatedServiceTax = subtotal * (taxRates.serviceTaxRate / 100);
+      calculatedCityTax = subtotal * (taxRates.cityTaxRate / 100);
+      
+      // Add all taxes to subtotal
+      let total = subtotal + calculatedVat + calculatedNhil + calculatedServiceTax + calculatedCityTax;
+      
+      // Add room service fee if applicable
+      if (formData.deliveryMethod === "roomService") {
+        const roomServiceFee = subtotal * 0.1;
+        total += roomServiceFee;
+      }
+      
+      setOrderTotals({
+        subtotal,
+        vat: calculatedVat,
+        nhil: calculatedNhil,
+        serviceTax: calculatedServiceTax,
+        cityTax: calculatedCityTax,
+        roomServiceFee: formData.deliveryMethod === "roomService" ? subtotal * 0.1 : 0,
+        total,
+        taxesIncluded: false
+      });
     }
-    
-    setOrderTotals({
-      subtotal,
-      vat,
-      nhil,
-      serviceTax,
-      roomServiceFee: formData.deliveryMethod === "roomService" ? subtotal * 0.1 : 0,
-      total
-    });
   }, [cartItems, taxRates, formData.deliveryMethod]);
 
   // Check room service eligibility when room number changes
@@ -432,13 +507,8 @@ const Checkout = () => {
         userId,
         ...formData,
         cartItems,
-        subtotal: orderTotals.subtotal,
-        vat: orderTotals.vat,
-        nhil: orderTotals.nhil,
-        serviceTax: orderTotals.serviceTax,
-        roomServiceFee: orderTotals.roomServiceFee || 0,
-        total: orderTotals.total,
-        taxRates,
+        ...orderTotals, // Include all calculated totals
+        taxRates, // Include the tax rates used for the calculation
         status,
         isGuest: !getAuth().currentUser,
         paymentReference,
@@ -643,10 +713,19 @@ const Checkout = () => {
                   </div>
                 ))}
                 <hr />
+                
+                {taxRates.taxIncluded && (
+                  <div className="tax-included-notice">
+                    <span>All prices include taxes</span>
+                  </div>
+                )}
+                
                 <div className="checkout-line">
                   <span>Subtotal</span>
                   <span>GHS {orderTotals.subtotal.toFixed(2)}</span>
                 </div>
+                
+                {/* Show tax breakdown regardless of whether taxes are included or not */}
                 <div className="checkout-line">
                   <span>VAT ({taxRates.vatRate}%)</span>
                   <span>GHS {orderTotals.vat.toFixed(2)}</span>
@@ -659,6 +738,12 @@ const Checkout = () => {
                   <div className="checkout-line">
                     <span>Service Tax ({taxRates.serviceTaxRate}%)</span>
                     <span>GHS {orderTotals.serviceTax.toFixed(2)}</span>
+                  </div>
+                )}
+                {taxRates.cityTaxRate > 0 && (
+                  <div className="checkout-line">
+                    <span>City/Tourism Tax ({taxRates.cityTaxRate}%)</span>
+                    <span>GHS {orderTotals.cityTax.toFixed(2)}</span>
                   </div>
                 )}
                 {formData.deliveryMethod === "roomService" && (
@@ -703,28 +788,6 @@ const Checkout = () => {
                   />
                   {formErrors.phone && <span className="error-message">{formErrors.phone}</span>}
                 </label>
-                
-                {/* Room Number input to enable room service eligibility checking */}
-                {/* {!userProfile.isHotelGuest && (
-                  <label>
-                    <div className="field-tooltip">
-                      Room Number
-                      <span className="tooltip-icon">
-                        <FaQuestionCircle />
-                        <span className="tooltip-text">
-                          Enter your room number to enable room service option.
-                        </span>
-                      </span>
-                    </div>
-                    <input
-                      type="text"
-                      name="roomNumber"
-                      value={formData.roomNumber}
-                      onChange={handleChange}
-                      placeholder="Enter your room number to enable room service"
-                    />
-                  </label>
-                )} */}
                 
                 {/* Delivery Method Selection */}
                 <label>

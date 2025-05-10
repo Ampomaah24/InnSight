@@ -20,6 +20,7 @@ const RoomBooking = () => {
   const [loading, setLoading] = useState(true);
   const [roomIndexes, setRoomIndexes] = useState({});
   const [selectedRooms, setSelectedRooms] = useState([]);
+  const [roomCounts, setRoomCounts] = useState({}); // Track how many of each room type we're booking
   const [isLoggedIn, setIsLoggedIn] = useState(false); // Track login state
 
   // Discount configuration pulled from Firestore
@@ -143,11 +144,14 @@ const RoomBooking = () => {
         const q = query(roomsCollection, where("availability", "==", true));
         const querySnapshot = await getDocs(q);
         let availableRooms = [];
+        const initialRoomCounts = {}; // Initialize room counts
 
         querySnapshot.forEach((doc) => {
           let room = { id: doc.id, ...doc.data() };
           if (!room.bookings || room.bookings.length === 0) {
             availableRooms.push(room);
+            // Track how many rooms of each type are available
+            initialRoomCounts[room.t_room] = (initialRoomCounts[room.t_room] || 0) + 1;
             return;
           }
 
@@ -161,7 +165,11 @@ const RoomBooking = () => {
             return selectedCheckIn <= bookedCheckOut && selectedCheckOut >= bookedCheckIn;
           });
 
-          if (!isBooked) availableRooms.push(room);
+          if (!isBooked) {
+            availableRooms.push(room);
+            // Track how many rooms of each type are available
+            initialRoomCounts[room.t_room] = (initialRoomCounts[room.t_room] || 0) + 1;
+          }
         });
 
         setRooms(availableRooms);
@@ -172,6 +180,13 @@ const RoomBooking = () => {
           if (!initialIndexes[room.t_room]) initialIndexes[room.t_room] = 0;
         });
         setRoomIndexes(initialIndexes);
+        
+        // Initialize room selection counts to zero
+        const initialSelectionCounts = {};
+        Object.keys(initialRoomCounts).forEach(roomType => {
+          initialSelectionCounts[roomType] = 0;
+        });
+        setRoomCounts(initialSelectionCounts);
       } catch (error) {
         console.error("Error fetching available rooms:", error);
         setRooms([]);
@@ -190,6 +205,12 @@ const RoomBooking = () => {
     return acc;
   }, {});
 
+  // Count available rooms by type
+  const roomAvailabilityCounts = Object.keys(groupedRooms).reduce((acc, type) => {
+    acc[type] = groupedRooms[type].length;
+    return acc;
+  }, {});
+
   const changeRoomIndex = (roomType, direction) => {
     setRoomIndexes((prevIndexes) => {
       const totalRooms = groupedRooms[roomType].length;
@@ -201,12 +222,70 @@ const RoomBooking = () => {
     });
   };
 
+  // Modified function to handle multiple rooms of the same type
   const toggleRoomSelection = (room) => {
-    setSelectedRooms((prevSelected) => {
-      const isSelected = prevSelected.some((r) => r.id === room.id);
-      return isSelected
-        ? prevSelected.filter((r) => r.id !== room.id)
-        : [...prevSelected, room];
+    const roomType = room.t_room;
+    
+    setRoomCounts(prevCounts => {
+      // Calculate new count after toggling
+      const currentCount = prevCounts[roomType] || 0;
+      let newCount;
+      
+      // If we've selected all available rooms of this type, reset to 0
+      if (currentCount >= roomAvailabilityCounts[roomType]) {
+        newCount = 0;
+      } else {
+        // Otherwise increment the count
+        newCount = currentCount + 1;
+      }
+      
+      // Update selected rooms based on new count
+      updateSelectedRooms(roomType, newCount);
+      
+      return { ...prevCounts, [roomType]: newCount };
+    });
+  };
+  
+  // Helper function to update selected rooms based on count
+  const updateSelectedRooms = (roomType, count) => {
+    setSelectedRooms(prevSelected => {
+      // Remove all rooms of this type first
+      const filteredRooms = prevSelected.filter(r => r.t_room !== roomType);
+      
+      // If count is 0, just return the filtered array
+      if (count === 0) {
+        return filteredRooms;
+      }
+      
+      // Add the required number of rooms of this type
+      const roomsToAdd = groupedRooms[roomType].slice(0, count);
+      return [...filteredRooms, ...roomsToAdd];
+    });
+  };
+
+  // New function to decrease room count
+  const decreaseRoomCount = (roomType) => {
+    setRoomCounts(prevCounts => {
+      const currentCount = prevCounts[roomType] || 0;
+      if (currentCount <= 0) return prevCounts; // Can't go below 0
+      
+      const newCount = currentCount - 1;
+      updateSelectedRooms(roomType, newCount);
+      return { ...prevCounts, [roomType]: newCount };
+    });
+  };
+
+  // New function to increase room count
+  const increaseRoomCount = (roomType) => {
+    setRoomCounts(prevCounts => {
+      const currentCount = prevCounts[roomType] || 0;
+      const maxAvailable = roomAvailabilityCounts[roomType] || 0;
+      
+      if (currentCount >= maxAvailable) return prevCounts; // Can't exceed available rooms
+      
+      const newCount = currentCount + 1;
+      updateSelectedRooms(roomType, newCount);
+      return { ...prevCounts, [roomType]: newCount };
     });
   };
 
@@ -364,6 +443,8 @@ const RoomBooking = () => {
             
           const totalRooms = groupedRooms[roomType].length;
           const totalPrice = discountedPrice * nights;
+          const currentRoomCount = roomCounts[roomType] || 0;
+          const maxAvailable = roomAvailabilityCounts[roomType] || 0;
 
           return (
             <div key={roomType} className="room-type-section">
@@ -412,12 +493,30 @@ const RoomBooking = () => {
                     </ul>
                   </div>
 
-                  <button 
-                    className={`select-room ${selectedRooms.some(r => r.id === currentRoom.id) ? 'selected' : ''}`}
-                    onClick={() => toggleRoomSelection(currentRoom)}
-                  >
-                    {selectedRooms.some(r => r.id === currentRoom.id) ? 'Room Selected' : 'Select Room'}
-                  </button>
+                  {/* New room quantity selector */}
+                  <div className="room-quantity-selector">
+                    <span>Number of Rooms: </span>
+                    <div className="quantity-controls">
+                      <button 
+                        className="quantity-btn" 
+                        onClick={() => decreaseRoomCount(roomType)}
+                        disabled={currentRoomCount <= 0}
+                      >
+                        -
+                      </button>
+                      <span className="quantity-display">{currentRoomCount}</span>
+                      <button 
+                        className="quantity-btn" 
+                        onClick={() => increaseRoomCount(roomType)}
+                        disabled={currentRoomCount >= maxAvailable}
+                      >
+                        +
+                      </button>
+                    </div>
+                    <div className="availability-info">
+                      {maxAvailable} available
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>

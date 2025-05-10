@@ -9,6 +9,7 @@ export const UserContext = createContext(null);
 export const UserProvider = ({ children }) => {
   const [currentUser, setCurrentUser] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [userRole, setUserRole] = useState(null); // Add role state
 
   // Function to normalize user data
   const normalizeUserData = (user, data) => {
@@ -18,7 +19,7 @@ export const UserProvider = ({ children }) => {
     
     if (data.fullName) {
       const nameParts = data.fullName.split(' ');
-      firstName = normalizeUserData.fname;
+      firstName = nameParts[0] || "";
       lastName = nameParts.slice(1).join(' ') || "";
     } else if (data.fname && data.lname) {
       firstName = data.fname;
@@ -29,6 +30,9 @@ export const UserProvider = ({ children }) => {
       lastName = nameParts.slice(1).join(' ') || "";
     }
     
+    // Extract role with default fallback
+    const role = data.role || 'staff';
+    
     return {
       id: user.uid,
       fname: firstName,
@@ -37,7 +41,7 @@ export const UserProvider = ({ children }) => {
       email: user.email,
       photoURL: data.photoURL || user.photoURL || null,
       avatar: data.avatar || null,
-      role: data.role || 'user',
+      role: role, // Ensure role is included
       // Additional properties from your user object
       phone: data.phone || "",
       address: data.address || "",
@@ -82,30 +86,44 @@ export const UserProvider = ({ children }) => {
             // Update context state
             setCurrentUser(normalizedUser);
             
+            // Set role separately for easy access
+            setUserRole(normalizedUser.role);
+            
             // Update sessionStorage
             sessionStorage.setItem('currentUser', JSON.stringify(normalizedUser));
           } else {
             console.error("User document not found in Firestore");
-            setCurrentUser({
+            
+            // Default user with staff role if no Firestore data
+            const defaultUser = {
               id: user.uid,
               email: user.email,
-              displayName: user.displayName || "User"
-            });
+              displayName: user.displayName || "User",
+              role: 'staff' // Default role
+            };
+            
+            setCurrentUser(defaultUser);
+            setUserRole('staff');
           }
         } catch (err) {
           console.error("Error in auth state change:", err);
           // Set basic user info if Firestore fetch fails
-          setCurrentUser({
+          const basicUser = {
             id: user.uid,
             email: user.email,
-            displayName: user.displayName || "User"
-          });
+            displayName: user.displayName || "User",
+            role: 'staff' // Default role
+          };
+          
+          setCurrentUser(basicUser);
+          setUserRole('staff');
         } finally {
           setLoading(false);
         }
       } else {
         // User is logged out
         setCurrentUser(null);
+        setUserRole(null);
         sessionStorage.removeItem('currentUser');
         setLoading(false);
       }
@@ -115,7 +133,9 @@ export const UserProvider = ({ children }) => {
     const storedUser = sessionStorage.getItem('currentUser');
     if (storedUser) {
       try {
-        setCurrentUser(JSON.parse(storedUser));
+        const parsedUser = JSON.parse(storedUser);
+        setCurrentUser(parsedUser);
+        setUserRole(parsedUser.role || 'staff');
       } catch (e) {
         console.error("Error parsing stored user data:", e);
         sessionStorage.removeItem('currentUser');
@@ -126,8 +146,21 @@ export const UserProvider = ({ children }) => {
     return () => unsubscribe();
   }, []);
 
+  // Create role-based helper properties
+  const isAdmin = userRole === 'admin' || userRole === 'superadmin';
+  const isSuperAdmin = userRole === 'superadmin';
+
   return (
-    <UserContext.Provider value={{ currentUser, loading, setCurrentUser }}>
+    <UserContext.Provider 
+      value={{ 
+        currentUser, 
+        loading, 
+        setCurrentUser,
+        userRole,
+        isAdmin,
+        isSuperAdmin
+      }}
+    >
       {children}
     </UserContext.Provider>
   );

@@ -2,13 +2,11 @@ import React, { useState, useEffect } from "react";
 import { collection, getDocs, doc, updateDoc, addDoc, serverTimestamp, deleteDoc } from "firebase/firestore";
 import { db } from "../config/firebase";
 import Sidebar from "../components/Sidebar";
-import TopRightProfile from "../components/TopRightProfile";
+// Removed TopRightProfile import
 import "../assets/styles/Dashboard.css";
 import "../assets/styles/RoomManagement.css";
 
-// Icon imports (assuming Font Awesome or similar is used)
-// You'll need to install and import the actual icon library you're using
-// For example: npm install @fortawesome/react-fontawesome @fortawesome/free-solid-svg-icons
+// Icon imports
 import { FaEdit, FaSave, FaTimes, FaTrash, FaPlus } from 'react-icons/fa';
 
 const RoomManagement = () => {
@@ -31,7 +29,7 @@ const RoomManagement = () => {
     bookings: []
   });
   
-  // New state for room types management
+  // State for room types management
   const [roomTypes, setRoomTypes] = useState(["Single bed", "Double bed", "Twin bed"]);
   const [showRoomTypeModal, setShowRoomTypeModal] = useState(false);
   const [newRoomType, setNewRoomType] = useState("");
@@ -455,7 +453,7 @@ const RoomManagement = () => {
   return (
     <div className="dashboard-container">
       <Sidebar />
-      <TopRightProfile />
+      {/* Removed TopRightProfile component */}
       <div className="main-content">
         <div className="dashboard-header">
           <h1 className="dashboard-title">Room Management</h1>
@@ -605,7 +603,7 @@ const RoomManagement = () => {
                   name="name"
                   value={newRoom.name}
                   onChange={handleNewRoomChange}
-                  placeholder="e.g. R054"
+                  placeholder="e.g. R001"
                   required
                 />
               </div>

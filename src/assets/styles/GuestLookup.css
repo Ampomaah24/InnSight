@@ -1,0 +1,459 @@
+/* Guest Lookup Component Styling */
+/* This file should be placed in the assets/styles directory as GuestLookup.css */
+
+/* Main Container */
+.guest-lookup {
+    background-color: var(--white-color, #fff);
+    border-radius: var(--border-radius-lg, 0.5rem);
+    box-shadow: var(--shadow, 0 0.25rem 0.75rem rgba(0,0,0,0.1));
+    overflow: hidden;
+    margin-bottom: 1.5rem;
+  }
+  
+  /* Search Container */
+  .guest-lookup__search {
+    padding: 1.5rem;
+    border-bottom: 1px solid var(--gray-200, #e9ecef);
+  }
+  
+  .search-form {
+    width: 100%;
+  }
+  
+  /* Search Form Field */
+  .search-form__field {
+    margin-bottom: 1rem;
+  }
+  
+  .search-form__label {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.95rem;
+    font-weight: 500;
+    color: var(--gray-700, #495057);
+    margin-bottom: 0.5rem;
+  }
+  
+  .search-form__icon {
+    color: var(--primary-color, #4361ee);
+  }
+  
+  .search-form__input-group {
+    display: flex;
+    gap: 0.75rem;
+  }
+  
+  .search-form__input {
+    flex: 1;
+    height: var(--input-height, 2.75rem);
+    padding: 0 1rem;
+    border: 1px solid var(--gray-300, #dee2e6);
+    border-radius: var(--border-radius, 0.375rem);
+    font-size: var(--input-font-size, 0.95rem);
+    color: var(--gray-800, #343a40);
+    transition: var(--transition, all 0.3s ease);
+  }
+  
+  .search-form__input:focus {
+    border-color: var(--primary-color, #4361ee);
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.15);
+  }
+  
+  .search-form__button {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    height: var(--input-height, 2.75rem);
+    padding: 0 1.25rem;
+    background-color: var(--primary-color, #4361ee);
+    color: white;
+    border: none;
+    border-radius: var(--border-radius, 0.375rem);
+    font-size: 0.95rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: var(--transition, all 0.3s ease);
+    white-space: nowrap;
+  }
+  
+  .search-form__button:hover {
+    background-color: var(--primary-dark, #3651d4);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-sm, 0 0.125rem 0.25rem rgba(0,0,0,0.075));
+  }
+  
+  .search-form__button:disabled {
+    background-color: var(--gray-400, #ced4da);
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+  }
+  
+  /* Search Type Tabs */
+  .search-type-selector {
+    margin-bottom: 1rem;
+  }
+  
+  .search-type-tabs {
+    display: flex;
+    border-bottom: 1px solid var(--gray-300, #dee2e6);
+    margin-bottom: 1rem;
+    overflow-x: auto;
+    scrollbar-width: thin;
+  }
+  
+  .search-type-tab {
+    padding: 0.75rem 1.25rem;
+    background: transparent;
+    border: none;
+    color: var(--gray-700, #495057);
+    font-size: 0.95rem;
+    font-weight: 500;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: var(--transition, all 0.3s ease);
+    position: relative;
+  }
+  
+  .search-type-tab:hover {
+    color: var(--primary-color, #4361ee);
+  }
+  
+  .search-type-tab.active {
+    color: var(--primary-color, #4361ee);
+  }
+  
+  .search-type-tab.active::after {
+    content: '';
+    position: absolute;
+    bottom: -1px;
+    left: 0;
+    width: 100%;
+    height: 2px;
+    background-color: var(--primary-color, #4361ee);
+  }
+  
+  /* Advanced Filters */
+  .advanced-filters-toggle {
+    margin: 1rem 0;
+  }
+  
+  .toggle-button {
+    background-color: transparent;
+    color: var(--primary-color, #4361ee);
+    border: 1px dashed var(--gray-300, #dee2e6);
+    border-radius: var(--border-radius, 0.375rem);
+    padding: 0.5rem 1rem;
+    font-size: 0.875rem;
+    cursor: pointer;
+    transition: var(--transition, all 0.3s ease);
+  }
+  
+  .toggle-button:hover {
+    background-color: rgba(67, 97, 238, 0.05);
+    border-color: var(--primary-color, #4361ee);
+  }
+  
+  .advanced-filters {
+    background-color: var(--gray-100, #f8f9fa);
+    border-radius: var(--border-radius, 0.375rem);
+    padding: 1rem;
+    margin-bottom: 1rem;
+    border: 1px solid var(--gray-200, #e9ecef);
+  }
+  
+  .advanced-filters__row {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+  }
+  
+  .advanced-filters__field {
+    flex: 1;
+    min-width: 200px;
+  }
+  
+  .advanced-filters__label {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 0.5rem;
+    font-weight: 500;
+    color: var(--gray-700, #495057);
+    font-size: 0.9rem;
+  }
+  
+  .advanced-filters__icon {
+    color: var(--primary-color, #4361ee);
+  }
+  
+  .advanced-filters__select,
+  .advanced-filters__input {
+    width: 100%;
+    padding: 0.625rem 0.875rem;
+    border: 1px solid var(--gray-300, #dee2e6);
+    border-radius: var(--border-radius, 0.375rem);
+    font-size: 0.9rem;
+    transition: var(--transition, all 0.3s ease);
+  }
+  
+  .advanced-filters__select:focus,
+  .advanced-filters__input:focus {
+    border-color: var(--primary-color, #4361ee);
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.15);
+  }
+  
+  /* Full Width Button */
+  .search-actions {
+    margin-top: 1rem;
+  }
+  
+  .search-form__button--full {
+    width: 100%;
+    justify-content: center;
+  }
+  
+  /* Results Section */
+  .guest-lookup__results {
+    padding: 1.5rem;
+  }
+  
+  .section-title {
+    display: flex;
+    align-items: center;
+    gap: 0.625rem;
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--gray-800, #343a40);
+    margin-top: 0;
+    margin-bottom: 1rem;
+  }
+  
+  /* Pending Stats */
+  .pending-stats {
+    display: flex;
+    background-color: var(--gray-100, #f8f9fa);
+    border-radius: var(--border-radius, 0.375rem);
+    padding: 0.75rem 1rem;
+    margin-bottom: 1.25rem;
+    border: 1px solid var(--gray-200, #e9ecef);
+    flex-wrap: wrap;
+    gap: 1.5rem;
+  }
+  
+  .pending-stat-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  
+  .pending-stat-label {
+    font-size: 0.9rem;
+    color: var(--gray-700, #495057);
+    font-weight: 500;
+  }
+  
+  .pending-stat-value {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--primary-color, #4361ee);
+  }
+  
+  /* Bookings List */
+  .bookings-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+    gap: 1.25rem;
+  }
+  
+  /* Booking Card */
+  .booking-card {
+    background-color: var(--white-color, #fff);
+    border-radius: var(--border-radius, 0.375rem);
+    box-shadow: var(--shadow-sm, 0 0.125rem 0.25rem rgba(0,0,0,0.075));
+    border: 1px solid var(--gray-200, #e9ecef);
+    overflow: hidden;
+    transition: var(--transition, all 0.3s ease);
+  }
+  
+  .booking-card:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow, 0 0.25rem 0.75rem rgba(0,0,0,0.1));
+  }
+  
+  .booking-card__header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem;
+    background-color: var(--gray-100, #f8f9fa);
+    border-bottom: 1px solid var(--gray-200, #e9ecef);
+    flex-wrap: wrap;
+    gap: 0.75rem;
+  }
+  
+  .booking-card__title {
+    margin: 0;
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: var(--gray-900, #212529);
+  }
+  
+  .booking-card__dates {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.95rem;
+    color: var(--gray-700, #495057);
+  }
+  
+  .booking-card__details {
+    padding: 1rem;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    border-bottom: 1px solid var(--gray-200, #e9ecef);
+  }
+  
+  .booking-card__icon {
+    color: var(--primary-color, #4361ee);
+    margin-right: 0.375rem;
+  }
+  
+  .booking-card__booker {
+    display: flex;
+    align-items: center;
+    font-weight: 500;
+    margin: 0;
+    min-width: 250px;
+  }
+  
+  .booking-card__room-info {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1.5rem;
+  }
+  
+  .booking-card__room-info p {
+    margin: 0;
+    display: flex;
+    align-items: center;
+    min-width: 200px;
+  }
+  
+  .booking-card__guests {
+    padding: 1rem;
+  }
+  
+  .booking-card__subtitle {
+    margin: 0 0 0.75rem;
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--gray-800, #343a40);
+  }
+  
+  /* Pending Guests List */
+  .pending-guests-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+  
+  .pending-guest {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.75rem 1rem;
+    background-color: var(--gray-100, #f8f9fa);
+    border-radius: var(--border-radius, 0.375rem);
+    border: 1px solid var(--gray-200, #e9ecef);
+  }
+  
+  .pending-guest__name {
+    font-weight: 500;
+    color: var(--gray-800, #343a40);
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+  
+  .main-booker-tag {
+    display: inline-block;
+    background-color: var(--primary-color, #4361ee);
+    color: white;
+    font-size: 0.7rem;
+    font-weight: 500;
+    padding: 0.1rem 0.4rem;
+    border-radius: 0.25rem;
+    vertical-align: middle;
+  }
+  
+  .pending-guest__register-btn {
+    background-color: var(--primary-color, #4361ee);
+    color: white;
+    border: none;
+    border-radius: var(--border-radius, 0.375rem);
+    padding: 0.5rem 0.75rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: var(--transition, all 0.3s ease);
+    white-space: nowrap;
+  }
+  
+  .pending-guest__register-btn:hover {
+    background-color: var(--primary-dark, #3651d4);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-sm, 0 0.125rem 0.25rem rgba(0,0,0,0.075));
+  }
+  
+  /* Loading Spinner */
+  .spinner {
+    animation: spin 1s linear infinite;
+  }
+  
+  @keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+  }
+  
+  /* Responsive Adjustments */
+  @media (max-width: 768px) {
+    .search-form__input-group {
+      flex-direction: column;
+    }
+    
+    .search-form__button {
+      width: 100%;
+    }
+    
+    .booking-card__header {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+    
+    .booking-card__details {
+      flex-direction: column;
+    }
+    
+    .pending-guest {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 0.75rem;
+    }
+    
+    .pending-guest__register-btn {
+      width: 100%;
+    }
+    
+    .bookings-list {
+      grid-template-columns: 1fr;
+    }
+  }
