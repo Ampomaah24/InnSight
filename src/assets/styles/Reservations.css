@@ -1,4 +1,5 @@
-/* Enhanced Reservations.css */
+
+
 
 :root {
   /* Core colors */
@@ -85,33 +86,9 @@ body {
   line-height: var(--line-height-normal);
 }
 .dashboard-container .main-content {
-  width: calc(100vw - 35rem) !important; /* Force the change temporarily */
+  width: calc(100vw - 40rem) !important; /* Force the change temporarily */
   max-width: 1400px !important;
 }
-.center-success-message {
-  position: fixed;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  background-color: var(--success);
-  color: white;
-  padding: 1rem 2rem;
-  border-radius: var(--radius-lg);
-  font-size: 1.1rem;
-  font-weight: 600;
-  z-index: 9999;
-  box-shadow: var(--shadow-lg);
-  text-align: center;
-  animation: fadeInOut 1s ease-in-out forwards;
-}
-
-@keyframes fadeInOut {
-  0% { opacity: 0; transform: translate(-50%, -60%); }
-  10% { opacity: 1; transform: translate(-50%, -50%); }
-  90% { opacity: 1; transform: translate(-50%, -50%); }
-  100% { opacity: 0; transform: translate(-50%, -40%); }
-}
-
 .dashboard-container {
   display: flex;
   min-height: 100vh;
@@ -129,55 +106,74 @@ body {
   transition: margin-left var(--transition-normal);
 }
 
-.reservation-summary-box {
-  background-color: var(--gray-50);
-  border: 1px solid var(--gray-200);
-  border-radius: var(--radius-lg);
-  padding: var(--space-6);
-  margin-bottom: var(--space-6);
+
+/* Fix for modal content overflow */
+.modal-content-large {
+  max-width: 90vw;
+  width: 600px;
+  overflow: hidden;
 }
 
-.summary-heading {
-  font-size: 1.125rem;
-  font-weight: 700;
-  color: var(--gray-900);
-  margin-bottom: var(--space-4);
-  border-bottom: 1px solid var(--gray-200);
-  padding-bottom: var(--space-3);
+.modal-body {
+  overflow-y: auto;
+  max-height: 70vh;
+  padding: 20px;
 }
 
-.summary-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-  gap: var(--space-4);
+.guest-details {
+  margin-bottom: 20px;
 }
 
-.summary-item {
+.info-row {
   display: flex;
-  flex-direction: column;
-  
-}
-.summary-value {
-  font-size: 0.65rem;
-  font-weight: 10 !important; /* Force normal weight */
-  color: var(--gray-800);
-  line-height: 1.4;
+  margin-bottom: 10px;
+  gap: 10px;
+  flex-wrap: wrap;
+  word-break: break-word;
 }
 
-.summary-label {
-  font-size: 0.85rem;
+.info-label {
+  font-weight: bold;
+  min-width: 120px;
+  flex-shrink: 0;
+}
+
+.info-value {
+  flex: 1;
+  word-break: break-word;
+  overflow-wrap: break-word;
+  max-width: calc(100% - 130px);
+}
+.info-row {
+  display: flex;
+  align-items: center;
+  flex-wrap: nowrap;
+  gap: 1rem;
+  margin-bottom: 0.75rem;
+  white-space: nowrap;
+}
+
+.info-label {
+  min-width: 150px;
   font-weight: 600;
   color: var(--gray-600);
-  margin-bottom: 0.25rem;
 }
 
-.summary-heading {
-  font-size: 1.05rem;
-  font-weight: 600; 
-  color: var(--gray-800);
+.info-value {
+  flex: 1;
+  color: var(--gray-900);
+  font-weight: 500;
+  overflow-wrap: break-word;
 }
 
 
+/* Fix for very long text strings */
+.modal-content .info-value {
+  white-space: normal;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  hyphens: auto;
+}
 /* Add this media query to adjust for smaller screens */
 @media (max-width: 75rem) {
   .main-content {
@@ -339,6 +335,7 @@ body {
   box-shadow: var(--shadow-sm);
 }
 
+/* Ensure select elements have white background */
 .filter-box select {
   background-color: var(--white);
   -webkit-appearance: none;
@@ -1368,26 +1365,6 @@ body {
     width: 100%;
     font-size: 0.8rem;
   }
-<<<<<<< Updated upstream
-
-
-}
-
-.pending::before {
-  background-color: #5f6368;
-}
-
-.pending-tag {
-  font-size: 0.8em;
-  font-style: italic;
-  color: var(--warning);
-  margin-left: 4px;
-}
-
-/* ========== ACTION BUTTONS ========== */
-.actions-cell {
-  white-space: nowrap;
-=======
   
   .stat-card {
     page-break-inside: avoid;
@@ -1410,149 +1387,82 @@ body {
     color: #000 !important;
     padding: 0;
   }
- /* Toggle Filter Box - Enhanced Style with Switch on Right */
+  /* Toggle Filter Box */
 .toggle-box {
->>>>>>> Stashed changes
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  gap: 0.5rem;
   padding: 0.75rem 1rem;
   border: 1px solid var(--gray-200);
   border-radius: var(--radius-lg);
   font-size: 0.95rem;
   background-color: var(--white);
   box-shadow: var(--shadow-sm);
-  min-width: 200px;
+  min-width: 180px;
   height: 100%;
-  transition: all var(--transition-normal);
-}
-.extended-checkout {
-  color: var(--info);
-  font-weight: bold;
-  font-size: 0.85rem;
-}
-
-.toggle-box:hover {
-  border-color: var(--primary);
-  box-shadow: 0 0 0 1px var(--primary-lighter);
+  white-space: nowrap;
 }
 
 .toggle-label {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  width: 100%;
-  cursor: pointer;
-  user-select: none;
-  gap: 1rem;
-}
-
-.toggle-label span:first-of-type {
   font-weight: 500;
   color: var(--gray-700);
-  transition: color var(--transition-normal);
-  flex: 1;
-}
-
-/* Hide the default checkbox */
-.toggle-label input[type="checkbox"] {
-  position: absolute;
-  opacity: 0;
+  gap: 0.5rem;
   cursor: pointer;
-  height: 0;
-  width: 0;
+}
+/* Fix for Reservation Details section */
+.reservation-details {
+  background-color: var(--gray-50);
+  border-radius: var(--radius-lg);
+  padding: var(--space-6);
+  margin-bottom: var(--space-6);
+  border: 1px solid var(--gray-200);
 }
 
-/* Custom toggle switch */
-.toggle-switch {
-  position: relative;
-  display: inline-block;
-  width: 48px;
-  height: 24px;
-  background-color: var(--gray-300);
-  border-radius: 24px;
-  transition: all var(--transition-normal);
-  flex-shrink: 0;
-  order: 2; /* Ensures switch is on the right */
+.reservation-details h4 {
+  margin-top: 0;
+  margin-bottom: var(--space-4);
+  color: var(--gray-900);
+  font-size: 1.1rem;
+  font-weight: 700;
+  padding-bottom: var(--space-3);
+  border-bottom: 1px solid var(--gray-200);
+  letter-spacing: -0.01em;
 }
 
-.toggle-switch::after {
-  content: '';
-  position: absolute;
-  width: 18px;
-  height: 18px;
-  left: 3px;
-  top: 3px;
-  background-color: white;
-  border-radius: 50%;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
-  transition: all var(--transition-normal);
+/* Improved info row styling */
+.info-row {
+  display: flex;
+  margin-bottom: var(--space-3);
+  align-items: flex-start; /* Changed from center to flex-start for better text alignment */
+  flex-wrap: nowrap;
+  gap: var(--space-4);
+  white-space: nowrap;
 }
 
-<<<<<<< Updated upstream
-.cancel-button {
-  background-color: #f1f3f4;
-}
-=======
-/* Checked state */
-.toggle-label input[type="checkbox"]:checked ~ .toggle-switch {
-  background-color: var(--primary);
-}
-
-.toggle-label input[type="checkbox"]:checked ~ .toggle-switch::after {
-  transform: translateX(24px);
-}
-
-/* Focus state for accessibility */
-.toggle-label input[type="checkbox"]:focus ~ .toggle-switch {
-  box-shadow: 0 0 0 3px var(--primary-lighter);
-}
-
-/* Hover state when not checked */
-.toggle-label:hover .toggle-switch {
-  background-color: var(--gray-400);
-}
-
-.toggle-label:hover input[type="checkbox"]:checked ~ .toggle-switch {
-  background-color: var(--primary-dark);
-}
-
-/* Active label text color when checked */
-.toggle-label input[type="checkbox"]:checked ~ span:first-of-type {
-  color: var(--primary);
+.info-label {
+  min-width: 150px;
   font-weight: 600;
+  color: var(--gray-600);
+  flex-shrink: 0;
 }
 
-/* Make the whole toggle-box responsive */
-@media (max-width: 48rem) {
-  .toggle-box {
-    min-width: 100%;
-  }
+.info-value {
+  flex: 1;
+  color: var(--gray-900);
+  font-weight: 500;
+  white-space: normal; /* Changed from nowrap to normal */
+  word-break: break-word;
+  overflow-wrap: anywhere;
 }
-
-@media (max-width: 36rem) {
-  .toggle-box {
-    padding: 0.625rem 0.875rem;
-  }
-  
-  .toggle-switch {
-    width: 40px;
-    height: 20px;
-  }
-  
-  .toggle-switch::after {
-    width: 14px;
-    height: 14px;
-  }
-  
-  .toggle-label input[type="checkbox"]:checked ~ .toggle-switch::after {
-    transform: translateX(20px);
-  }
+.toggle-label input[type="checkbox"] {
+  width: 1rem;
+  height: 1rem;
+  accent-color: var(--primary);
 }
 
   .status::before {
     display: none;
   }
 }
-
->>>>>>> Stashed changes
