@@ -2,15 +2,15 @@
   display: flex;
   min-height: 100vh;
   font-family: 'Poppins', sans-serif;
-
+  position: relative;
 }
+
 body {
   font-family: 'Poppins', sans-serif !important;
 }
 
-
 .sidebar {
-  width: 14.5rem;
+  width: 15.7rem !important;
   height: 100vh;
   background: white;
   padding: 1.5rem 0;
@@ -81,26 +81,34 @@ body {
 
 .main-content {
   flex: 1;
-  margin-left: 14.5rem; 
-  padding: 1.25rem 2rem; 
-  max-width: 72rem; 
+  margin-left: 7.2rem !important; 
+  padding: 0 2rem 2rem 2rem;
   width: 100%;
   background-color: rgb(255, 255, 255) !important;
+  position: relative;
+}
 
- 
+/* Header section with profile */
+.dashboard-header-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding: 1.5rem 0;
+  width: 100%;
+  margin-bottom: 1.5rem;
 }
 
 .dashboard-header {
-  margin-bottom: 2rem; 
-  padding-top: 0.5rem;
-  padding-right: 8rem; 
+  flex: 1;
+  margin: 0;
+  padding: 0;
 }
 
 .dashboard-title {
   font-size: 1.75rem;
   font-weight: 700;
-  color: #333;
-  margin-bottom: 0.25rem;
+  color: #DB6C24;
+  margin-bottom: 0.5rem;
   position: relative;
   display: inline-block;
 }
@@ -120,9 +128,36 @@ body {
   font-size: 1rem;
   color: #666;
   margin-top: 0.75rem;
-  margin-bottom: 1.5rem;
+  margin-bottom: 0;
 }
 
+/* Profile section in header */
+.top-right-profile {
+  position: static;
+  margin-left: 2rem;
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+/* Make sure profile dropdown appears above other elements */
+.profile-dropdown-container {
+  position: relative;
+  z-index: 150;
+}
+
+/* Optional: Adjust profile section size for dashboard */
+.top-right-profile .profile-name {
+  font-size: 1rem;
+}
+
+.top-right-profile .profile-pic-container {
+  width: 2.5rem;
+  height: 2.5rem;
+}
+
+/* Summary Cards */
 .summary-cards {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -132,7 +167,7 @@ body {
 
 .card {
   background: white;
-  padding: 1.75rem; /* Increased for more spacious cards */
+  padding: 1.75rem;
   border-radius: 0.5rem;
   box-shadow: 0 0.125rem 0.5rem rgba(0, 0, 0, 0.05);
   text-align: center;
@@ -143,7 +178,7 @@ body {
   justify-content: space-between;
   transition: transform 0.2s ease;
   will-change: transform;
-  min-width: 12rem; /* Increased from 10rem */
+  min-width: 12rem;
 }
 
 .card:hover {
@@ -151,13 +186,13 @@ body {
 }
 
 .card-title {
-  font-size: 1rem; /* Increased from 0.9rem */
+  font-size: 1rem;
   color: #666;
-  margin-bottom: 1.25rem; /* Increased from 1rem */
+  margin-bottom: 1.25rem;
 }
 
 .card-value {
-  font-size: 2.25rem; /* Back to original size */
+  font-size: 2.25rem;
   font-weight: 700;
   color: #333;
   margin: 0;
@@ -198,7 +233,7 @@ body {
   height: 0.375rem;
   background-color: #f1f1f1;
   border-radius: 0.25rem;
-  margin-top: 0.75rem; /* Increased from 0.5rem */
+  margin-top: 0.75rem;
   overflow: hidden;
 }
 
@@ -210,21 +245,22 @@ body {
   min-width: 1%;
 }
 
+/* Table Container */
 .table-container {
   background: white;
-  padding: 1.75rem; /* Increased from 1.5rem */
+  padding: 1.75rem;
   border-radius: 0.5rem;
   box-shadow: 0 0.125rem 0.5rem rgba(0, 0, 0, 0.05);
   overflow: hidden;
-  margin-top: 2rem; /* Increased from 1.5rem */
+  margin-top: 2rem;
   max-width: 100%;
 }
 
 .table-title {
-  font-size: 1.25rem; /* Back to original size */
+  font-size: 1.25rem;
   font-weight: 600;
   color: #333;
-  margin-bottom: 1.25rem; /* Increased from 1rem */
+  margin-bottom: 1.25rem;
   padding-bottom: 0.75rem;
   text-align: center;
   position: relative;
@@ -249,19 +285,19 @@ body {
   font-weight: 500;
   color: #555;
   text-align: left;
-  padding: 0.85rem 1rem; /* Back to original padding */
+  padding: 0.85rem 1rem;
   border-bottom: 0.0625rem solid #eee;
-  font-size: 0.9rem; /* Back to original size */
+  font-size: 0.9rem;
   position: sticky;
   top: 0;
   z-index: 10;
 }
 
 .reservations-table td {
-  padding: 0.75rem 1rem; /* Back to original padding */
+  padding: 0.75rem 1rem;
   border-bottom: 0.0625rem solid #eee;
   color: #444;
-  font-size: 0.9rem; /* More readable size */
+  font-size: 0.9rem;
 }
 
 .reservations-table tr {
@@ -322,7 +358,7 @@ body {
   background-color: white;
   color: #DB6C24;
   border: 0.0625rem solid #DB6C24;
-  padding: 0.6rem 1.5rem; /* Wider button */
+  padding: 0.6rem 1.5rem;
   border-radius: 0.5rem;
   font-weight: 600;
   cursor: pointer;
@@ -348,50 +384,6 @@ body {
   font-style: italic;
 }
 
-/* ======= Mobile Responsiveness ======= */
-@media (max-width: 62rem) {
-  .sidebar {
-    width: 14rem;
-  }
-  
-  .main-content {
-    margin-left: 14rem;
-    padding: 1.25rem 1.5rem;
-  }
-  
-  .summary-cards {
-    grid-template-columns: repeat(3, 1fr);
-    gap: 1.25rem;
-  }
-}
-
-.top-right-profile {
-  position: fixed; 
-  top: 1.5rem;
-  right: 2.5rem;
-  z-index: 150;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-
-
-/* Make sure profile dropdown appears above other elements */
-.profile-dropdown-container {
-  position: relative;
-  z-index: 150;
-}
-
-/* Optional: Adjust profile section size for dashboard */
-.top-right-profile .profile-name {
-  font-size: 1.1rem;
-}
-
-.top-right-profile .profile-pic-container {
-  width: 2.4rem;
-  height: 2.4rem;
-}
-
 /* Remove any lines after card values */
 .card-value::after {
   display: none !important;
@@ -410,6 +402,23 @@ body {
   content: none !important;
 }
 
+/* Mobile Responsiveness */
+@media (max-width: 62rem) {
+  .sidebar {
+    width: 14rem;
+  }
+  
+  .main-content {
+    margin-left: 14rem;
+    padding: 0 1.5rem 1.5rem 1.5rem;
+  }
+  
+  .summary-cards {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.25rem;
+  }
+}
+
 @media (max-width: 48rem) {
   .sidebar {
     transform: translateX(-100%);
@@ -420,9 +429,8 @@ body {
   }
   
   .main-content {
-    
     margin-left: 0;
-    padding: 1.25rem 1rem;
+    padding: 0 1rem 1rem 1rem;
   }
   
   .summary-cards {
@@ -430,13 +438,14 @@ body {
     gap: 1rem;
   }
   
-  .top-right-profile {
-    top: 1rem;
-    right: 1rem;
+  .dashboard-header-container {
+    flex-direction: column;
+    gap: 1rem;
   }
   
-  .dashboard-header {
-    padding-right: 0;
+  .top-right-profile {
+    margin-left: 0;
+    align-self: flex-end;
   }
   
   .card {
@@ -454,7 +463,7 @@ body {
   }
   
   .main-content {
-    max-width: 65rem;
+    max-width: 100%;
   }
 }
 

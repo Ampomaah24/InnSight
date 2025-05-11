@@ -1,26 +1,30 @@
 const functions = require("firebase-functions");
 const admin = require("firebase-admin");
 const nodemailer = require("nodemailer");
+const { onSchedule } = require("firebase-functions/v2/scheduler");
+
 
 admin.initializeApp();
-const { FieldValue } = require("firebase-admin/firestore");
 
-// Configure Gmail transporter (use App Password, not account password)
+// Add this line to fix the FieldValue issue
+const { FieldValue } = require('firebase-admin/firestore');
+
+// Configure the email transport using nodemailer
 const transporter = nodemailer.createTransport({
-  service: "gmail",
+  service: "gmail", 
   auth: {
-    user: "juniorantwi95@gmail.com",
-    pass: "urlm gebm hskt okfw",
-  },
+    user: "juniorantwi95@gmail.com", // Replace with your actual Gmail address
+    pass: "urlm gebm hskt okfw", // Replace with the app password you generated
+  }, 
 });
 
-// 🔹 1. Send Contact Form Email (onCall)
 exports.sendContactEmail = functions.https.onCall(async (data, context) => {
   try {
+    // Email content
     const mailOptions = {
-      from: "Contact Form <juniorantwi95@gmail.com>",
-      to: "juniorantwi95@gmail.com",
-      replyTo: data.email,
+      from: "Contact Form <juniorantwi95@gmail.com>", // Replace with your Gmail
+      to: "juniorantwi95@gmail.com", // Replace with your Gmail
+      replyTo: data.email, // The user's email for direct replies
       subject: `Contact Form: ${data.subject}`,
       html: `
         <h2>New Contact Form Submission</h2>
@@ -35,8 +39,10 @@ exports.sendContactEmail = functions.https.onCall(async (data, context) => {
       `,
     };
 
+    // Send email
     await transporter.sendMail(mailOptions);
 
+    // Update Firestore to mark the email as sent
     await admin.firestore().collection("contactMessages").doc(data.messageId).update({
       emailSent: true,
       emailSentAt: FieldValue.serverTimestamp(),
@@ -45,12 +51,18 @@ exports.sendContactEmail = functions.https.onCall(async (data, context) => {
     return { success: true, message: "Email sent successfully" };
   } catch (error) {
     console.error("Error sending email:", error);
-    return { success: false, message: "Error sending email", error: error.message };
+    return { 
+      success: false, 
+      message: "Error sending email", 
+      error: error.message 
+    };
   }
 });
 
-// 🔹 2. Notify Missed Check-Ins (Scheduled Daily @10AM)
-exports.notifyMissedCheckIns = functions.pubsub.schedule("every day 10:00").timeZone("Africa/Accra").onRun(async () => {
+exports.notifyMissedCheckIns = onSchedule({
+  schedule: "every day 10:00",
+  timeZone: "Africa/Accra"
+}, async (event) => {
   const today = new Date();
   today.setHours(0, 0, 0, 0);
 
@@ -80,20 +92,28 @@ exports.notifyMissedCheckIns = functions.pubsub.schedule("every day 10:00").time
         return `<li>${name} — Room: ${room} — Scheduled: ${date}</li>`;
       }).join("");
 
-      await transporter.sendMail({
+      // Email notification
+      const mailOptions = {
         from: "juniorantwi95@gmail.com",
         to: "juniorantwi95@gmail.com",
         subject: "⚠️ Missed Check-ins Notification",
         html: `<p>The following guests missed their check-in as of today:</p><ul>${emailContent}</ul>`,
-      });
+      };
 
+      await transporter.sendMail(mailOptions);
+      console.log("✅ Missed check-in email sent.");
+
+      // In-app notification for admin (Firestore)
       const notificationsRef = admin.firestore().collection("notifications");
+
       const batch = admin.firestore().batch();
 
       missed.forEach(b => {
         const name = `${b.bookerFirstName || ""} ${b.bookerLastName || ""}`.trim();
         const message = `${name} missed their check-in for Room ${b.roomNumber || "N/A"}`;
-        batch.set(notificationsRef.doc(), {
+
+        const newNotification = notificationsRef.doc();
+        batch.set(newNotification, {
           type: "missed_checkin",
           message,
           bookingId: b.id,
@@ -104,79 +124,11 @@ exports.notifyMissedCheckIns = functions.pubsub.schedule("every day 10:00").time
       });
 
       await batch.commit();
-      console.log("✅ Missed check-in notifications sent.");
+      console.log("✅ In-app missed check-in notifications added.");
     } else {
-      console.log("✅ No missed check-ins today.");
+      console.log("✅ No missed check-ins found today.");
     }
   } catch (error) {
     console.error("❌ Failed to process missed check-ins:", error);
-  }
-});
-
-// 🔹 3. Airport Pickup Reminders (Scheduled Daily @9AM)
-exports.remindAirportPickups = functions.pubsub.schedule("every day 09:00").timeZone("Africa/Accra").onRun(async () => {
-  const now = new Date();
-  const oneHourLater = new Date(now.getTime() + 1 * 60 * 60 * 1000);
-  const twentyFourHoursLater = new Date(now.getTime() + 24 * 60 * 60 * 1000);
-
-  try {
-    const snapshot = await admin.firestore()
-      .collection("bookings")
-      .where("pickupDetails.pickupDate", "!=", null)
-      .get();
-
-    const reminders = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }))
-      .filter(b => {
-        const { pickupDate, pickupTime } = b.pickupDetails || {};
-        if (!pickupDate || !pickupTime) return false;
-
-        const [hour, minute] = pickupTime.split(":").map(Number);
-        const fullPickup = new Date(pickupDate);
-        fullPickup.setHours(hour, minute, 0, 0);
-
-        const diff1 = Math.abs(fullPickup - oneHourLater);
-        const diff24 = Math.abs(fullPickup - twentyFourHoursLater);
-        return diff1 < 10 * 60 * 1000 || diff24 < 10 * 60 * 1000;
-      });
-
-    if (reminders.length > 0) {
-      const htmlList = reminders.map(b => {
-        const name = `${b.bookerFirstName || ""} ${b.bookerLastName || ""}`.trim();
-        const { airportLocation, flightNumber, pickupDate, pickupTime } = b.pickupDetails;
-        return `<li>${name} — Flight: ${flightNumber}, Pickup at ${airportLocation} on ${pickupDate.split("T")[0]} ${pickupTime}</li>`;
-      }).join("");
-
-      await transporter.sendMail({
-        from: "juniorantwi95@gmail.com",
-        to: "juniorantwi95@gmail.com",
-        subject: "🚐 Airport Pickup Reminder",
-        html: `<p>Upcoming airport pickups:</p><ul>${htmlList}</ul>`,
-      });
-
-      const notificationsRef = admin.firestore().collection("notifications");
-      const batch = admin.firestore().batch();
-
-      reminders.forEach(b => {
-        const { pickupDate, pickupTime, airportLocation, flightNumber } = b.pickupDetails;
-        const name = `${b.bookerFirstName || ""} ${b.bookerLastName || ""}`.trim();
-        const message = `${name} has an airport pickup at ${airportLocation} for flight ${flightNumber} on ${pickupDate.split("T")[0]} ${pickupTime}`;
-
-        batch.set(notificationsRef.doc(), {
-          type: "airport_pickup_reminder",
-          message,
-          bookingId: b.id,
-          createdAt: FieldValue.serverTimestamp(),
-          forAdmin: true,
-          read: false,
-        });
-      });
-
-      await batch.commit();
-      console.log("✅ Airport pickup reminders sent.");
-    } else {
-      console.log("✅ No upcoming airport pickups found.");
-    }
-  } catch (err) {
-    console.error("❌ Failed to send airport pickup reminders:", err);
   }
 });

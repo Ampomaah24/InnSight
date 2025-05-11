@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { collection, query, where, getDocs, getFirestore, doc, updateDoc, addDoc, writeBatch, orderBy, limit, getDoc } from 'firebase/firestore';
-import "../assets/styles/Bills.css";
+import Sidebar from '../components/Sidebar'; // Added Sidebar import
 import PaymentModal from './PaymentModal';
+import "../assets/styles/Bills.css";
 
 const HotelBills = () => {
   const [guests, setGuests] = useState([]);
@@ -16,6 +17,9 @@ const HotelBills = () => {
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [paymentType, setPaymentType] = useState('');
   const [paymentAmount, setPaymentAmount] = useState(0);
+  
+  // ... Keep all the existing functions and logic ...
+  // (All the helper functions, data fetching functions, etc.)
   
   // Format date helper function
   const formatDate = (dateString) => {
@@ -67,6 +71,7 @@ const HotelBills = () => {
     
     return new Date(timestamp);
   };
+
   const getExtendedCheckoutDate = async (db, extensionBookingId) => {
     try {
       const extRef = doc(db, "bookings", extensionBookingId);
@@ -105,6 +110,9 @@ const HotelBills = () => {
 
     fetchData();
   }, []);
+
+  // Keep all existing functions (fetchGuests, processExtensionHistory, fetchExtensionBookings, etc.)
+  // ... I'll skip these for brevity since they remain the same ...
 
   const fetchGuests = async (db) => {
     try {
@@ -280,6 +288,7 @@ else {
       console.error(`Error processing extension history for guest in room ${guest.room}:`, err);
     }
   };
+
   const seenExtensions = new Set();
 
   // Enhanced function to fetch extension bookings
@@ -731,16 +740,15 @@ else {
     }
   };
 
-    // Calculate total food orders (excluding extensions)
-    const calculateFoodTotal = (orders) => {
-      if (!orders || !Array.isArray(orders)) return 0;
-      
-      return orders.filter(order => 
-        order.type === "food" && 
-        !(order.description && order.description.toLowerCase().includes("extension"))
-      ).reduce((total, order) => total + (Number(order.amount) || 0), 0);
-    };
-
+  // Calculate total food orders (excluding extensions)
+  const calculateFoodTotal = (orders) => {
+    if (!orders || !Array.isArray(orders)) return 0;
+    
+    return orders.filter(order => 
+      order.type === "food" && 
+      !(order.description && order.description.toLowerCase().includes("extension"))
+    ).reduce((total, order) => total + (Number(order.amount) || 0), 0);
+  };
 
   const calculateTotalBalance = (guest) => {
     if (!guest) return 0;
@@ -752,18 +760,19 @@ else {
     return accommodationBalance + extensionBalance + foodBalance;
   };
 
-    // Calculate total extension charges
-    const calculateExtensionTotal = (orders) => {
-      if (!orders || !Array.isArray(orders)) return 0;
-      
-      const extensionOrders = orders.filter(order => 
-        order.type === "extension" || 
-        (order.description && order.description.toLowerCase().includes("extension"))
-      );
-      
-      const total = extensionOrders.reduce((total, order) => total + (Number(order.amount) || 0), 0);
-      return total;
-    };
+  // Calculate total extension charges
+  const calculateExtensionTotal = (orders) => {
+    if (!orders || !Array.isArray(orders)) return 0;
+    
+    const extensionOrders = orders.filter(order => 
+      order.type === "extension" || 
+      (order.description && order.description.toLowerCase().includes("extension"))
+    );
+    
+    const total = extensionOrders.reduce((total, order) => total + (Number(order.amount) || 0), 0);
+    return total;
+  };
+
   // Filter guests based on search term
   const filteredGuests = guests.filter(guest => {
     const nameMatch = guest.name.toLowerCase().includes(searchTerm.toLowerCase());
@@ -772,7 +781,6 @@ else {
   
     return (nameMatch || roomMatch) && hasOutstandingBalance;
   });
-  
 
   // Filter processed payments based on search term
   const filteredPayments = processedPayments.filter(payment => 
@@ -781,8 +789,6 @@ else {
     (payment.type?.toLowerCase().includes(paymentSearchTerm.toLowerCase())) ||
     (payment.method?.toLowerCase().includes(paymentSearchTerm.toLowerCase()))
   );
-
-
 
   // Get food orders vs extension charges
   const getFoodOnlyOrders = (orders) => {
@@ -1125,10 +1131,15 @@ else {
 
   if (loading) {
     return (
-      <div className="loading-container">
-        <div>
-          <div className="loading-spinner"></div>
-          <p className="loading-text">Loading data...</p>
+      <div className="dashboard-container">
+        <Sidebar />
+        <div className="main-content">
+          <div className="loading-container">
+            <div>
+              <div className="loading-spinner"></div>
+              <p className="loading-text">Loading data...</p>
+            </div>
+          </div>
         </div>
       </div>
     );
@@ -1136,375 +1147,378 @@ else {
 
   if (error) {
     return (
-      <div className="error-container">
-        <p>{error}</p>
-        <button className="retry-button" onClick={() => window.location.reload()}>
-          Retry
-        </button>
+      <div className="dashboard-container">
+        <Sidebar />
+        <div className="main-content">
+          <div className="error-container">
+            <p>{error}</p>
+            <button className="retry-button" onClick={() => window.location.reload()}>
+              Retry
+            </button>
+          </div>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="bills-container">
-      <div className="view-selector">
-        <button 
-          className={`view-button ${mainView === 'active' ? 'active' : ''}`}
-          onClick={() => setMainView('active')}
-        >
-          Active Bills
-        </button>
-        <button 
-          className={`view-button ${mainView === 'processed' ? 'active' : ''}`}
-          onClick={() => setMainView('processed')}
-        >
-          Processed Payments
-        </button>
-      </div>
-
-      {/* Active Bills View */}
-      {mainView === 'active' && (
-        <div className="bills-card">
-          <div className="bills-header">
-            <h2 className="bills-title">Hotel Guest Outstanding Bills</h2>
-            <p className="bills-subtitle">View and manage bills for checked-in guests</p>
-          </div>
-          <div className="bills-content">
-            <div className="layout-grid">
-              {/* Guest List Section */}
-              <div>
-                <input
-                  type="text"
-                  placeholder="Search by name or room number"
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="search-input"
-                />
-                
-                <div className="guest-list">
-                  {filteredGuests.length > 0 ? (
-                    filteredGuests.map(guest => (
-                      <div 
-                        key={guest.id}
-                        className={`guest-card ${selectedGuest?.id === guest.id ? 'selected' : ''}`}
-                        onClick={() => handleGuestSelect(guest)}
-                      >
-                        <div className="guest-info">
-                          <div>
-                            <h3 className="guest-name">{guest.name}</h3>
-                            <p className="room-info">Room {guest.room} {guest.roomName && `(${guest.roomName})`}</p>
-                          </div>
-                          <span className="status-badge checked-in">{guest.status}</span>
-                        </div>
-                        
-    
-                        </div>
-                      
-                    ))
-                  ) : (
-                    <p className="empty-state">No guests found</p>
-                  )}
-                </div>
-              </div>
-
-              {/* Bill Details Section */}
-              <div>
-                {selectedGuest ? (
-                  <div className="bill-details">
-                    <div className="guest-header">
-                      <div className="guest-header-info">
-                        <div>
-                          <h2 className="bills-title">{selectedGuest.name}</h2>
-                          <p className="bills-subtitle">
-                            Room {selectedGuest.room} {selectedGuest.roomName && `(${selectedGuest.roomName})`} | 
-                            {selectedGuest.checkInDate && ` Check-in: ${formatDate(selectedGuest.checkInDate)}`}
-                            {selectedGuest.checkOutDate && ` | Check-out: ${formatDate(selectedGuest.checkOutDate)}`}
-                          </p>
-                        </div>
-                        <span className="status-badge checked-in">{selectedGuest.status}</span>
-                      </div>
-                    </div>
-                    <div className="bills-content">
-                      <div>
-                        <div className="tab-nav">
-                          <button 
-                            onClick={() => setActiveTab('accommodation')} 
-                            className={`tab-button ${activeTab === 'accommodation' ? 'active' : ''}`}
-                          >
-                            Accommodation Balance
-                          </button>
-                          <button 
-                            onClick={() => setActiveTab('foodOrders')} 
-                            className={`tab-button ${activeTab === 'foodOrders' ? 'active' : ''}`}
-                          >
-                            Food & Beverage
-                          </button>
-                          {getExtensionOrders(selectedGuest.foodOrders).length > 0 && (
-                            <button 
-                              onClick={() => setActiveTab('extensions')} 
-                              className={`tab-button ${activeTab === 'extensions' ? 'active' : ''}`}
-                            >
-                              Stay Extensions
-                            </button>
-                          )}
-                        </div>
-                        
-                        {activeTab === 'accommodation' && (
-                          <div className="tab-content">
-                            <div className="bill-details">
-                              <div className="bills-content">
-                                <div className="charges-header">
-                                  <h3 className="charges-title">Accommodation Charges</h3>
-                                  <span className={`status-badge ${selectedGuest.accommodationBalance > 0 ? 'outstanding' : 'paid'}`}>
-                                    {selectedGuest.paymentStatus || (selectedGuest.accommodationBalance > 0 ? "Outstanding" : "Paid")}
-                                  </span>
-                                </div>
-                                
-                                <div className="charges-details">
-                                  <div className="charge-item">
-                                    <span>Room Type</span>
-                                    <span>{selectedGuest.roomType}</span>
-                                  </div>
-                                  <div className="charge-item">
-                                    <span>Room Category</span>
-                                    <span>{selectedGuest.roomCategory}</span>
-                                  </div>
-                                  <div className="charge-item">
-                                    <span>Number of Guests</span>
-                                    <span>{selectedGuest.numberOfGuests}</span>
-                                  </div>
-                                  <div className="charge-item">
-                                    <span>Payment Method</span>
-                                    <span>{selectedGuest.paymentOption || "Not specified"}</span>
-                                  </div>
-                                  <div className="charge-item">
-                                    <span>Original Price</span>
-                                    <span>GHS{Number(selectedGuest.originalPrice).toFixed(2)}</span>
-                                  </div>
-                                  <div className="charge-total">
-                                    <span>Remainder Due</span>
-                                    <span>GHS{Number(selectedGuest.accommodationBalance).toFixed(2)}</span>
-                                  </div>
-                                </div>
-                                
-                                <div className="actions">
-                                  <button 
-                                    className="btn btn-primary"
-                                    onClick={() => handlePayment('accommodation')}
-                                    disabled={selectedGuest.accommodationBalance <= 0}
-                                  >
-                                    Process Payment
-                                  </button>
-                                </div>
-                              </div>
-                            </div>
-                          </div>
-                        )}
-                        
-                        {activeTab === 'foodOrders' && (
-                          <div className="tab-content">
-                            <div className="bill-details">
-                              <div className="bills-content">
-                                <div className="charges-header">
-                                  <h3 className="charges-title">Food & Beverage Charges</h3>
-                                  <span className={`status-badge ${getFoodOnlyOrders(selectedGuest.foodOrders).length > 0 ? 'outstanding' : 'paid'}`}>
-                                    {getFoodOnlyOrders(selectedGuest.foodOrders).length > 0 ? "Outstanding" : "No Charges"}
-                                  </span>
-                                </div>
-                                
-                                {getFoodOnlyOrders(selectedGuest.foodOrders).length > 0 ? (
-                                  <div className="table-container">
-                                    <table className="food-orders-table">
-                                      <thead>
-                                        <tr>
-                                          <th>Date</th>
-                                          <th>Description</th>
-                                          <th>Amount</th>
-                                        </tr>
-                                      </thead>
-                                      <tbody>
-                                        {getFoodOnlyOrders(selectedGuest.foodOrders).map(order => (
-                                          <tr key={order.id}>
-                                            <td>{formatDate(order.date)}</td>
-                                            <td>{order.description}</td>
-                                            <td>GHS{order.amount.toFixed(2)}</td>
-                                          </tr>
-                                        ))}
-                                        <tr className="total-row">
-                                          <td colSpan={2}>Total</td>
-                                          <td>GHS{calculateFoodTotal(selectedGuest.foodOrders).toFixed(2)}</td>
-                                        </tr>
-                                      </tbody>
-                                    </table>
-                                  </div>
-                                ) : (
-                                  <p className="empty-state">No food or beverage charges</p>
-                                )}
-                                
-                                {getFoodOnlyOrders(selectedGuest.foodOrders).length > 0 && (
-                                  <div className="actions">
-                                    <button 
-                                      className="btn btn-primary"
-                                      onClick={() => handlePayment('food')}
-                                    >
-                                      Process Payment
-                                    </button>
-                                  </div>
-                                )}
-                              </div>
-                            </div>
-                          </div>
-                        )}
- {activeTab === 'extensions' && (
-  <div className="tab-content">
-    <div className="bill-details">
-      <div className="bills-content">
-        <div className="charges-header">
-          <h3 className="charges-title">Stay Extension Charges</h3>
-          <span className={`status-badge outstanding`}>
-            Outstanding
-          </span>
-        </div>
-        
-        {/* Extension tab content */}
-        {getExtensionOrders(selectedGuest.foodOrders).length > 0 ? (
-          <div className="table-container">
-            <table className="food-orders-table">
-              <thead>
-                <tr>
-                  <th>Date</th>
-                  <th>Description</th>
-                  <th>Amount</th>
-                </tr>
-              </thead>
-              <tbody>
-                {getExtensionOrders(selectedGuest.foodOrders).map(order => (
-                  <tr key={order.id} className="extension-row">
-                    <td>{formatDate(order.date)}</td>
-                    <td>
-                      {order.description}
-                      {order.notes && !order.notes.toLowerCase().startsWith("transaction id") && (
-  <div className="order-notes">{order.notes}</div>
-)}
-
-                    </td>
-                    <td>GHS{order.amount.toFixed(2)}</td>
-                  </tr>
-                ))}
-                <tr className="total-row">
-                  <td colSpan={2}>Total</td>
-                  <td>GHS{calculateExtensionTotal(selectedGuest.foodOrders).toFixed(2)}</td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        ) : (
-          <p className="empty-state">No stay extension charges</p>
-        )}
-
-        {getExtensionOrders(selectedGuest.foodOrders).length > 0 && (
-          <div className="actions">
+    <div className="dashboard-container">
+      <Sidebar />
+      <div className="main-content">
+        <div className="bills-container">
+          <div className="view-selector">
             <button 
-              className="btn btn-primary"
-              onClick={() => handlePayment('extension')}
+              className={`view-button ${mainView === 'active' ? 'active' : ''}`}
+              onClick={() => setMainView('active')}
             >
-              Process Payment
+              Active Bills
+            </button>
+            <button 
+              className={`view-button ${mainView === 'processed' ? 'active' : ''}`}
+              onClick={() => setMainView('processed')}
+            >
+              Processed Payments
             </button>
           </div>
-        )}
-      </div>
-    </div>
-  </div>
-)}
-                      </div>
+
+          {/* Active Bills View */}
+          {mainView === 'active' && (
+            <div className="bills-card">
+              <div className="bills-header">
+                <h2 className="bills-title">Hotel Guest Outstanding Bills</h2>
+                <p className="bills-subtitle">View and manage bills for checked-in guests</p>
+              </div>
+              <div className="bills-content">
+                <div className="layout-grid">
+                  {/* Guest List Section */}
+                  <div>
+                    <input
+                      type="text"
+                      placeholder="Search by name or room number"
+                      value={searchTerm}
+                      onChange={(e) => setSearchTerm(e.target.value)}
+                      className="search-input"
+                    />
+                    
+                    <div className="guest-list">
+                      {filteredGuests.length > 0 ? (
+                        filteredGuests.map(guest => (
+                          <div 
+                            key={guest.id}
+                            className={`guest-card ${selectedGuest?.id === guest.id ? 'selected' : ''}`}
+                            onClick={() => handleGuestSelect(guest)}
+                          >
+                            <div className="guest-info">
+                              <div>
+                                <h3 className="guest-name">{guest.name}</h3>
+                                <p className="room-info">Room {guest.room} {guest.roomName && `(${guest.roomName})`}</p>
+                              </div>
+                              <span className="status-badge checked-in">{guest.status}</span>
+                            </div>
+                          </div>
+                        ))
+                      ) : (
+                        <p className="empty-state">No guests found</p>
+                      )}
                     </div>
                   </div>
+
+                  {/* Bill Details Section */}
+                  <div>
+                    {selectedGuest ? (
+                      <div className="bill-details">
+                        <div className="guest-header">
+                          <div className="guest-header-info">
+                            <div>
+                              <h2 className="bills-title">{selectedGuest.name}</h2>
+                              <p className="bills-subtitle">
+                                Room {selectedGuest.room} {selectedGuest.roomName && `(${selectedGuest.roomName})`} | 
+                                {selectedGuest.checkInDate && ` Check-in: ${formatDate(selectedGuest.checkInDate)}`}
+                                {selectedGuest.checkOutDate && ` | Check-out: ${formatDate(selectedGuest.checkOutDate)}`}
+                              </p>
+                            </div>
+                            <span className="status-badge checked-in">{selectedGuest.status}</span>
+                          </div>
+                        </div>
+                        <div className="bills-content">
+                          <div>
+                            <div className="tab-nav">
+                              <button 
+                                onClick={() => setActiveTab('accommodation')} 
+                                className={`tab-button ${activeTab === 'accommodation' ? 'active' : ''}`}
+                              >
+                                Accommodation Balance
+                              </button>
+                              <button 
+                                onClick={() => setActiveTab('foodOrders')} 
+                                className={`tab-button ${activeTab === 'foodOrders' ? 'active' : ''}`}
+                              >
+                                Food & Beverage
+                              </button>
+                              {getExtensionOrders(selectedGuest.foodOrders).length > 0 && (
+                                <button 
+                                  onClick={() => setActiveTab('extensions')} 
+                                  className={`tab-button ${activeTab === 'extensions' ? 'active' : ''}`}
+                                >
+                                  Stay Extensions
+                                </button>
+                              )}
+                            </div>
+                            
+                            {activeTab === 'accommodation' && (
+                              <div className="tab-content">
+                                <div className="bill-details">
+                                  <div className="bills-content">
+                                    <div className="charges-header">
+                                      <h3 className="charges-title">Accommodation Charges</h3>
+                                      <span className={`status-badge ${selectedGuest.accommodationBalance > 0 ? 'outstanding' : 'paid'}`}>
+                                        {selectedGuest.paymentStatus || (selectedGuest.accommodationBalance > 0 ? "Outstanding" : "Paid")}
+                                      </span>
+                                    </div>
+                                    
+                                    <div className="charges-details">
+                                      <div className="charge-item">
+                                        <span>Room Type</span>
+                                        <span>{selectedGuest.roomType}</span>
+                                      </div>
+                                      <div className="charge-item">
+                                        <span>Room Category</span>
+                                        <span>{selectedGuest.roomCategory}</span>
+                                      </div>
+                                      <div className="charge-item">
+                                        <span>Number of Guests</span>
+                                        <span>{selectedGuest.numberOfGuests}</span>
+                                      </div>
+                                      <div className="charge-item">
+                                        <span>Payment Method</span>
+                                        <span>{selectedGuest.paymentOption || "Not specified"}</span>
+                                      </div>
+                                      <div className="charge-item">
+                                        <span>Original Price</span>
+                                        <span>GHS{Number(selectedGuest.originalPrice).toFixed(2)}</span>
+                                      </div>
+                                      <div className="charge-total">
+                                        <span>Remainder Due</span>
+                                        <span>GHS{Number(selectedGuest.accommodationBalance).toFixed(2)}</span>
+                                      </div>
+                                    </div>
+                                    
+                                    <div className="actions">
+                                      <button 
+                                        className="btn btn-primary"
+                                        onClick={() => handlePayment('accommodation')}
+                                        disabled={selectedGuest.accommodationBalance <= 0}
+                                      >
+                                        Process Payment
+                                      </button>
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+                            )}
+                            
+                            {activeTab === 'foodOrders' && (
+                              <div className="tab-content">
+                                <div className="bill-details">
+                                  <div className="bills-content">
+                                    <div className="charges-header">
+                                      <h3 className="charges-title">Food & Beverage Charges</h3>
+                                      <span className={`status-badge ${getFoodOnlyOrders(selectedGuest.foodOrders).length > 0 ? 'outstanding' : 'paid'}`}>
+                                        {getFoodOnlyOrders(selectedGuest.foodOrders).length > 0 ? "Outstanding" : "No Charges"}
+                                      </span>
+                                    </div>
+                                    
+                                    {getFoodOnlyOrders(selectedGuest.foodOrders).length > 0 ? (
+                                      <div className="table-container">
+                                        <table className="food-orders-table">
+                                          <thead>
+                                            <tr>
+                                              <th>Date</th>
+                                              <th>Description</th>
+                                              <th>Amount</th>
+                                            </tr>
+                                          </thead>
+                                          <tbody>
+                                            {getFoodOnlyOrders(selectedGuest.foodOrders).map(order => (
+                                              <tr key={order.id}>
+                                                <td>{formatDate(order.date)}</td>
+                                                <td>{order.description}</td>
+                                                <td>GHS{order.amount.toFixed(2)}</td>
+                                              </tr>
+                                            ))}
+                                            <tr className="total-row">
+                                              <td colSpan={2}>Total</td>
+                                              <td>GHS{calculateFoodTotal(selectedGuest.foodOrders).toFixed(2)}</td>
+                                            </tr>
+                                          </tbody>
+                                        </table>
+                                      </div>
+                                    ) : (
+                                      <p className="empty-state">No food or beverage charges</p>
+                                    )}
+                                    
+                                    {getFoodOnlyOrders(selectedGuest.foodOrders).length > 0 && (
+                                      <div className="actions">
+                                        <button 
+                                          className="btn btn-primary"
+                                          onClick={() => handlePayment('food')}
+                                        >
+                                          Process Payment
+                                        </button>
+                                      </div>
+                                    )}
+                                  </div>
+                                </div>
+                              </div>
+                            )}
+                            
+                            {activeTab === 'extensions' && (
+                              <div className="tab-content">
+                                <div className="bill-details">
+                                  <div className="bills-content">
+                                    <div className="charges-header">
+                                      <h3 className="charges-title">Stay Extension Charges</h3>
+                                      <span className={`status-badge outstanding`}>
+                                        Outstanding
+                                      </span>
+                                    </div>
+                                    
+                                    {getExtensionOrders(selectedGuest.foodOrders).length > 0 ? (
+                                      <div className="table-container">
+                                        <table className="food-orders-table">
+                                          <thead>
+                                            <tr>
+                                              <th>Date</th>
+                                              <th>Description</th>
+                                              <th>Amount</th>
+                                            </tr>
+                                          </thead>
+                                          <tbody>
+                                            {getExtensionOrders(selectedGuest.foodOrders).map(order => (
+                                              <tr key={order.id} className="extension-row">
+                                                <td>{formatDate(order.date)}</td>
+                                                <td>
+                                                  {order.description}
+                                                  {order.notes && !order.notes.toLowerCase().startsWith("transaction id") && (
+                                                    <div className="order-notes">{order.notes}</div>
+                                                  )}
+                                                </td>
+                                                <td>GHS{order.amount.toFixed(2)}</td>
+                                              </tr>
+                                            ))}
+                                            <tr className="total-row">
+                                              <td colSpan={2}>Total</td>
+                                              <td>GHS{calculateExtensionTotal(selectedGuest.foodOrders).toFixed(2)}</td>
+                                            </tr>
+                                          </tbody>
+                                        </table>
+                                      </div>
+                                    ) : (
+                                      <p className="empty-state">No stay extension charges</p>
+                                    )}
+
+                                    {getExtensionOrders(selectedGuest.foodOrders).length > 0 && (
+                                      <div className="actions">
+                                        <button 
+                                          className="btn btn-primary"
+                                          onClick={() => handlePayment('extension')}
+                                        >
+                                          Process Payment
+                                        </button>
+                                      </div>
+                                    )}
+                                  </div>
+                                </div>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="select-guest-placeholder">
+                        <div className="placeholder-content">
+                          <h3 className="placeholder-title">Select a Guest</h3>
+                          <p className="placeholder-description">Choose a guest from the list to view their outstanding bills</p>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Processed Payments View */}
+          {mainView === 'processed' && (
+            <div className="bills-card">
+              <div className="bills-header">
+                <h2 className="bills-title">Processed Payments</h2>
+                <p className="bills-subtitle">View recent payment transactions</p>
+              </div>
+              <div className="bills-content">
+                <input
+                  type="text"
+                  placeholder="Search by guest name, room, payment type, or method"
+                  value={paymentSearchTerm}
+                  onChange={(e) => setPaymentSearchTerm(e.target.value)}
+                  className="search-input wide"
+                />
+                
+                {filteredPayments.length > 0 ? (
+                  <div className="table-container payments-table-container">
+                    <table className="payments-table">
+                      <thead>
+                        <tr>
+                          <th>Date</th>
+                          <th>Time</th>
+                          <th>Guest</th>
+                          <th>Room</th>
+                          <th>Type</th>
+                          <th>Method</th>
+                          <th>Amount</th>
+                          <th>Status</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {filteredPayments.map(payment => (
+                          <tr key={payment.id}>
+                            <td>{formatDate(payment.timestamp)}</td>
+                            <td>{formatTime(payment.timestamp)}</td>
+                            <td>{payment.guestName}</td>
+                            <td>{payment.roomNumber}</td>
+                            <td>{formatPaymentType(payment.type)}</td>
+                            <td>{payment.method}</td>
+                            <td className="amount">GHS{payment.amount.toFixed(2)}</td>
+                            <td>
+                              <span className={`payment-status-pill ${payment.status.toLowerCase()}`}>
+                                {payment.status}
+                              </span>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
                 ) : (
-                  <div className="select-guest-placeholder">
-                    <div className="placeholder-content">
-                      <h3 className="placeholder-title">Select a Guest</h3>
-                      <p className="placeholder-description">Choose a guest from the list to view their outstanding bills</p>
-                    </div>
+                  <div className="empty-state">
+                    <p>No processed payments found for the selected criteria.</p>
                   </div>
                 )}
               </div>
             </div>
-          </div>
+          )}
+          
+          {/* Payment Modal */}
+          <PaymentModal
+            show={showPaymentModal}
+            onHide={() => setShowPaymentModal(false)}
+            guest={selectedGuest}
+            paymentType={paymentType}
+            amount={paymentAmount}
+            onPaymentComplete={handlePaymentComplete}
+          />
         </div>
-      )}
-
-      {/* Processed Payments View */}
-      {mainView === 'processed' && (
-        <div className="bills-card">
-          <div className="bills-header">
-            <h2 className="bills-title">Processed Payments</h2>
-            <p className="bills-subtitle">View recent payment transactions</p>
-          </div>
-          <div className="bills-content">
-            <input
-              type="text"
-              placeholder="Search by guest name, room, payment type, or method"
-              value={paymentSearchTerm}
-              onChange={(e) => setPaymentSearchTerm(e.target.value)}
-              className="search-input wide"
-            />
-            
-            {filteredPayments.length > 0 ? (
-              <div className="table-container payments-table-container">
-                <table className="payments-table">
-                  <thead>
-                    <tr>
-                      <th>Date</th>
-                      <th>Time</th>
-                      <th>Guest</th>
-                      <th>Room</th>
-                      <th>Type</th>
-                      <th>Method</th>
-                      <th>Amount</th>
-                      <th>Status</th>
-                      {/* Removed print button column */}
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {filteredPayments.map(payment => (
-                      <tr key={payment.id}>
-                        <td>{formatDate(payment.timestamp)}</td>
-                        <td>{formatTime(payment.timestamp)}</td>
-                        <td>{payment.guestName}</td>
-                        <td>{payment.roomNumber}</td>
-                        <td>{formatPaymentType(payment.type)}</td>
-                        <td>{payment.method}</td>
-                        <td className="amount">${payment.amount.toFixed(2)}</td>
-                        <td>
-                          <span className={`payment-status-pill ${payment.status.toLowerCase()}`}>
-                            {payment.status}
-                          </span>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            ) : (
-              <div className="empty-state">
-                <p>No processed payments found for the selected criteria.</p>
-              </div>
-            )}
-            
-            {/* Removed export controls section */}
-          </div>
-        </div>
-      )}
-      
-      {/* Payment Modal */}
-      <PaymentModal
-        show={showPaymentModal}
-        onHide={() => setShowPaymentModal(false)}
-        guest={selectedGuest}
-        paymentType={paymentType}
-        amount={paymentAmount}
-        onPaymentComplete={handlePaymentComplete}
-      />
+      </div>
     </div>
   );
 };

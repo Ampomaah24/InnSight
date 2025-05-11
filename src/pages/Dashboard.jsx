@@ -7,7 +7,6 @@ import Sidebar from "../components/Sidebar";
 import ProfileSection from "../components/ProfileSection"; 
 import "../assets/styles/Dashboard.css";
 
-
 // Total rooms in the hotel
 const TOTAL_ROOMS = 53;
 
@@ -22,7 +21,7 @@ const Dashboard = () => {
     totalRooms: TOTAL_ROOMS
   });
   const [loading, setLoading] = useState(true);
-  const [user, setUser] = useState(null); // Add user state for ProfileSection
+  const [user, setUser] = useState(null);
 
   // Fetch user data for ProfileSection
   useEffect(() => {
@@ -357,27 +356,31 @@ const Dashboard = () => {
     <div className="dashboard-container">
       <Sidebar />
       
-      {/* Add Profile Section at the top right */}
-      <div className="top-right-profile">
-        {user && (
-          <ProfileSection
-            user={user}
-            onLogout={() => {
-              auth.signOut()
-                .then(() => {
-                  sessionStorage.removeItem('currentUser');
-                  navigate('/login');
-                })
-                .catch(error => console.error("Error signing out:", error));
-            }}
-          />
-        )}
-      </div>
-      
       <div className="main-content">
-        <div className="dashboard-header">
+        {/* Header with Profile Section */}
+        <div className="dashboard-header-container">
+          <div className="dashboard-header">
+           
+           
+            <p className="dashboard-subtitle">Overview of Activities</p>
+          </div>
           
-          <p className="dashboard-subtitle">Overview of Activities</p>
+          {/* Profile Section */}
+          <div className="top-right-profile">
+            {user && (
+              <ProfileSection
+                user={user}
+                onLogout={() => {
+                  auth.signOut()
+                    .then(() => {
+                      sessionStorage.removeItem('currentUser');
+                      navigate('/login');
+                    })
+                    .catch(error => console.error("Error signing out:", error));
+                }}
+              />
+            )}
+          </div>
         </div>
         
         {/* Summary Cards */}
