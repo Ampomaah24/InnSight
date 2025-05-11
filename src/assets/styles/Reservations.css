@@ -869,54 +869,65 @@ body {
   letter-spacing: -0.01em;
 }
 
-/* Success Popup */
+/* Simple Success Notification */
 .success-popup {
   position: fixed;
-  top: 2rem;
-  right: 2rem;
-  max-width: 24rem;
-  background-color: var(--success-light);
-  color: var(--success);
-  border-left: 4px solid var(--success);
-  border-radius: var(--radius-lg);
-  padding: 1rem 1.5rem;
-  display: flex;
-  align-items: center;
-  box-shadow: var(--shadow-lg);
-  z-index: 10001;
-  animation: slideInRight 0.3s ease-out forwards, fadeOut 0.3s ease-in forwards 3.7s;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  max-width: 480px;
+  width: 90%;
+  background-color: white;
+  padding: 18px 20px;
+  border-radius: 8px;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+  z-index: 1000;
+  border-left: 4px solid #4CAF50;
+  animation: fade-in 0.3s ease-out;
+  font-size: 15px;
+  line-height: 1.5;
+  color: #333;
 }
 
-@keyframes slideInRight {
-  from { transform: translateX(100%); opacity: 0; }
-  to { transform: translateX(0); opacity: 1; }
-}
-
-@keyframes fadeOut {
-  from { opacity: 1; }
-  to { opacity: 0; }
-}
-
-.success-popup .success-icon {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 2rem;
-  height: 2rem;
+.success-popup::before {
+  content: "✓";
+  display: inline-block;
+  width: 24px;
+  height: 24px;
+  background-color: rgba(76, 175, 80, 0.1);
   border-radius: 50%;
-  background-color: var(--success);
-  color: white;
-  margin-right: var(--space-4);
-  flex-shrink: 0;
-  font-size: 1.2rem;
+  color: #4CAF50;
+  text-align: center;
+  line-height: 24px;
+  margin-right: 10px;
   font-weight: bold;
 }
 
-.success-message {
-  flex-grow: 1;
-  font-weight: 500;
-  line-height: 1.5;
+@keyframes fade-in {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -40%);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, -50%);
+  }
 }
+
+.success-popup.fade-out {
+  animation: fade-out 0.3s forwards;
+}
+
+@keyframes fade-out {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
+
 
 /* Room Unavailable Alert */
 .room-unavailable-alert {

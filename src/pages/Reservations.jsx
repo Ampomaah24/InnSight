@@ -1248,9 +1248,12 @@ const extensionHistoryRecord = {
       
       // Hide popup after 4 seconds
       setTimeout(() => {
-        setShowSuccessPopup(false);
-      }, 4000);
-      
+          const popup = document.querySelector('.success-popup');
+          if (popup) popup.classList.add('fade-out');
+          setTimeout(() => {
+            setShowSuccessPopup(false);
+          }, 300);
+        }, 4000);
     } catch (error) {
       console.error("Error extending stay:", error);
       setIsProcessing(false);
@@ -1975,10 +1978,10 @@ return (
     )}
     
     {showSuccessPopup && (
-  <div className="center-success-message">
-    {successMessage}
-  </div>
-)}
+      <div className="success-popup">
+        {successMessage}
+      </div>
+    )}
 
   </div>
 );
