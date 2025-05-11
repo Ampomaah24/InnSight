@@ -1,8 +1,9 @@
 import React, { useEffect, useState, useCallback } from "react";
 import { collection, getDocs, query, where, orderBy, limit, doc, addDoc, updateDoc } from "firebase/firestore";
 import { db } from "../config/firebase";
-import NavMenu from "../components/NavMenu";
+import Sidebar from "../components/Sidebar";
 import NotificationsComponent from "../components/Notification";
+import "../assets/styles/Dashboard.css";
 import "../assets/styles/Pickup.css";
 
 // Date utility functions
@@ -364,11 +365,9 @@ const reminderService = {
 
 // Component for the header section
 const PickupHeader = ({ upcomingCount, urgentCount }) => (
-  <div className="pickup-header">
-    <div>
-      <h2 className="page-heading">Airport Pickup Schedule</h2>
-      <p className="subtext">Track upcoming airport pickups requested by guests.</p>
-    </div>
+  <div className="dashboard-header">
+    <h1 className="dashboard-title">Airport Pickup Schedule</h1>
+    <p className="dashboard-subtitle">Track upcoming airport pickups requested by guests.</p>
     <div className="summary-stats">
       <div className="stat-item">
         <span className="stat-number">{upcomingCount}</span>
@@ -604,7 +603,6 @@ const usePickupData = () => {
 
 // Main component
 const AdminPickupTracker = () => {
-  const [menuOpen, setMenuOpen] = useState(false);
   const [filter, setFilter] = useState("all");
   const [searchTerm, setSearchTerm] = useState("");
   const [refreshKey, setRefreshKey] = useState(0); // For triggering refreshes
@@ -693,17 +691,14 @@ const AdminPickupTracker = () => {
 
   // Render
   return (
-    <div className="pickup-admin-container">
-      <div className="nav-container">
-        <NavMenu menuOpen={menuOpen} setMenuOpen={setMenuOpen} />
-        
-        {/* Position the notification bell on the far right */}
-        <div className="notifications-area">
+    <div className="dashboard-container">
+      <Sidebar />
+      <div className="main-content">
+        {/* Position the notification bell in the top right corner of main content */}
+        <div className="notification-wrapper" style={{ position: 'absolute', top: '20px', right: '20px' }}>
           <NotificationsComponent />
         </div>
-      </div>
-      
-      <div className="pickup-content">
+        
         <PickupHeader upcomingCount={upcomingCount} urgentCount={urgentCount} />
         
         <PickupControls 

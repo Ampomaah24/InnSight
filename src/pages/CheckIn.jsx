@@ -6,7 +6,7 @@ import "../assets/styles/CheckIn.css";
 
 const CheckIn = () => {
   const [bookedGuests, setBookedGuests] = useState([]);
-  const [rooms, setRooms] = useState([]);
+  const [rooms, setRooms] = useState({});
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [timeFilter, setTimeFilter] = useState('today'); // 'today', 'tomorrow', 'all'
@@ -35,15 +35,23 @@ const CheckIn = () => {
       // Fetch all rooms first to have their info available
       const roomsSnapshot = await getDocs(collection(db, "rooms"));
       const roomsData = {};
+      const roomNumberToId = {}; // Map room numbers to document IDs
+      
       roomsSnapshot.docs.forEach(doc => {
+        const roomData = doc.data();
         roomsData[doc.id] = {
           id: doc.id,
-          ...doc.data(),
-          name: doc.data().name || doc.id
+          ...roomData,
+          name: roomData.name || doc.id
         };
+        
+        // Create mapping from room number/name to document ID
+        if (roomData.name) {
+          roomNumberToId[roomData.name] = doc.id;
+        }
       });
       
-      setRooms(roomsData);
+      setRooms({ roomsData, roomNumberToId }); // Store both the room data and the mapping
       
       // Fetch all bookings from Firestore
       const bookingsQuery = query(collection(db, "bookings"));
@@ -78,7 +86,8 @@ const CheckIn = () => {
         }
         
         // Get room details if available
-        const roomDetails = data.roomNumber ? roomsData[data.roomNumber] : null;
+        const roomId = roomNumberToId[data.roomNumber] || null;
+        const roomDetails = roomId ? roomsData[roomId] : null;
         
         // Based on the Firestore structure, use booker information for guest name
         const fullName = data.bookerFirstName && data.bookerLastName 
@@ -97,12 +106,12 @@ const CheckIn = () => {
           isCheckingOutToday: isSameDay(checkOutDate, today),
           isCheckingInTomorrow: isSameDay(checkInDate, tomorrow),
           isExpired: checkOutDate < today && (data.status === "Checked in" || data.status === "Confirmed"),
-          roomDetails
+          roomDetails,
+          roomId // Store the actual room document ID
         };
       }).filter(booking => booking.checkInDate && booking.checkOutDate); // Filter out bookings with invalid dates
 
       // Sort by relevance for today's operations
-      // First today's check-outs, then today's check-ins, then tomorrow's check-ins
       const sortedBookings = bookingsData.sort((a, b) => {
         // If it's after noon, prioritize checkouts
         const isPM = new Date().getHours() >= 12;
@@ -195,10 +204,9 @@ const CheckIn = () => {
         lastUpdated: Timestamp.now()
       });
 
-      // Update room status if room number is specified
-      if (booking.roomNumber) {
-        // Check if room exists first
-        const roomRef = doc(db, "rooms", booking.roomNumber);
+      // Update room status if room ID is available
+      if (booking.roomId) {
+        const roomRef = doc(db, "rooms", booking.roomId);
         const roomSnap = await getDoc(roomRef);
         
         if (roomSnap.exists()) {
@@ -213,10 +221,12 @@ const CheckIn = () => {
             available: false
           });
           
-          console.log(`Updated room ${booking.roomNumber} status to Occupied`);
+          console.log(`Updated room ${booking.roomNumber} (ID: ${booking.roomId}) status to Occupied`);
         } else {
-          console.warn(`Room ${booking.roomNumber} not found in database`);
+          console.warn(`Room ${booking.roomNumber} (ID: ${booking.roomId}) not found in database`);
         }
+      } else {
+        console.warn(`No room ID found for room number ${booking.roomNumber}`);
       }
 
       // Update UI
@@ -256,10 +266,9 @@ const CheckIn = () => {
         lastUpdated: Timestamp.now() 
       });
 
-      // Update room status if room number is specified
-      if (booking.roomNumber) {
-        // Check if room exists first
-        const roomRef = doc(db, "rooms", booking.roomNumber);
+      // Update room status if room ID is available
+      if (booking.roomId) {
+        const roomRef = doc(db, "rooms", booking.roomId);
         const roomSnap = await getDoc(roomRef);
         
         if (roomSnap.exists()) {
@@ -274,10 +283,12 @@ const CheckIn = () => {
             available: true
           });
           
-          console.log(`Updated room ${booking.roomNumber} status to Available`);
+          console.log(`Updated room ${booking.roomNumber} (ID: ${booking.roomId}) status to Available`);
         } else {
-          console.warn(`Room ${booking.roomNumber} not found in database`);
+          console.warn(`Room ${booking.roomNumber} (ID: ${booking.roomId}) not found in database`);
         }
+      } else {
+        console.warn(`No room ID found for room number ${booking.roomNumber}`);
       }
 
       // Update UI
@@ -317,9 +328,9 @@ const CheckIn = () => {
         notes: (booking.notes || '') + `\n${new Date().toLocaleString()}: Auto-checked out due to expired stay.`
       });
       
-      // Update room status
-      if (booking.roomNumber) {
-        const roomRef = doc(db, "rooms", booking.roomNumber);
+      // Update room status if room ID is available
+      if (booking.roomId) {
+        const roomRef = doc(db, "rooms", booking.roomId);
         const roomSnap = await getDoc(roomRef);
         
         if (roomSnap.exists()) {

@@ -27,7 +27,7 @@ import {
 } from "react-icons/fa";
 
 const UserRegistration = () => {
-  // View mode: 'register' for new registrations, 'pending' for viewing pending registrations
+
   const [viewMode, setViewMode] = useState("register");
   
   // Form state
@@ -38,8 +38,7 @@ const UserRegistration = () => {
     phone: "",
     idType: "passport",
     idNumber: "",
-    nationality: "",
-    address: "",
+
     roomNumber: "",
     checkIn: "",
     checkOut: "",
@@ -69,6 +68,10 @@ const UserRegistration = () => {
 
   // Lookup error state
   const [lookupError, setLookupError] = useState(null);
+  const [phoneError, setPhoneError] = useState("");
+  const [emailError, setEmailError] = useState("");
+
+
 
   // Fetch available rooms on component mount
   useEffect(() => {
@@ -95,15 +98,33 @@ const UserRegistration = () => {
     }
   }, [success, error]);
 
-  // Handle form field changes
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
+    const updatedValue = type === "checkbox" ? checked : value;
+  
     setFormData({
       ...formData,
-      [name]: type === "checkbox" ? checked : value,
+      [name]: updatedValue,
     });
+  
+    if (name === "phone") {
+      if (value && !isValidGhanaianPhoneNumber(value)) {
+        setPhoneError("Invalid Ghanaian phone number");
+      } else {
+        setPhoneError("");
+      }
+    }
+    if (name === "email") {
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (value && !emailRegex.test(value)) {
+        setEmailError("Invalid email address");
+      } else {
+        setEmailError("");
+      }
+    }
+    
   };
-
+  
   // Fetch all rooms for filtering
   const fetchAllRooms = async () => {
     try {
@@ -123,8 +144,12 @@ const UserRegistration = () => {
       console.error("Error fetching all rooms:", error);
     }
   };
-
-  // Fetch available rooms from database
+  const isValidGhanaianPhoneNumber = (phone) => {
+    const ghanaLocalPattern = /^(0)(24|25|26|27|28|50|54|55|56|57|58|59)\d{7}$/;
+    const ghanaIntlPattern = /^\+233(24|25|26|27|28|50|54|55|56|57|58|59)\d{7}$/;
+    return ghanaLocalPattern.test(phone) || ghanaIntlPattern.test(phone);
+  };
+  
   const fetchAvailableRooms = async () => {
     try {
       setRoomsLoading(true);
@@ -152,7 +177,6 @@ const UserRegistration = () => {
         const booking = doc.data();
         let checkInDate, checkOutDate;
         
-        // Convert checkIn date based on its type
         if (booking.checkIn instanceof Timestamp) {
           checkInDate = booking.checkIn.toDate();
         } else if (booking.checkIn && booking.checkIn.seconds) {
@@ -161,7 +185,6 @@ const UserRegistration = () => {
           checkInDate = new Date(booking.checkIn);
         }
         
-        // Convert checkOut date based on its type
         if (booking.checkOut instanceof Timestamp) {
           checkOutDate = booking.checkOut.toDate();
         } else if (booking.checkOut && booking.checkOut.seconds) {
@@ -183,14 +206,30 @@ const UserRegistration = () => {
       const rooms = [];
       querySnapshot.forEach((doc) => {
         const room = { id: doc.id, ...doc.data() };
+        
+        // Debug log for the first room
+        if (rooms.length === 0) {
+          console.log("First room data:", room);
+        }
+        
         // Only add rooms that are not occupied and are active
-        if (!occupiedRooms.has(room.roomNumber) && room.status !== "maintenance") {
-          rooms.push(room);
+        if (!occupiedRooms.has(room.id) && room.status !== "maintenance") {
+          // Use the document ID as the roomNumber since that's how they're identified
+          rooms.push({
+            ...room,
+            roomNumber: room.id // Use the document ID (R4, R27, etc.) as the roomNumber
+          });
         }
       });
       
-      // Sort rooms by number
-      rooms.sort((a, b) => a.roomNumber - b.roomNumber);
+      // Sort rooms naturally (R1, R2, R3... R10, R11...)
+      rooms.sort((a, b) => {
+        const aNum = parseInt(a.roomNumber.substring(1));
+        const bNum = parseInt(b.roomNumber.substring(1));
+        return aNum - bNum;
+      });
+      
+      console.log("Available rooms:", rooms);
       setAvailableRooms(rooms);
       setRoomsLoading(false);
     } catch (error) {
@@ -198,7 +237,6 @@ const UserRegistration = () => {
       setRoomsLoading(false);
     }
   };
-
   // Fetch all pending registrations
   const fetchPendingRegistrations = async () => {
     try {
@@ -266,8 +304,8 @@ const UserRegistration = () => {
       phone: "",
       idType: "passport",
       idNumber: "",
-      nationality: "",
-      address: ""
+    
+
     });
   };
 
@@ -284,6 +322,14 @@ const UserRegistration = () => {
         throw new Error("Please fill in all required fields");
       }
       
+      if (formData.phone && !isValidGhanaianPhoneNumber(formData.phone)) {
+        throw new Error("Please enter a valid Ghanaian phone number");
+      }
+      if (emailError || phoneError) {
+        throw new Error("Please correct the errors in the form before submitting.");
+      }
+      
+      
       // Prepare user data for Firestore
       const userData = {
         firstName: formData.firstName,
@@ -292,8 +338,8 @@ const UserRegistration = () => {
         phone: formData.phone,
         idType: formData.idType,
         idNumber: formData.idNumber,
-        nationality: formData.nationality,
-        address: formData.address,
+
+  
         userType: "guest", // Default to guest type
         createdAt: Timestamp.now()
       };
@@ -332,14 +378,27 @@ const UserRegistration = () => {
           });
           
           setSuccess(`Guest ${formData.firstName} ${formData.lastName} registration completed successfully`);
-          
-          // Refresh pending registrations
-          fetchPendingRegistrations();
-          
-          // Reset selected booking if all guests in this booking are registered
-          if (allGuestsRegistered) {
-            setSelectedBooking(null);
-          }
+// Update the pendingRegistrations state to remove this guest
+const updatedBookingList = pendingRegistrations.map((booking) => {
+  if (booking.id === selectedBooking.id) {
+    const newGuests = booking.pendingGuests.filter(
+      (_, index) => index !== selectedBooking.selectedGuestIndex
+    );
+    return {
+      ...booking,
+      pendingGuests: newGuests,
+    };
+  }
+  return booking;
+}).filter(booking => booking.pendingGuests.length > 0);
+
+setPendingRegistrations(updatedBookingList);
+
+// Reset form and UI
+setSelectedBooking(null);
+setSuccess(`Guest ${formData.firstName} ${formData.lastName} registration completed successfully`);
+
+
         }
       }
       // If room assignment is enabled, create a booking
@@ -390,8 +449,7 @@ const UserRegistration = () => {
         phone: "",
         idType: "passport",
         idNumber: "",
-        nationality: "",
-        address: "",
+
         roomNumber: "",
         checkIn: "",
         checkOut: "",
@@ -429,8 +487,8 @@ const UserRegistration = () => {
       phone: "",
       idType: "passport",
       idNumber: "",
-      nationality: "",
-      address: "",
+ 
+
       roomNumber: "",
       checkIn: "",
       checkOut: "",
@@ -623,92 +681,7 @@ const UserRegistration = () => {
                 )}
               </div>
               
-              <div className="filter-section">
-                <div className="filter-header" onClick={() => setShowFilters(!showFilters)}>
-                  <div className="filter-title">
-                    <FaFilter className="filter-icon" />
-                    <span>Filter Pending Registrations</span>
-                  </div>
-                  <div className={`filter-toggle ${showFilters ? 'active' : ''}`}>
-                    {showFilters ? '−' : '+'}
-                  </div>
-                </div>
-                
-                {showFilters && (
-                  <div className="filter-content">
-                    <div className="filter-row">
-                      <div className="filter-field">
-                        <label htmlFor="roomFilter" className="filter-label">
-                          <FaBed className="filter-icon" />
-                          Room Number
-                        </label>
-                        <select
-                          id="roomFilter"
-                          value={roomFilter}
-                          onChange={(e) => setRoomFilter(e.target.value)}
-                          className="filter-select"
-                        >
-                          <option value="">All Rooms</option>
-                          {allRooms.map(room => (
-                            <option key={room.id} value={room.roomNumber}>
-                              Room {room.roomNumber} - {room.type}
-                            </option>
-                          ))}
-                        </select>
-                      </div>
-                      
-                      <div className="filter-field">
-                        <label htmlFor="dateFilter" className="filter-label">
-                          <FaCalendarAlt className="filter-icon" />
-                          Stay Date
-                        </label>
-                        <input
-                          type="date"
-                          id="dateFilter"
-                          value={dateFilter}
-                          onChange={(e) => setDateFilter(e.target.value)}
-                          className="filter-input"
-                        />
-                      </div>
-                      
-                      <div className="filter-field">
-                        <label htmlFor="nameFilter" className="filter-label">
-                          <FaUserPlus className="filter-icon" />
-                          Guest Name
-                        </label>
-                        <input
-                          type="text"
-                          id="nameFilter"
-                          value={nameFilter}
-                          placeholder="Search by guest name"
-                          onChange={(e) => setNameFilter(e.target.value)}
-                          className="filter-input"
-                        />
-                      </div>
-                    </div>
-                    
-                    <div className="filter-actions">
-                      <button 
-                        className="clear-filters-button"
-                        onClick={() => {
-                          setRoomFilter("");
-                          setDateFilter("");
-                          setNameFilter("");
-                        }}
-                      >
-                        Clear Filters
-                      </button>
-                      
-                      <button 
-                        className="refresh-button"
-                        onClick={fetchPendingRegistrations}
-                      >
-                        <FaSync className="refresh-icon" /> Refresh
-                      </button>
-                    </div>
-                  </div>
-                )}
-              </div>
+
               
               {pendingLoading ? (
                 <div className="loading-container">
@@ -731,8 +704,7 @@ const UserRegistration = () => {
                     <div className="booking-card" key={booking.id}>
                       <div className="booking-card__header">
                         <div className="booking-id">
-                          <span className="booking-label">Booking ID</span>
-                          <h4 className="booking-value">#{booking.id.substring(0, 6)}</h4>
+                         
                         </div>
                         
                         <div className="booking-dates">
@@ -869,10 +841,7 @@ const UserRegistration = () => {
                     </span>
                   </div>
                   
-                  <div className="details-item">
-                    <span className="details-item-label">Booking ID</span>
-                    <span className="details-item-value">#{selectedBooking.id.substring(0, 8)}</span>
-                  </div>
+                  
                 </div>
               </div>
               
@@ -916,35 +885,39 @@ const UserRegistration = () => {
                     </div>
                     
                     <div className="form-group">
-                      <label htmlFor="email" className="form-label">
-                        <FaEnvelope className="form-label-icon" /> Email Address *
-                      </label>
-                      <input
-                        type="email"
-                        id="email"
-                        name="email"
-                        value={formData.email}
-                        onChange={handleChange}
-                        required
-                        className="form-input"
-                        placeholder="Enter email address"
-                      />
-                    </div>
+  <label htmlFor="email" className="form-label">
+    <FaEnvelope className="form-label-icon" /> Email Address *
+  </label>
+  <input
+    type="email"
+    id="email"
+    name="email"
+    value={formData.email}
+    onChange={handleChange}
+    required
+    className={`form-input ${emailError ? "input-error" : ""}`}
+    placeholder="Enter email address"
+  />
+  {emailError && <small className="error-text">{emailError}</small>}
+</div>
+
                     
                     <div className="form-group">
-                      <label htmlFor="phone" className="form-label">
-                        <FaPhone className="form-label-icon" /> Phone Number
-                      </label>
-                      <input
-                        type="tel"
-                        id="phone"
-                        name="phone"
-                        value={formData.phone}
-                        onChange={handleChange}
-                        className="form-input"
-                        placeholder="Enter phone number"
-                      />
-                    </div>
+  <label htmlFor="phone" className="form-label">
+    <FaPhone className="form-label-icon" /> Phone Number
+  </label>
+  <input
+    type="tel"
+    id="phone"
+    name="phone"
+    value={formData.phone}
+    onChange={handleChange}
+    className={`form-input ${phoneError ? "input-error" : ""}`}
+    placeholder="e.g. 0241234567 or +233241234567"
+  />
+  {phoneError && <small className="error-text">{phoneError}</small>}
+</div>
+
                     
                     <div className="form-group">
                       <label htmlFor="idType" className="form-label">
@@ -979,35 +952,9 @@ const UserRegistration = () => {
                       />
                     </div>
                     
-                    <div className="form-group">
-                      <label htmlFor="nationality" className="form-label">
-                        <FaBuilding className="form-label-icon" /> Nationality
-                      </label>
-                      <input
-                        type="text"
-                        id="nationality"
-                        name="nationality"
-                        value={formData.nationality}
-                        onChange={handleChange}
-                        className="form-input"
-                        placeholder="Enter nationality"
-                      />
-                    </div>
+                 
                     
-                    <div className="form-group">
-                      <label htmlFor="address" className="form-label">
-                        <FaBuilding className="form-label-icon" /> Address
-                      </label>
-                      <input
-                        type="text"
-                        id="address"
-                        name="address"
-                        value={formData.address}
-                        onChange={handleChange}
-                        className="form-input"
-                        placeholder="Enter address"
-                      />
-                    </div>
+                    
                   </div>
                 </div>
                 
@@ -1143,35 +1090,10 @@ const UserRegistration = () => {
                         />
                       </div>
                       
-                      <div className="form-group">
-                        <label htmlFor="nationality" className="form-label">
-                          <FaBuilding className="form-label-icon" /> Nationality
-                        </label>
-                        <input
-                          type="text"
-                          id="nationality"
-                          name="nationality"
-                          value={formData.nationality}
-                          onChange={handleChange}
-                          className="form-input"
-                          placeholder="Enter nationality"
-                        />
-                      </div>
+   
                       
-                      <div className="form-group">
-                        <label htmlFor="address" className="form-label">
-                          <FaBuilding className="form-label-icon" /> Address
-                        </label>
-                        <input
-                          type="text"
-                          id="address"
-                          name="address"
-                          value={formData.address}
-                          onChange={handleChange}
-                          className="form-input"
-                          placeholder="Enter address"
-                        />
-                      </div>
+     
+               
                     </div>
                   </div>
                   
@@ -1197,27 +1119,39 @@ const UserRegistration = () => {
                             <label htmlFor="roomNumber" className="form-label">
                               <FaBed className="form-label-icon" /> Room Number *
                             </label>
-                            <select
-                              id="roomNumber"
-                              name="roomNumber"
-                              value={formData.roomNumber}
-                              onChange={handleChange}
-                              required={formData.assignRoom}
-                              className="form-select"
-                            >
-                              <option value="">Select a room</option>
-                              {roomsLoading ? (
-                                <option disabled>Loading rooms...</option>
-                              ) : availableRooms.length === 0 ? (
-                                <option disabled>No available rooms</option>
-                              ) : (
-                                availableRooms.map((room) => (
-                                  <option key={room.id} value={room.roomNumber}>
-                                    Room {room.roomNumber} - {room.type} (${room.rate}/night)
-                                  </option>
-                                ))
-                              )}
-                            </select>
+                           
+<select
+  id="roomNumber"
+  name="roomNumber"
+  value={formData.roomNumber}
+  onChange={handleChange}
+  required={formData.assignRoom}
+  className="form-select"
+>
+  <option value="">Select a room</option>
+  {roomsLoading ? (
+    <option disabled>Loading rooms...</option>
+  ) : availableRooms.length === 0 ? (
+    <option disabled>No available rooms</option>
+  ) : (
+    availableRooms.map((room) => {
+      // The roomNumber is now the document ID (R4, R27, etc.)
+      const roomIdentifier = room.roomNumber || room.id;
+      
+      // Get the room type from the Firebase data
+      const roomType = room.roomType || room.t_room || 'Standard';
+      
+      // Get the price from the Firebase data
+      const price = room.price || 0;
+      
+      return (
+        <option key={room.id} value={roomIdentifier}>
+          {roomIdentifier} - {roomType} - GHS {price}/night
+        </option>
+      );
+    })
+  )}
+</select>
                           </div>
                           
                           <div className="form-group">
@@ -1234,7 +1168,7 @@ const UserRegistration = () => {
                             >
                               <option value="confirmed">Confirmed</option>
                               <option value="checked-in">Checked In</option>
-                              <option value="pending">Pending</option>
+                              
                             </select>
                           </div>
                           

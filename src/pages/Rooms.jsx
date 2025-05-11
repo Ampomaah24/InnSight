@@ -17,6 +17,83 @@ const Rooms = () => {
   });
   const [statusUpdateMessage, setStatusUpdateMessage] = useState(null);
 
+  // Helper function to get guest name consistently from booking data
+  const getGuestNameFromBookingData = (data) => {
+    // First try primary guest fields
+    if (data.primaryGuestFirstName || data.primaryGuestLastName) {
+      return `${data.primaryGuestFirstName || ''} ${data.primaryGuestLastName || ''}`.trim();
+    }
+    
+    // Then check guests array
+    if (data.guests && Array.isArray(data.guests) && data.guests.length > 0) {
+      const firstGuest = data.guests[0];
+      if (firstGuest && (firstGuest.firstName || firstGuest.lastName)) {
+        return `${firstGuest.firstName || ''} ${firstGuest.lastName || ''}`.trim();
+      }
+    }
+    
+    // Then try booker fields
+    if (data.bookerFirstName || data.bookerLastName) {
+      return `${data.bookerFirstName || ''} ${data.bookerLastName || ''}`.trim();
+    }
+    
+    // Finally fall back to legacy fields
+    return `${data.firstName || ''} ${data.lastName || ''}`.trim() || "Guest";
+  };
+
+  // Helper function to normalize status strings for comparison
+  const normalizeStatus = (status) => {
+    if (!status) return "";
+    // Convert to lowercase and remove all spaces/special characters
+    return status.toLowerCase().replace(/[\s\-_]/g, '');
+  };
+
+  // Helper function to check if a booking should show as reserved
+  const isBookingReserved = (status) => {
+    if (!status) return false;
+    
+    // First check exact match (case-insensitive)
+    const lowerStatus = status.toLowerCase();
+    const exactMatches = ['confirmed', 'reserved', 'pending', 'paid', 'booked', 'active'];
+    if (exactMatches.includes(lowerStatus)) {
+      console.log(`Status "${status}" matched exactly, isReserved: true`);
+      return true;
+    }
+    
+    // Then check normalized status
+    const normalized = normalizeStatus(status);
+    const reservedStatuses = [
+      'confirmed',
+      'reserved', 
+      'pending',
+      'paymentpending',
+      'paid',
+      'booked',
+      'active'
+    ];
+    
+    // Check if the normalized status matches any reserved status
+    const isReserved = reservedStatuses.includes(normalized);
+    console.log(`Status "${status}" normalized to "${normalized}", isReserved: ${isReserved}`);
+    return isReserved;
+  };
+
+  // Helper function to check if a booking is checked in
+  const isBookingCheckedIn = (status) => {
+    if (!status) return false;
+    
+    const lowerStatus = status.toLowerCase();
+    const normalized = normalizeStatus(status);
+    
+    // Check various forms of "checked in"
+    return lowerStatus === 'checked in' || 
+           lowerStatus === 'checkedin' || 
+           normalized === 'checkedin' || 
+           normalized === 'occupied' ||
+           lowerStatus === 'in house' ||
+           normalized === 'inhouse';
+  };
+
   const fetchRoomsAndBookings = async () => {
     try {
       setLoading(true);
@@ -24,18 +101,28 @@ const Rooms = () => {
       // Get current date (start of day) for comparing booking dates
       const today = new Date();
       today.setHours(0, 0, 0, 0);
+      console.log(`Current date for comparison: ${today.toISOString()}`);
       
       // Fetch all rooms
       const roomsSnapshot = await getDocs(collection(db, "rooms"));
       const fetchedRooms = roomsSnapshot.docs.map((doc) => {
         const data = doc.data();
+        console.log(`Room ${data.name || doc.id} - DB Status: "${data.status}"`);
+        
+        // Fix: If status is a room number or invalid, set it to Available
+        let roomStatus = data.status;
+        if (!roomStatus || roomStatus === data.name || roomStatus === doc.id) {
+          roomStatus = "Available";
+          console.log(`Room ${data.name || doc.id} had invalid status, defaulting to Available`);
+        }
+        
         return {
           id: doc.id,
           number: data.name || doc.id,
           type: data.t_room || data.type || "Standard",
-          status: data.status || "Available", // Use status from DB if available
-          price: `$${data.price || 0}`,
+          price: `GHS ${data.price || 0}`,
           features: data.amenities || [],
+          status: roomStatus,
           lastUpdated: data.lastUpdated,
         };
       });
@@ -52,11 +139,14 @@ const Rooms = () => {
             checkInDate = data.checkIn.toDate();
           } else if (data.checkIn && data.checkIn.seconds) {
             checkInDate = new Date(data.checkIn.seconds * 1000);
+          } else if (typeof data.checkIn === 'string') {
+            checkInDate = new Date(data.checkIn);
           } else if (data.checkIn) {
             checkInDate = new Date(data.checkIn);
           }
+          console.log(`Check-in date for booking ${doc.id}: ${checkInDate}`);
         } catch (e) {
-          console.warn("Error parsing check-in date", e);
+          console.warn("Error parsing check-in date", e, data.checkIn);
           checkInDate = null;
         }
         
@@ -66,99 +156,209 @@ const Rooms = () => {
             checkOutDate = data.checkOut.toDate();
           } else if (data.checkOut && data.checkOut.seconds) {
             checkOutDate = new Date(data.checkOut.seconds * 1000);
+          } else if (typeof data.checkOut === 'string') {
+            checkOutDate = new Date(data.checkOut);
           } else if (data.checkOut) {
             checkOutDate = new Date(data.checkOut);
           }
+          console.log(`Check-out date for booking ${doc.id}: ${checkOutDate}`);
         } catch (e) {
-          console.warn("Error parsing check-out date", e);
+          console.warn("Error parsing check-out date", e, data.checkOut);
           checkOutDate = null;
         }
+        
+        // Use the helper function to get guest name
+        const guestName = getGuestNameFromBookingData(data);
+        
+        // Debug: Log the booking status
+        console.log(`Booking ${doc.id} - Status: "${data.status}", Room: ${data.roomNumber}, CheckIn: ${checkInDate}, CheckOut: ${checkOutDate}`);
         
         return {
           id: doc.id,
           roomNumber: data.roomNumber,
           status: data.status,
-          guestName: `${data.firstName || ''} ${data.lastName || ''}`.trim(),
+          guestName: guestName,
           checkInDate,
           checkOutDate,
           lastUpdated: data.lastUpdated
         };
-      }).filter(booking => booking.checkInDate && booking.checkOutDate && booking.roomNumber); // Filter out invalid bookings
+      }).filter(booking => {
+        // Basic validation
+        if (!booking.roomNumber) {
+          console.log(`Filtering out booking ${booking.id} - missing room number`);
+          return false;
+        }
+        
+        if (!booking.checkInDate || !booking.checkOutDate) {
+          console.log(`Filtering out booking ${booking.id} - missing check-in/out dates`);
+          return false;
+        }
+      
+        const normalizedStatus = normalizeStatus(booking.status);
+        const lowerStatus = (booking.status || '').toLowerCase();
+        
+        // Only filter out explicitly cancelled/terminated/checked out bookings
+        if (normalizedStatus === "cancelled" || 
+            normalizedStatus === "terminated" || 
+            normalizedStatus === "checkedout" ||
+            lowerStatus === "checked out") {
+          console.log(`Filtering out booking ${booking.id} - status: ${booking.status}`);
+          return false;
+        }
+      
+        // Debug log for kept bookings
+        console.log(`Keeping booking ${booking.id} for room ${booking.roomNumber}`, {
+          status: booking.status,
+          normalizedStatus: normalizedStatus,
+          isReserved: isBookingReserved(booking.status),
+          checkIn: booking.checkInDate?.toISOString(),
+          checkOut: booking.checkOutDate?.toISOString()
+        });
+      
+        return true;
+      });
       
       setBookings(fetchedBookings);
       
-      // Update room status based on bookings if room doesn't have a status
-      const updatedRooms = fetchedRooms.map(room => {
-        // Only calculate status if not already set in database
-        if (!room.status || room.status === "Available") {
-          const roomBookings = fetchedBookings.filter(
-            booking => booking.roomNumber === room.number
-          );
+      // Update rooms based on actual booking data
+      const updatedRooms = await Promise.all(fetchedRooms.map(async (room) => {
+        // Find bookings for this room - handle room number variations
+        const roomBookings = fetchedBookings.filter(booking => {
+          // Handle variations in room numbers (R1 vs R001, R2 vs R002, etc.)
+          const bookingRoomNum = booking.roomNumber;
+          const roomNum = room.number;
           
-          // Find bookings affecting this room's status today
-          const activeBooking = roomBookings.find(booking => {
-            return (
-              booking.checkInDate <= today && 
-              booking.checkOutDate > today &&
-              (booking.status === "Checked in" || booking.status === "checked-in" || booking.status === "Checked-in")
-            );
-          });
+          // Direct match
+          if (bookingRoomNum === roomNum) return true;
           
-          const reservedBooking = roomBookings.find(booking => {
-            return (
-              booking.checkInDate > today &&
-              (booking.status === "Confirmed" || booking.status === "Reserved" || booking.status === "reserved")
-            );
-          });
+          // Extract numeric parts for comparison
+          const bookingNumMatch = bookingRoomNum.match(/\d+/);
+          const roomNumMatch = roomNum.match(/\d+/);
           
-          // Determine room status
-          let status = "Available";
-          
-          if (activeBooking) {
-            status = "Occupied";
-          } else if (reservedBooking) {
-            status = "Reserved";
+          if (bookingNumMatch && roomNumMatch) {
+            const bookingNum = parseInt(bookingNumMatch[0]);
+            const roomNumInt = parseInt(roomNumMatch[0]);
+            return bookingNum === roomNumInt;
           }
           
-          return { 
-            ...room, 
-            status,
-            activeBookingId: activeBooking?.id,
-            reservedBookingId: reservedBooking?.id,
-            activeBooking,
-            reservedBooking 
-          };
+          return false;
+        });
+
+        console.log(`\n=== Room ${room.number} Analysis ===`);
+        console.log(`Room DB Status: "${room.status}"`);
+        console.log(`Found ${roomBookings.length} bookings`);
+        roomBookings.forEach(b => {
+          console.log(`Booking ${b.id}: status="${b.status}", checkIn=${b.checkInDate}, checkOut=${b.checkOutDate}`);
+          console.log(`  isReserved: ${isBookingReserved(b.status)}, isCheckedIn: ${isBookingCheckedIn(b.status)}`);
+        });
+
+        // Find active bookings (checked in)
+        const activeBooking = roomBookings.find(booking => {
+          const dateActive = booking.checkInDate <= today && booking.checkOutDate > today;
+          const isCheckedIn = isBookingCheckedIn(booking.status);
+          
+          console.log(`Active check for booking ${booking.id}:`, {
+            checkIn: booking.checkInDate?.toISOString(),
+            checkOut: booking.checkOutDate?.toISOString(),
+            today: today.toISOString(),
+            dateActive,
+            status: booking.status,
+            isCheckedIn
+          });
+          
+          return dateActive && isCheckedIn;
+        });
+
+        // Find reservations (confirmed but not checked in)
+        const reservedBooking = roomBookings.find(booking => {
+          const isReserved = isBookingReserved(booking.status);
+          const notCheckedIn = !isBookingCheckedIn(booking.status);
+          
+          // Check if it's a future booking OR a same-day booking that hasn't checked in yet
+          const isFuture = booking.checkInDate > today;
+          const isTodayNotCheckedIn = booking.checkInDate <= today && 
+                                     booking.checkOutDate > today && 
+                                     notCheckedIn;
+          
+          console.log(`Reservation check for booking ${booking.id}:`, {
+            checkIn: booking.checkInDate?.toISOString(),
+            checkOut: booking.checkOutDate?.toISOString(),
+            today: today.toISOString(),
+            status: booking.status,
+            isReserved,
+            notCheckedIn,
+            isFuture,
+            isTodayNotCheckedIn,
+            result: isReserved && (isFuture || isTodayNotCheckedIn)
+          });
+          
+          return isReserved && (isFuture || isTodayNotCheckedIn);
+        });
+
+        // Determine the display status
+        let displayStatus = "Available"; // Default to available
+        let bookingDetails = {
+          activeBookingId: null,
+          reservedBookingId: null,
+          activeBooking: null,
+          reservedBooking: null
+        };
+        
+        // Priority: Occupied > Reserved > Available
+        if (activeBooking) {
+          displayStatus = "Occupied";
+          bookingDetails.activeBookingId = activeBooking.id;
+          bookingDetails.activeBooking = activeBooking;
+          console.log(`Room ${room.number} set to Occupied`);
+        } else if (reservedBooking) {
+          displayStatus = "Reserved";
+          bookingDetails.reservedBookingId = reservedBooking.id;
+          bookingDetails.reservedBooking = reservedBooking;
+          console.log(`Room ${room.number} set to Reserved`);
+          
+          // AUTOMATICALLY UPDATE THE ROOM STATUS IN DATABASE
+          if (room.status !== "Reserved") {
+            console.log(`Auto-updating room ${room.number} to Reserved status in database`);
+            try {
+              const roomRef = doc(db, "rooms", room.id);
+              await updateDoc(roomRef, { 
+                status: "Reserved",
+                lastUpdated: Timestamp.now()
+              });
+            } catch (error) {
+              console.error(`Error auto-updating room status:`, error);
+            }
+          }
+        } else {
+          // No active or reserved bookings
+          displayStatus = "Available";
+          
+          // AUTOMATICALLY UPDATE THE ROOM STATUS IN DATABASE to Available if needed
+          if (room.status !== "Available" && room.status !== "Maintenance") {
+            console.log(`Auto-updating room ${room.number} to Available status in database`);
+            try {
+              const roomRef = doc(db, "rooms", room.id);
+              await updateDoc(roomRef, { 
+                status: "Available",
+                lastUpdated: Timestamp.now()
+              });
+            } catch (error) {
+              console.error(`Error auto-updating room status:`, error);
+            }
+          }
         }
         
-        // If room already has a status, find the associated booking for reference
-        const roomBookings = fetchedBookings.filter(
-          booking => booking.roomNumber === room.number
-        );
-        
-        const activeBooking = roomBookings.find(booking => {
-          return (
-            booking.checkInDate <= today && 
-            booking.checkOutDate > today &&
-            (booking.status === "Checked in" || booking.status === "checked-in" || booking.status === "Checked-in")
-          );
-        });
-        
-        const reservedBooking = roomBookings.find(booking => {
-          return (
-            booking.checkInDate > today &&
-            (booking.status === "Confirmed" || booking.status === "Reserved" || booking.status === "reserved")
-          );
-        });
-        
-        return { 
+        console.log(`Final status for room ${room.number}: ${displayStatus}`);
+        console.log(`=== End Room ${room.number} Analysis ===\n`);
+
+        return {
           ...room,
-          activeBookingId: activeBooking?.id,
-          reservedBookingId: reservedBooking?.id,
-          activeBooking,
-          reservedBooking
+          status: displayStatus,
+          dbStatus: room.status, // Keep original DB status for reference
+          ...bookingDetails
         };
-      });
-      
+      }));
+
       // Calculate stats
       const totalRooms = updatedRooms.length;
       const availableRooms = updatedRooms.filter(room => room.status === "Available").length;
@@ -196,10 +396,10 @@ const Rooms = () => {
   useEffect(() => {
     fetchRoomsAndBookings();
     
-    // Set up auto-refresh every 5 minutes
+    // Set up auto-refresh every 2 minutes
     const refreshInterval = setInterval(() => {
       fetchRoomsAndBookings();
-    }, 300000); // 5 minutes
+    }, 120000); // 2 minutes
     
     return () => clearInterval(refreshInterval);
   }, []);
@@ -212,7 +412,7 @@ const Rooms = () => {
     }, 3000);
   };
 
-  // Handle status change with full booking synchronization
+  // Handle status change
   const handleStatusChange = async (roomId, roomNumber, newStatus, activeBookingId, reservedBookingId) => {
     try {
       // Update room status in Firestore
@@ -224,7 +424,6 @@ const Rooms = () => {
       
       // Handle booking status updates based on room status change
       if (newStatus === "Occupied") {
-        // If changing to Occupied and there's a reserved booking, update it to checked in
         if (reservedBookingId) {
           const bookingRef = doc(db, "bookings", reservedBookingId);
           await updateDoc(bookingRef, { 
@@ -234,13 +433,10 @@ const Rooms = () => {
           
           showStatusMessage(`Room ${roomNumber} marked as Occupied and booking updated to Checked in`);
         } else {
-          // If there's no booking but room is marked occupied, log it
-          console.log(`Room ${roomNumber} marked as Occupied but no booking found to update`);
           showStatusMessage(`Room ${roomNumber} marked as Occupied`);
         }
       } 
       else if (newStatus === "Available") {
-        // If changing to Available and there's an active booking, update it to checked out
         if (activeBookingId) {
           const bookingRef = doc(db, "bookings", activeBookingId);
           await updateDoc(bookingRef, { 
@@ -257,31 +453,14 @@ const Rooms = () => {
         showStatusMessage(`Room ${roomNumber} marked as Reserved`);
       }
 
-      // Update local state for immediate UI feedback
+      // Update local state
       setRooms((prevRooms) =>
         prevRooms.map((room) =>
           room.id === roomId ? { ...room, status: newStatus } : room
         )
       );
       
-      // Update stats
-      const updatedRooms = rooms.map(room => 
-        room.id === roomId ? { ...room, status: newStatus } : room
-      );
-      
-      const totalRooms = updatedRooms.length;
-      const availableRooms = updatedRooms.filter(room => room.status === "Available").length;
-      const reservedRooms = updatedRooms.filter(room => room.status === "Reserved").length;
-      const occupiedRooms = updatedRooms.filter(room => room.status === "Occupied").length;
-      
-      setStats({
-        total: totalRooms,
-        available: availableRooms,
-        reserved: reservedRooms,
-        occupied: occupiedRooms
-      });
-      
-      // Refresh data after a delay to ensure DB updates are reflected
+      // Refresh data after a delay
       setTimeout(() => {
         fetchRoomsAndBookings();
       }, 1000);
@@ -297,7 +476,7 @@ const Rooms = () => {
     // Check if room has active bookings first
     const roomBookings = bookings.filter(booking => 
       booking.roomNumber === roomNumber && 
-      (booking.status === "Confirmed" || booking.status === "Checked in" || booking.status === "Reserved")
+      (isBookingReserved(booking.status) || isBookingCheckedIn(booking.status))
     );
     
     if (roomBookings.length > 0) {
@@ -405,8 +584,6 @@ const Rooms = () => {
                     <th>Status</th>
                     <th>Price</th>
                     <th>Features</th>
-                    <th>Guest</th>
-                    <th>Actions</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -444,25 +621,11 @@ const Rooms = () => {
                             ))}
                           </div>
                         </td>
-                        <td className="guest-name">
-                          {room.status === "Occupied" && room.activeBooking ? 
-                            room.activeBooking.guestName : 
-                            room.status === "Reserved" && room.reservedBooking ? 
-                            room.reservedBooking.guestName : ""}
-                        </td>
-                        <td>
-                          <button 
-                            className="remove-btn" 
-                            onClick={() => handleDeleteRoom(room.id, room.number)}
-                          >
-                            Remove
-                          </button>
-                        </td>
                       </tr>
                     ))
                   ) : (
                     <tr className="empty-row">
-                      <td colSpan="7">No rooms available</td>
+                      <td colSpan="5">No rooms available</td>
                     </tr>
                   )}
                 </tbody>

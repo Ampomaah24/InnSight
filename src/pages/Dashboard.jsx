@@ -427,7 +427,7 @@ const Dashboard = () => {
                 </thead>
                 <tbody>
                   {upcomingReservations.slice(0, 10).map((res) => (
-                    <tr key={res.id} onClick={() => navigate(`/reservation/${res.id}`)}>
+                    <tr key={res.id} >
                       <td>{res.guestName || "Guest"}</td>
                       <td>{res.checkIn}</td>
                       <td>{res.checkOut}</td>

@@ -756,7 +756,7 @@ const BookingPage = () => {
               
               // Additional info
               specialRequests: formData.specialRequests,
-              status: "Confirmed",
+              status: "Reserved",
               createdAt: serverTimestamp(),
               
               // Group booking information

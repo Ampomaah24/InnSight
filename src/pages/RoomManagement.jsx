@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from "react";
-import { collection, getDocs, doc, updateDoc, addDoc, serverTimestamp, deleteDoc } from "firebase/firestore";
+import { collection, getDocs, doc, updateDoc, addDoc, serverTimestamp, deleteDoc, writeBatch } from "firebase/firestore";
 import { db } from "../config/firebase";
 import Sidebar from "../components/Sidebar";
-// Removed TopRightProfile import
 import "../assets/styles/Dashboard.css";
 import "../assets/styles/RoomManagement.css";
 
@@ -23,36 +22,57 @@ const RoomManagement = () => {
   const [showAddForm, setShowAddForm] = useState(false);
   const [newRoom, setNewRoom] = useState({
     name: "",
-    t_room: "Single bed",
+    type: "Single bed",
     price: 600,
     amenities: ["WiFi", "Breakfast"],
     bookings: []
   });
   
   // State for room types management
-  const [roomTypes, setRoomTypes] = useState(["Single bed", "Double bed", "Twin bed"]);
+  const [roomTypes, setRoomTypes] = useState({
+    hotel: ["Single bed", "Double bed", "Twin bed"],
+    conference: [ "Small", "Big", "Long"]
+  });
   const [showRoomTypeModal, setShowRoomTypeModal] = useState(false);
   const [newRoomType, setNewRoomType] = useState("");
   const [editingRoomType, setEditingRoomType] = useState(null);
   const [editedRoomType, setEditedRoomType] = useState("");
+  const [roomCategory, setRoomCategory] = useState("hotel");
+  
+  // New state for bulk amenity editing
+  const [showBulkAmenityModal, setShowBulkAmenityModal] = useState(false);
+  const [selectedRoomType, setSelectedRoomType] = useState("");
+  const [bulkAmenityInput, setBulkAmenityInput] = useState("");
+  const [bulkAmenities, setBulkAmenities] = useState([]);
+  const [bulkAction, setBulkAction] = useState("add"); // "add" or "replace"
 
   useEffect(() => {
     const fetchRooms = async () => {
       try {
         setLoading(true);
-        const roomsCollection = collection(db, "rooms");
+        
+        // Determine which collection to fetch based on category
+        const collectionName = roomCategory === "conference" ? "conference_rooms" : "rooms";
+        const roomsCollection = collection(db, collectionName);
         const roomSnapshot = await getDocs(roomsCollection);
         
         if (roomSnapshot.empty) {
-          console.log("No rooms found in database");
+          console.log(`No ${roomCategory} rooms found in database`);
+          setRooms([]);
+          setFilteredRooms([]);
           setLoading(false);
           return;
         }
         
-        const roomsList = roomSnapshot.docs.map(doc => ({
-          id: doc.id,
-          ...doc.data()
-        }));
+        const roomsList = roomSnapshot.docs.map(doc => {
+          const data = doc.data();
+          return {
+            id: doc.id,
+            ...data,
+            // Map t_room to type for consistency in the component
+            type: data.t_room || data.type
+          };
+        });
         
         // Sort rooms by name
         roomsList.sort((a, b) => {
@@ -64,16 +84,6 @@ const RoomManagement = () => {
         setRooms(roomsList);
         setFilteredRooms(roomsList);
         
-        // Extract unique room types for the dropdown
-        const uniqueRoomTypes = [...new Set(roomsList.map(room => room.t_room))];
-        if (uniqueRoomTypes.length > 0) {
-          setRoomTypes(prevTypes => {
-            // Merge existing types with ones from database
-            const allTypes = [...new Set([...prevTypes, ...uniqueRoomTypes])];
-            return allTypes;
-          });
-        }
-        
         setLoading(false);
       } catch (error) {
         console.error("Error fetching rooms:", error);
@@ -82,18 +92,28 @@ const RoomManagement = () => {
     };
     
     fetchRooms();
-  }, []);
+  }, [roomCategory]); // Refetch when category changes
+
+  // Update newRoom default when category changes
+  useEffect(() => {
+    setNewRoom(prev => ({
+      ...prev,
+      type: roomTypes[roomCategory][0],
+      amenities: roomCategory === "conference" ? ["WiFi", "Coffee break"] : ["WiFi", "Breakfast"],
+      price: roomCategory === "conference" ? 3000 : 600
+    }));
+  }, [roomCategory, roomTypes]);
 
   useEffect(() => {
     // Filter rooms based on search term and room type
     const filtered = rooms.filter(room => {
       const matchesSearch = 
         (room.name && room.name.toLowerCase().includes(searchTerm.toLowerCase())) ||
-        (room.t_room && room.t_room.toLowerCase().includes(searchTerm.toLowerCase()));
+        (room.type && room.type.toLowerCase().includes(searchTerm.toLowerCase()));
       
       const matchesType = 
         filterType === "all" || 
-        (room.t_room && room.t_room.toLowerCase() === filterType.toLowerCase());
+        (room.type && room.type.toLowerCase() === filterType.toLowerCase());
       
       return matchesSearch && matchesType;
     });
@@ -151,11 +171,18 @@ const RoomManagement = () => {
       const roomToUpdate = {...editedRoom};
       delete roomToUpdate.id;
       
+      // Ensure we save the room type correctly based on the field name used in the database
+      if (roomToUpdate.type) {
+        roomToUpdate.t_room = roomToUpdate.type;
+        delete roomToUpdate.type;
+      }
+      
       // Add timestamp for last update
       roomToUpdate.lastUpdated = serverTimestamp();
       
       // Update the room in Firestore
-      const roomRef = doc(db, "rooms", id);
+      const collectionName = roomCategory === "conference" ? "conference_rooms" : "rooms";
+      const roomRef = doc(db, collectionName, id);
       await updateDoc(roomRef, roomToUpdate);
       
       // Update local state
@@ -254,15 +281,23 @@ const RoomManagement = () => {
       // Create room object to save
       const roomToAdd = {
         ...newRoom,
+        availability: true, // Default to available
         createdAt: serverTimestamp(),
         lastUpdated: serverTimestamp()
       };
       
+      // Use t_room field name for consistency with database
+      if (roomToAdd.type) {
+        roomToAdd.t_room = roomToAdd.type;
+        delete roomToAdd.type;
+      }
+      
       // Save to Firestore
-      const roomsCollection = collection(db, "rooms");
+      const collectionName = roomCategory === "conference" ? "conference_rooms" : "rooms";
+      const roomsCollection = collection(db, collectionName);
       const docRef = await addDoc(roomsCollection, roomToAdd);
       
-      // Add to local state
+      // Add to local state with type properly set
       const newRoomWithId = {
         ...newRoom,
         id: docRef.id
@@ -273,9 +308,9 @@ const RoomManagement = () => {
       // Reset form and close it
       setNewRoom({
         name: "",
-        t_room: "Single bed",
-        price: 600,
-        amenities: ["WiFi", "Breakfast"],
+        type: roomTypes[roomCategory][0],
+        price: roomCategory === "conference" ? 3000 : 600,
+        amenities: roomCategory === "conference" ? ["WiFi", "Coffee break"] : ["WiFi", "Breakfast"],
         bookings: []
       });
       setShowAddForm(false);
@@ -313,7 +348,8 @@ const RoomManagement = () => {
       setSaving(true);
       
       // Delete from Firestore
-      const roomRef = doc(db, "rooms", roomId);
+      const collectionName = roomCategory === "conference" ? "conference_rooms" : "rooms";
+      const roomRef = doc(db, collectionName, roomId);
       await deleteDoc(roomRef);
       
       // Update local state
@@ -345,7 +381,8 @@ const RoomManagement = () => {
   // Room Type Management
   const handleAddRoomType = () => {
     if (newRoomType.trim() !== "") {
-      if (roomTypes.includes(newRoomType.trim())) {
+      const currentTypes = roomTypes[roomCategory];
+      if (currentTypes.includes(newRoomType.trim())) {
         setSaveMessage({
           type: "error",
           text: `Room type "${newRoomType}" already exists!`
@@ -353,7 +390,10 @@ const RoomManagement = () => {
         return;
       }
       
-      setRoomTypes([...roomTypes, newRoomType.trim()]);
+      setRoomTypes({
+        ...roomTypes,
+        [roomCategory]: [...currentTypes, newRoomType.trim()]
+      });
       setNewRoomType("");
       
       setSaveMessage({
@@ -369,7 +409,7 @@ const RoomManagement = () => {
   
   const handleEditRoomType = (index) => {
     setEditingRoomType(index);
-    setEditedRoomType(roomTypes[index]);
+    setEditedRoomType(roomTypes[roomCategory][index]);
   };
   
   const handleSaveRoomType = (index) => {
@@ -381,7 +421,8 @@ const RoomManagement = () => {
       return;
     }
     
-    if (roomTypes.includes(editedRoomType.trim()) && roomTypes[index] !== editedRoomType.trim()) {
+    const currentTypes = roomTypes[roomCategory];
+    if (currentTypes.includes(editedRoomType.trim()) && currentTypes[index] !== editedRoomType.trim()) {
       setSaveMessage({
         type: "error",
         text: `Room type "${editedRoomType}" already exists!`
@@ -389,21 +430,13 @@ const RoomManagement = () => {
       return;
     }
     
-    const updatedRoomTypes = [...roomTypes];
-    updatedRoomTypes[index] = editedRoomType.trim();
-    setRoomTypes(updatedRoomTypes);
+    const updatedTypes = [...currentTypes];
+    updatedTypes[index] = editedRoomType.trim();
     
-    // Update any rooms that use this room type
-    const oldRoomType = roomTypes[index];
-    const updatedRooms = rooms.map(room => {
-      if (room.t_room === oldRoomType) {
-        return { ...room, t_room: editedRoomType.trim() };
-      }
-      return room;
+    setRoomTypes({
+      ...roomTypes,
+      [roomCategory]: updatedTypes
     });
-    
-    // Update rooms in state and optionally in Firestore (would need to batch update)
-    setRooms(updatedRooms);
     
     setEditingRoomType(null);
     setEditedRoomType("");
@@ -419,10 +452,10 @@ const RoomManagement = () => {
   };
   
   const handleDeleteRoomType = (index) => {
-    const typeToDelete = roomTypes[index];
+    const typeToDelete = roomTypes[roomCategory][index];
     
     // Check if any rooms use this type
-    const roomsWithType = rooms.filter(room => room.t_room === typeToDelete);
+    const roomsWithType = rooms.filter(room => room.type === typeToDelete);
     
     if (roomsWithType.length > 0) {
       setSaveMessage({
@@ -436,9 +469,13 @@ const RoomManagement = () => {
       return;
     }
     
-    const updatedRoomTypes = [...roomTypes];
-    updatedRoomTypes.splice(index, 1);
-    setRoomTypes(updatedRoomTypes);
+    const updatedTypes = [...roomTypes[roomCategory]];
+    updatedTypes.splice(index, 1);
+    
+    setRoomTypes({
+      ...roomTypes,
+      [roomCategory]: updatedTypes
+    });
     
     setSaveMessage({
       type: "success",
@@ -450,10 +487,129 @@ const RoomManagement = () => {
     }, 3000);
   };
 
+  // Bulk amenity functions
+  const handleOpenBulkAmenityModal = () => {
+    setShowBulkAmenityModal(true);
+    setSelectedRoomType("");
+    setBulkAmenities([]);
+    setBulkAmenityInput("");
+    setBulkAction("add");
+  };
+
+  const handleAddBulkAmenity = () => {
+    if (bulkAmenityInput.trim() !== "") {
+      if (!bulkAmenities.includes(bulkAmenityInput.trim())) {
+        setBulkAmenities([...bulkAmenities, bulkAmenityInput.trim()]);
+      }
+      setBulkAmenityInput("");
+    }
+  };
+
+  const handleRemoveBulkAmenity = (index) => {
+    const updatedAmenities = [...bulkAmenities];
+    updatedAmenities.splice(index, 1);
+    setBulkAmenities(updatedAmenities);
+  };
+
+  const handleBulkAmenityUpdate = async () => {
+    if (!selectedRoomType || bulkAmenities.length === 0) {
+      setSaveMessage({
+        type: "error",
+        text: "Please select a room type and add amenities!"
+      });
+      return;
+    }
+
+    try {
+      setSaving(true);
+      
+      // Get all rooms of the selected type
+      const roomsToUpdate = rooms.filter(room => room.type === selectedRoomType);
+      
+      if (roomsToUpdate.length === 0) {
+        setSaveMessage({
+          type: "error",
+          text: `No rooms found with type "${selectedRoomType}"`
+        });
+        setSaving(false);
+        return;
+      }
+
+      // Create a batch update
+      const batch = writeBatch(db);
+      const collectionName = roomCategory === "conference" ? "conference_rooms" : "rooms";
+      
+      roomsToUpdate.forEach(room => {
+        const roomRef = doc(db, collectionName, room.id);
+        let updatedAmenities;
+        
+        if (bulkAction === "replace") {
+          // Replace existing amenities
+          updatedAmenities = [...bulkAmenities];
+        } else {
+          // Add to existing amenities
+          const existingAmenities = room.amenities || [];
+          updatedAmenities = [...new Set([...existingAmenities, ...bulkAmenities])];
+        }
+        
+        batch.update(roomRef, {
+          amenities: updatedAmenities,
+          lastUpdated: serverTimestamp()
+        });
+      });
+      
+      // Commit the batch
+      await batch.commit();
+      
+      // Update local state
+      const updatedRooms = rooms.map(room => {
+        if (room.type === selectedRoomType) {
+          let updatedAmenities;
+          
+          if (bulkAction === "replace") {
+            updatedAmenities = [...bulkAmenities];
+          } else {
+            const existingAmenities = room.amenities || [];
+            updatedAmenities = [...new Set([...existingAmenities, ...bulkAmenities])];
+          }
+          
+          return { ...room, amenities: updatedAmenities };
+        }
+        return room;
+      });
+      
+      setRooms(updatedRooms);
+      
+      // Close modal and reset
+      setShowBulkAmenityModal(false);
+      setSelectedRoomType("");
+      setBulkAmenities([]);
+      setBulkAmenityInput("");
+      setBulkAction("add");
+      
+      // Show success message
+      setSaveMessage({
+        type: "success",
+        text: `${roomsToUpdate.length} rooms of type "${selectedRoomType}" updated successfully!`
+      });
+      
+      setTimeout(() => {
+        setSaveMessage({ type: "", text: "" });
+      }, 3000);
+    } catch (error) {
+      console.error("Error updating rooms:", error);
+      setSaveMessage({
+        type: "error",
+        text: `Error updating rooms: ${error.message}`
+      });
+    } finally {
+      setSaving(false);
+    }
+  };
+
   return (
     <div className="dashboard-container">
       <Sidebar />
-      {/* Removed TopRightProfile component */}
       <div className="main-content">
         <div className="dashboard-header">
           <h1 className="dashboard-title">Room Management</h1>
@@ -467,6 +623,21 @@ const RoomManagement = () => {
         )}
         
         <div className="room-filters">
+          <div className="room-category-toggle">
+            <button
+              className={`category-btn ${roomCategory === "hotel" ? "active" : ""}`}
+              onClick={() => setRoomCategory("hotel")}
+            >
+              Hotel Rooms
+            </button>
+            <button
+              className={`category-btn ${roomCategory === "conference" ? "active" : ""}`}
+              onClick={() => setRoomCategory("conference")}
+            >
+              Conference Rooms
+            </button>
+          </div>
+          
           <div className="search-box">
             <input
               type="text"
@@ -482,7 +653,7 @@ const RoomManagement = () => {
               onChange={(e) => setFilterType(e.target.value)}
             >
               <option value="all">All Room Types</option>
-              {roomTypes.map((type, index) => (
+              {roomTypes[roomCategory].map((type, index) => (
                 <option key={index} value={type.toLowerCase()}>
                   {type}
                 </option>
@@ -501,6 +672,14 @@ const RoomManagement = () => {
             </button>
             
             <button
+              className="bulk-amenity-btn"
+              onClick={handleOpenBulkAmenityModal}
+              title="Bulk Edit Amenities"
+            >
+              <FaEdit /> Bulk Amenities
+            </button>
+            
+            <button
               className="manage-types-btn"
               onClick={() => setShowRoomTypeModal(!showRoomTypeModal)}
               title="Manage Room Types"
@@ -510,12 +689,129 @@ const RoomManagement = () => {
           </div>
         </div>
         
+        {/* Bulk Amenity Modal */}
+        {showBulkAmenityModal && (
+          <div className="modal-overlay">
+            <div className="bulk-amenity-modal">
+              <h3>Bulk Edit Amenities</h3>
+              
+              <div className="bulk-amenity-form">
+                <div className="form-group">
+                  <label>Select Room Type</label>
+                  <select
+                    value={selectedRoomType}
+                    onChange={(e) => setSelectedRoomType(e.target.value)}
+                    className="room-type-select"
+                  >
+                    <option value="">Choose Room Type</option>
+                    {/* Only show room types for current category */}
+                    {roomTypes[roomCategory].map((type, index) => (
+                      <option key={index} value={type}>
+                        {type}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                
+                <div className="form-group">
+                  <label>Update Action</label>
+                  <div className="radio-group">
+                    <label>
+                      <input
+                        type="radio"
+                        value="add"
+                        checked={bulkAction === "add"}
+                        onChange={(e) => setBulkAction(e.target.value)}
+                      />
+                      Add to existing amenities
+                    </label>
+                    <label>
+                      <input
+                        type="radio"
+                        value="replace"
+                        checked={bulkAction === "replace"}
+                        onChange={(e) => setBulkAction(e.target.value)}
+                      />
+                      Replace all amenities
+                    </label>
+                  </div>
+                </div>
+                
+                <div className="form-group">
+                  <label>Amenities</label>
+                  <div className="amenities-container">
+                    <div className="amenities-list">
+                      {bulkAmenities.map((amenity, index) => (
+                        <div key={index} className="amenity-item">
+                          <span>{amenity}</span>
+                          <button
+                            type="button"
+                            onClick={() => handleRemoveBulkAmenity(index)}
+                            className="remove-amenity"
+                          >
+                            ×
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                    
+                    <div className="add-amenity">
+                      <input
+                        type="text"
+                        value={bulkAmenityInput}
+                        onChange={(e) => setBulkAmenityInput(e.target.value)}
+                        placeholder="Add amenity"
+                        className="amenity-input"
+                        onKeyPress={(e) => {
+                          if (e.key === 'Enter') {
+                            e.preventDefault();
+                            handleAddBulkAmenity();
+                          }
+                        }}
+                      />
+                      <button
+                        type="button"
+                        onClick={handleAddBulkAmenity}
+                        className="add-amenity-btn"
+                      >
+                        <FaPlus />
+                      </button>
+                    </div>
+                  </div>
+                </div>
+                
+                {selectedRoomType && (
+                  <div className="affected-rooms">
+                    <p>This will affect <strong>{rooms.filter(room => room.type === selectedRoomType).length}</strong> rooms.</p>
+                  </div>
+                )}
+              </div>
+              
+              <div className="modal-actions">
+                <button
+                  className="cancel-modal-btn"
+                  onClick={() => setShowBulkAmenityModal(false)}
+                >
+                  Cancel
+                </button>
+                <button
+                  className="confirm-modal-btn"
+                  onClick={handleBulkAmenityUpdate}
+                  disabled={saving || !selectedRoomType || bulkAmenities.length === 0}
+                >
+                  {saving ? "Updating..." : "Apply Changes"}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+        
         {/* Room Types Modal */}
         {showRoomTypeModal && (
           <div className="room-types-modal">
-            <h3>Manage Room Types</h3>
+            <h3>Manage {roomCategory === "hotel" ? "Room" : "Conference"} Types</h3>
             <div className="room-types-list">
-              {roomTypes.map((type, index) => (
+              {roomTypes[roomCategory].map((type, index) => (
                 <div key={index} className="room-type-item">
                   {editingRoomType === index ? (
                     <>
@@ -594,7 +890,7 @@ const RoomManagement = () => {
         {/* Add New Room Form */}
         {showAddForm && (
           <div className="add-room-form">
-            <h3>Add New Room</h3>
+            <h3>Add New {roomCategory === "hotel" ? "Room" : "Conference Room"}</h3>
             <div className="form-grid">
               <div className="form-group">
                 <label>Room Name *</label>
@@ -603,7 +899,7 @@ const RoomManagement = () => {
                   name="name"
                   value={newRoom.name}
                   onChange={handleNewRoomChange}
-                  placeholder="e.g. R001"
+                  placeholder={roomCategory === "hotel" ? "e.g. R001" : "e.g. Mini Hall"}
                   required
                 />
               </div>
@@ -611,11 +907,11 @@ const RoomManagement = () => {
               <div className="form-group">
                 <label>Room Type</label>
                 <select
-                  name="t_room"
-                  value={newRoom.t_room}
+                  name="type"
+                  value={newRoom.type}
                   onChange={handleNewRoomChange}
                 >
-                  {roomTypes.map((type, index) => (
+                  {roomTypes[roomCategory].map((type, index) => (
                     <option key={index} value={type}>
                       {type}
                     </option>
@@ -658,7 +954,7 @@ const RoomManagement = () => {
                     type="text"
                     value={amenityInput}
                     onChange={(e) => setAmenityInput(e.target.value)}
-                    placeholder="Add amenity"
+                    placeholder={roomCategory === "hotel" ? "Add amenity" : "Add facility"}
                     className="amenity-input"
                     onKeyPress={(e) => {
                       if (e.key === 'Enter') {
@@ -692,14 +988,14 @@ const RoomManagement = () => {
                 onClick={handleAddNewRoom}
                 disabled={saving}
               >
-                {saving ? "Saving..." : <><FaSave /> Add Room</>}
+                {saving ? "Saving..." : <><FaSave /> Add {roomCategory === "hotel" ? "Room" : "Conference Room"}</>}
               </button>
             </div>
           </div>
         )}
         
         {loading ? (
-          <div className="loading-indicator">Loading rooms...</div>
+          <div className="loading-indicator">Loading {roomCategory} rooms...</div>
         ) : (
           <div className="rooms-table-container">
             <table className="rooms-table">
@@ -715,7 +1011,7 @@ const RoomManagement = () => {
               <tbody>
                 {filteredRooms.length === 0 ? (
                   <tr>
-                    <td colSpan="5" className="no-data">No rooms found</td>
+                    <td colSpan="5" className="no-data">No {roomCategory} rooms found</td>
                   </tr>
                 ) : (
                   filteredRooms.map((room) => (
@@ -734,12 +1030,12 @@ const RoomManagement = () => {
                           </td>
                           <td>
                             <select
-                              name="t_room"
-                              value={editedRoom.t_room || ""}
+                              name="type"
+                              value={editedRoom.type || ""}
                               onChange={handleChange}
                               className="edit-select"
                             >
-                              {roomTypes.map((type, index) => (
+                              {roomTypes[roomCategory].map((type, index) => (
                                 <option key={index} value={type}>
                                   {type}
                                 </option>
@@ -819,7 +1115,7 @@ const RoomManagement = () => {
                         // View mode
                         <>
                           <td>{room.name}</td>
-                          <td>{room.t_room}</td>
+                          <td>{room.type}</td>
                           <td>{room.price} GHS</td>
                           <td>
                             <div className="amenities-display">
