@@ -10,14 +10,13 @@ import {
 } from "firebase/firestore";
 import "./Orders.css";
 import NavMenu from "../../components/NavMenu"; 
+import { FaShoppingBag, FaUtensils } from 'react-icons/fa';
 
 const Orders = () => {
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [userId, setUserId] = useState(null);
   const [menuOpen, setMenuOpen] = useState(false);
-
-
 
   // Handle authentication state changes and persist user ID
   useEffect(() => {
@@ -89,10 +88,26 @@ const Orders = () => {
   // Function to determine status badge class
   const getStatusClass = (status) => {
     const statusLower = (status || "").toLowerCase();
-    if (statusLower.includes("room service") || statusLower.includes("hotel tab")) {
-      return "room-service-badge";
+    if (statusLower.includes("room service")) {
+      return statusLower.includes("paid") ? "status-room-service-paid" : "status-room-service-pending";
+    }
+    if (statusLower.includes("hotel tab")) {
+      return "status-on-hotel-tab";
     }
     return "status-" + statusLower.replace(/\s+/g, '-');
+  };
+
+  // Format date more elegantly
+  const formatDate = (timestamp) => {
+    if (!timestamp?.toDate) return "Pending";
+    const date = timestamp.toDate();
+    return date.toLocaleDateString('en-US', {
+      month: 'short',
+      day: 'numeric',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
   };
 
   if (loading) {
@@ -106,22 +121,19 @@ const Orders = () => {
 
   return (
     <div className="orders-page">
-        <div className="nav-container" style={{ backgroundColor: "transparent", boxShadow: "none" }}>
-  <NavMenu menuOpen={menuOpen} setMenuOpen={setMenuOpen} />
-</div>
+      <div className="nav-container" style={{ backgroundColor: "transparent", boxShadow: "none" }}>
+        <NavMenu menuOpen={menuOpen} setMenuOpen={setMenuOpen} />
+      </div>
+      
       <h1>
-        <img
-          src="/images/receipt-icon.svg"
-          alt="Receipt"
-          width="32"
-          height="32"
-          style={{ opacity: 0.8 }}
-        />
+        <FaUtensils />
         My Orders
       </h1>
+      
 
       {!userId ? (
         <div className="orders-empty">
+          <FaShoppingBag style={{ fontSize: '3rem', color: '#f97316', marginBottom: '1rem' }} />
           <p>Please log in to view your orders.</p>
           <button onClick={() => window.location.href = '/login'} className="back-to-menu-btn">
             Go to Login
@@ -129,17 +141,18 @@ const Orders = () => {
         </div>
       ) : orders.length === 0 ? (
         <div className="orders-empty">
+          <FaUtensils style={{ fontSize: '3rem', color: '#f97316', marginBottom: '1rem' }} />
           <p>You haven't placed any orders yet.</p>
-          <button onClick={() => window.location.href = '/restaurant/menu'} className="back-to-menu-btn">
+          <button onClick={() => window.location.href = '/restaurant'} className="back-to-menu-btn">
             Browse Menu
           </button>
         </div>
       ) : (
         <div className="orders-list">
           {orders.map((order) => (
-            <div key={order.id} className="order-card">
+            <div key={order.id} className="order-card fade-in">
               <div className="order-id-section">
-                <span>Order ID: {order.id.slice(0, 8)}...</span>
+                <span>Order #{order.id.slice(0, 8).toUpperCase()}</span>
                 <span className={getStatusClass(order.status)}>
                   {order.status || "Processing"}
                 </span>
@@ -155,15 +168,13 @@ const Orders = () => {
               </div>
 
               <div className="order-total-section">
-                <div>
-                  <span className="total-label">Total: </span>
+                <div className="total-container">
+                  <span className="total-label">Total:</span>
                   <span className="total-value">GHS {order.total ? order.total.toFixed(2) : "0.00"}</span>
                 </div>
-                <div>
-                  <span className="placed-label">Placed: </span>
-                  <span className="placed-value">
-                    {order.timestamp?.toDate().toLocaleString() || "Pending"}
-                  </span>
+                <div className="placed-container">
+                  <span className="placed-label">Placed on</span>
+                  <span className="placed-value">{formatDate(order.timestamp)}</span>
                 </div>
               </div>
             </div>

@@ -37,6 +37,7 @@ import GuestBills from "./pages/GuestBills";
 import RoomManagement from "./pages/RoomManagement";
 import UserRegistration from './pages/UserRegistration';
 import BookingHistory from './pages/BookingHistory';
+import AdminFoodOrders from './pages/AdminFoodOrders'; // Add this import
 
 const App = () => {
   useEffect(() => {
@@ -99,6 +100,7 @@ const App = () => {
             <Route path="/room-management" element={<RoomManagement />} />
             <Route path="/user-registration" element={<UserRegistration />} />
             <Route path="/booking-history" element={<BookingHistory />} />
+            <Route path="/admin/food-orders" element={<AdminFoodOrders />} /> {/* Add this route */}
           </Routes>
         </Router>
       </BookingProvider>

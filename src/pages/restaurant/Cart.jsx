@@ -7,33 +7,11 @@ import {
   updateDoc,
   deleteDoc,
 } from "firebase/firestore";
-import { getAuth } from "firebase/auth";
+import { getAuth, onAuthStateChanged } from "firebase/auth";
 import { useNavigate, useLocation } from "react-router-dom";
 import NavMenu from "../../components/NavMenu";
 import { FaShoppingCart, FaArrowLeft, FaPlus, FaMinus, FaTimes, FaReceipt, FaTrashAlt } from 'react-icons/fa';
 import "./Cart.css";
-
-// Guest/user ID initialized ONCE and reused
-let persistentUserId;
-const getOrCreateUserId = () => {
-  if (persistentUserId) return persistentUserId;
-
-  const auth = getAuth();
-  const currentUser = auth.currentUser;
-
-  if (currentUser) {
-    persistentUserId = currentUser.uid;
-  } else {
-    let guestId = localStorage.getItem("guestId");
-    if (!guestId) {
-      guestId = `guest_${Math.random().toString(36).substr(2, 9)}`;
-      localStorage.setItem("guestId", guestId);
-    }
-    persistentUserId = guestId;
-  }
-
-  return persistentUserId;
-};
 
 const Cart = () => {
   const [cartItems, setCartItems] = useState([]);
@@ -41,18 +19,44 @@ const Cart = () => {
   const [loading, setLoading] = useState(true);
   const [menuOpen, setMenuOpen] = useState(false);
   const [clearingCart, setClearingCart] = useState(false);
+  const [userId, setUserId] = useState(null);
+  const [authChecked, setAuthChecked] = useState(false);
 
   const VAT_RATE = 0.125;
   const NHIL_RATE = 0.025;
 
-  const userId = getOrCreateUserId();
   const navigate = useNavigate();
   const location = useLocation();
+  const auth = getAuth();
 
-  const fetchCart = async () => {
+  // Handle authentication state and set userId
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      if (user) {
+        // User is signed in
+        setUserId(user.uid);
+      } else {
+        // No user is signed in, use guest ID
+        let guestId = localStorage.getItem("guestId");
+        if (!guestId) {
+          guestId = `guest_${Math.random().toString(36).substr(2, 9)}`;
+          localStorage.setItem("guestId", guestId);
+        }
+        setUserId(guestId);
+      }
+      setAuthChecked(true);
+    });
+
+    // Cleanup subscription on unmount
+    return () => unsubscribe();
+  }, [auth]);
+
+  const fetchCart = async (currentUserId) => {
+    if (!currentUserId) return;
+    
     setLoading(true);
     try {
-      const snapshot = await getDocs(collection(db, "carts", userId, "items"));
+      const snapshot = await getDocs(collection(db, "carts", currentUserId, "items"));
       const items = snapshot.docs.map((doc) => ({
         id: doc.id,
         ...doc.data(),
@@ -66,19 +70,20 @@ const Cart = () => {
     }
   };
 
+  // Fetch cart only after auth state is checked and userId is set
   useEffect(() => {
-    window.scrollTo(0, 0);
-    
-    // Check if we're returning from a completed order
-    const orderCompleted = localStorage.getItem("orderCompleted");
-    if (orderCompleted === "true") {
-      // Clear the flag
-      localStorage.removeItem("orderCompleted");
-      // Cart should already be empty server-side, just refresh the UI
+    if (authChecked && userId) {
+      window.scrollTo(0, 0);
+      
+      // Check if we're returning from a completed order
+      const orderCompleted = localStorage.getItem("orderCompleted");
+      if (orderCompleted === "true") {
+        localStorage.removeItem("orderCompleted");
+      }
+      
+      fetchCart(userId);
     }
-    
-    fetchCart();
-  }, []);
+  }, [authChecked, userId]);
 
   const calculateSubtotal = (items) => {
     const total = items.reduce(
@@ -89,6 +94,8 @@ const Cart = () => {
   };
 
   const updateQuantity = async (itemId, delta) => {
+    if (!userId) return;
+    
     const item = cartItems.find((item) => item.id === itemId);
     const newQuantity = item.quantity + delta;
     const itemRef = doc(db, "carts", userId, "items", itemId);
@@ -99,16 +106,19 @@ const Cart = () => {
       await updateDoc(itemRef, { quantity: newQuantity });
     }
 
-    fetchCart();
+    fetchCart(userId);
   };
 
   const removeFromCart = async (itemId) => {
+    if (!userId) return;
+    
     await deleteDoc(doc(db, "carts", userId, "items", itemId));
-    fetchCart();
+    fetchCart(userId);
   };
 
-  // Clear all items from cart
   const clearCart = async () => {
+    if (!userId) return;
+    
     if (window.confirm("Are you sure you want to clear your cart?")) {
       setClearingCart(true);
       try {
@@ -117,7 +127,7 @@ const Cart = () => {
           deleteDoc(doc(db, "carts", userId, "items", item.id))
         );
         await Promise.all(deletePromises);
-        fetchCart();
+        fetchCart(userId);
       } catch (error) {
         console.error("Error clearing cart:", error);
       } finally {
@@ -139,6 +149,7 @@ const Cart = () => {
         vat,
         nhil,
         total: grandTotal,
+        userId, // Pass userId to checkout
       },
     });
   };
@@ -146,6 +157,20 @@ const Cart = () => {
   const continueShopping = () => {
     navigate("/restaurant");
   };
+
+  if (!authChecked || loading) {
+    return (
+      <div className="main-container loading-screen">
+        <div className="loading-box">
+          <div className="custom-spinner"></div>
+          <p className="loading-message">
+            { !authChecked ? "Authenticating user..." : "Loading your cart, please wait..." }
+          </p>
+        </div>
+      </div>
+    );
+  }
+  
 
   return (
     <div className="main-container">
@@ -211,12 +236,30 @@ const Cart = () => {
                 ))}
               </div>
 
-              
-               
-                <button className="place-order-btn" onClick={handlePlaceOrder}>
-                  <FaShoppingCart /> Place Order ({cartItems.length} {cartItems.length > 1 ? "items" : "item"})
-                </button>
-              
+              <div className="cart-right">
+                <div className="cart-summary-block">
+                  <div className="cart-summary-line">
+                    <span>Subtotal</span>
+                    <span>GHS {subtotal.toFixed(2)}</span>
+                  </div>
+                  <div className="cart-summary-line">
+                    <span>VAT (12.5%)</span>
+                    <span>GHS {vat.toFixed(2)}</span>
+                  </div>
+                  <div className="cart-summary-line">
+                    <span>NHIL (2.5%)</span>
+                    <span>GHS {nhil.toFixed(2)}</span>
+                  </div>
+                  <hr />
+                  <div className="cart-summary-total">
+                    <span>Total</span>
+                    <span>GHS {grandTotal.toFixed(2)}</span>
+                  </div>
+                  <button className="place-order-btn" onClick={handlePlaceOrder}>
+                    <FaShoppingCart /> Place Order ({cartItems.length} {cartItems.length > 1 ? "items" : "item"})
+                  </button>
+                </div>
+              </div>
             </div>
           )}
         </div>

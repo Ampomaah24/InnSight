@@ -15,10 +15,12 @@ import {
 } from "react-icons/fa";
 import PhoneInput, { isValidPhoneNumber } from "react-phone-number-input";
 import "react-phone-number-input/style.css";
+import NavMenu from "../components/NavMenu";  // Add NavMenu import
 import "../assets/styles/ProfilePage.css";
 
 const ProfilePage = () => {
   // State variables
+  const [menuOpen, setMenuOpen] = useState(false);  // Add menu state
   const [userData, setUserData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
@@ -489,6 +491,9 @@ const ProfilePage = () => {
   if (loading && !userData) {
     return (
       <div className="profile-page">
+        <div className="nav-container" style={{ backgroundColor: "transparent", boxShadow: "none" }}>
+          <NavMenu menuOpen={menuOpen} setMenuOpen={setMenuOpen} />
+        </div>
         <div className="loading-spinner"></div>
         <p className="loading-text">Loading your profile...</p>
       </div>
@@ -499,7 +504,9 @@ const ProfilePage = () => {
   if (!loading && !userData) {
     return (
       <div className="profile-page">
-   
+        <div className="nav-container" style={{ backgroundColor: "transparent", boxShadow: "none" }}>
+          <NavMenu menuOpen={menuOpen} setMenuOpen={setMenuOpen} />
+        </div>
         
         <div className="auth-prompt-container">
           <div className="auth-prompt">
@@ -528,7 +535,9 @@ const ProfilePage = () => {
 
   return (
     <div className="profile-page">
-    
+      <div className="nav-container" style={{ backgroundColor: "transparent", boxShadow: "none" }}>
+        <NavMenu menuOpen={menuOpen} setMenuOpen={setMenuOpen} />
+      </div>
       
       {/* Success Message */}
       {updateSuccess && (
@@ -581,25 +590,23 @@ const ProfilePage = () => {
               </div>
 
               <div className="form-row">
-   
-
-              <div className="form-group">
-  <label htmlFor="phone">Phone Number</label>
-  <div className={`PhoneInput ${phoneError ? "error" : ""}`}>
-    <PhoneInput
-      international
-      defaultCountry="GH"
-      value={formData.phone}
-      onChange={handlePhoneChange}
-      id="phone"
-    />
-  </div>
-  {phoneError && (
-    <span className="phone-error-message">
-      Please enter a valid phone number
-    </span>
-  )}
-</div>
+                <div className="form-group">
+                  <label htmlFor="phone">Phone Number</label>
+                  <div className={`PhoneInput ${phoneError ? "error" : ""}`}>
+                    <PhoneInput
+                      international
+                      defaultCountry="GH"
+                      value={formData.phone}
+                      onChange={handlePhoneChange}
+                      id="phone"
+                    />
+                  </div>
+                  {phoneError && (
+                    <span className="phone-error-message">
+                      Please enter a valid phone number
+                    </span>
+                  )}
+                </div>
                 <div className="form-group">
                   <label htmlFor="dateOfBirth">Date of Birth</label>
                   <input

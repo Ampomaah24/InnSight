@@ -28,7 +28,7 @@ body, html {
     background-color: white;
     height: 3.75rem;
     box-sizing: border-box;
-    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.1);
+
   }
   
   /* Main Container */
@@ -232,7 +232,7 @@ body, html {
     background-color: white;
     z-index: 1000;
     transition: transform 0.3s ease;
-    box-shadow: 0.125rem 0 0.3125rem rgba(0, 0, 0, 0.1);
+   
     overflow-y: auto;
   }
   

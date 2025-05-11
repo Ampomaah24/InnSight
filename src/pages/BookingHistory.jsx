@@ -580,7 +580,7 @@ const BookingHistory = () => {
             <p><strong>Check-out:</strong> {formatDate(booking.checkOutDate)}</p>
             <p><strong>Guests:</strong> <FaUsers className="icon-inline" /> {safeDisplayValue(booking.guests)}</p>
             {booking.totalPrice && 
-              <p><strong>Total Price:</strong> <FaMoneyBillWave className="icon-inline" /> GH₵{parseFloat(booking.totalPrice).toFixed(2)}</p>
+              <p><strong>Total Price:</strong> <FaMoneyBillWave className="icon-inline" /> GHS{parseFloat(booking.totalPrice).toFixed(2)}</p>
             }
             
           </div>

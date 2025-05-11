@@ -26,23 +26,89 @@ const ContactUs = () => {
     window.scrollTo(0, 0);
   }, []);
 
+  // Ghanaian phone number validation
+  const isValidGhanaianPhoneNumber = (phone) => {
+    // Remove any spaces or dashes
+    const cleanedPhone = phone.replace(/[\s\-]/g, '');
+    
+    // Ghanaian phone number patterns
+    // Local format: 024XXXXXXX, 055XXXXXXX, etc.
+    const localPattern = /^(024|025|026|027|028|029|030|050|054|055|056|057|059)[0-9]{7}$/;
+    // International format: +233XXXXXXXXX
+    const internationalPattern = /^\+233(24|25|26|27|28|29|30|50|54|55|56|57|59)[0-9]{7}$/;
+    
+    return localPattern.test(cleanedPhone) || internationalPattern.test(cleanedPhone);
+  };
+
+  // Email validation
+  const isValidEmail = (email) => {
+    // More comprehensive email validation regex
+    const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+    return emailRegex.test(email.trim());
+  };
+
+  // Format phone number before saving
+  const formatPhoneNumber = (phone) => {
+    let formattedPhone = phone.trim();
+    if (formattedPhone && !formattedPhone.startsWith('+')) {
+      // Convert local format to international format for storage
+      if (formattedPhone.startsWith('0')) {
+        formattedPhone = '+233' + formattedPhone.substring(1);
+      }
+    }
+    return formattedPhone;
+  };
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    
+    // Special handling for phone number - only allow numbers and certain characters
+    if (name === 'phone') {
+      // Allow only numbers, +, spaces, and dashes
+      const cleanedValue = value.replace(/[^\d\s\-+]/g, '');
+      setFormData(prev => ({ ...prev, [name]: cleanedValue }));
+    } else {
+      setFormData(prev => ({ ...prev, [name]: value }));
+    }
+    
+    // Clear error when user starts typing
+    if (formErrors[name]) {
+      setFormErrors(prev => ({ ...prev, [name]: "" }));
+    }
+  };
+
   const validateForm = () => {
     let errors = {};
     
+    // Name validation
     if (!formData.name.trim()) {
       errors.name = "Name is required";
+    } else if (formData.name.trim().length < 2) {
+      errors.name = "Name must be at least 2 characters";
     }
     
+    // Email validation
     if (!formData.email.trim()) {
       errors.email = "Email is required";
-    } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
-      errors.email = "Email address is invalid";
+    } else if (!isValidEmail(formData.email)) {
+      errors.email = "Please enter a valid email address";
     }
     
+    // Phone validation (optional field, but validate if provided)
+    if (formData.phone.trim()) {
+      if (!isValidGhanaianPhoneNumber(formData.phone)) {
+        errors.phone = "Please enter a valid Ghanaian phone number (e.g., 024XXXXXXX or +233XXXXXXXXX)";
+      }
+    }
+    
+    // Subject validation
     if (!formData.subject.trim()) {
       errors.subject = "Subject is required";
+    } else if (formData.subject.trim().length < 3) {
+      errors.subject = "Subject must be at least 3 characters";
     }
     
+    // Message validation
     if (!formData.message.trim()) {
       errors.message = "Message is required";
     } else if (formData.message.trim().length < 10) {
@@ -51,16 +117,6 @@ const ContactUs = () => {
     
     setFormErrors(errors);
     return Object.keys(errors).length === 0;
-  };
-
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
-    
-    // Clear error when user starts typing
-    if (formErrors[name]) {
-      setFormErrors(prev => ({ ...prev, [name]: "" }));
-    }
   };
 
   const handleSubmit = async (e) => {
@@ -74,9 +130,13 @@ const ContactUs = () => {
     setSubmitError("");
     
     try {
-      // 1. Add the message to Firestore
+      // Format phone number for storage (if provided)
+      let formattedPhone = formatPhoneNumber(formData.phone);
+      
+      // 1. Add the message to Firestore with formatted phone
       const docRef = await addDoc(collection(db, "contactMessages"), {
         ...formData,
+        phone: formattedPhone || "Not provided",
         status: "New",
         createdAt: serverTimestamp(),
       });
@@ -85,7 +145,7 @@ const ContactUs = () => {
       const templateParams = {
         from_name: formData.name,
         from_email: formData.email,
-        from_phone: formData.phone || "Not provided",
+        from_phone: formattedPhone || "Not provided",
         subject: formData.subject,
         message: formData.message,
         reply_to: formData.email,
@@ -143,6 +203,7 @@ const ContactUs = () => {
       setIsSubmitting(false);
     }
   };
+
   return (
     <div className="contact-page">
       {/* NavMenu in top left */}
@@ -217,7 +278,7 @@ const ContactUs = () => {
           
           <form className="contact-form" onSubmit={handleSubmit}>
             <div className="form-group">
-              <label htmlFor="name">Name</label>
+              <label htmlFor="name">Name *</label>
               <input
                 type="text"
                 id="name"
@@ -225,12 +286,13 @@ const ContactUs = () => {
                 value={formData.name}
                 onChange={handleChange}
                 className={formErrors.name ? "error" : ""}
+                placeholder="Enter your full name"
               />
               {formErrors.name && <small className="error-text">{formErrors.name}</small>}
             </div>
             
             <div className="form-group">
-              <label htmlFor="email">Email</label>
+              <label htmlFor="email">Email *</label>
               <input
                 type="email"
                 id="email"
@@ -238,6 +300,7 @@ const ContactUs = () => {
                 value={formData.email}
                 onChange={handleChange}
                 className={formErrors.email ? "error" : ""}
+                placeholder="Enter your email address"
               />
               {formErrors.email && <small className="error-text">{formErrors.email}</small>}
             </div>
@@ -250,11 +313,14 @@ const ContactUs = () => {
                 name="phone"
                 value={formData.phone}
                 onChange={handleChange}
+                className={formErrors.phone ? "error" : ""}
+                placeholder="e.g., 024XXXXXXX or +233XXXXXXXXX"
               />
+              {formErrors.phone && <small className="error-text">{formErrors.phone}</small>}
             </div>
             
             <div className="form-group">
-              <label htmlFor="subject">Subject</label>
+              <label htmlFor="subject">Subject *</label>
               <input
                 type="text"
                 id="subject"
@@ -262,12 +328,13 @@ const ContactUs = () => {
                 value={formData.subject}
                 onChange={handleChange}
                 className={formErrors.subject ? "error" : ""}
+                placeholder="What is this regarding?"
               />
               {formErrors.subject && <small className="error-text">{formErrors.subject}</small>}
             </div>
             
             <div className="form-group">
-              <label htmlFor="message">Message</label>
+              <label htmlFor="message">Message *</label>
               <textarea
                 id="message"
                 name="message"
@@ -275,6 +342,7 @@ const ContactUs = () => {
                 value={formData.message}
                 onChange={handleChange}
                 className={formErrors.message ? "error" : ""}
+                placeholder="Enter your message here..."
               ></textarea>
               {formErrors.message && <small className="error-text">{formErrors.message}</small>}
             </div>
@@ -295,7 +363,7 @@ const ContactUs = () => {
         <h2>Find Us</h2>
         <div className="map-wrapper">
           <iframe
-            src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3970.4999696256787!2d-0.14757002406741038!3d5.640550394340682!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0xfdf84aea294a0b9%3A0x6b7445b9a4c59f14!2sAmpomaah%20Tourist%20Hotel!5e0!3m2!1sen!2sgh!4v1743924434929!5m2!1sen!2sgh"
+            src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3970.4999696256787!2d-0.14757002406741038!3d5.640550594340682!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0xfdf84aea294a0b9%3A0x6b7445b9a4c59f14!2sAmpomaah%20Tourist%20Hotel!5e0!3m2!1sen!2sgh!4v1743924434929!5m2!1sen!2sgh"
             width="100%"
             height="450"
             style={{ border: 0 }}

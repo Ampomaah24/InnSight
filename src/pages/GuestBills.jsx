@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { collection, query, where, getDocs, getFirestore, doc, getDoc, orderBy } from 'firebase/firestore';
 import { getAuth, onAuthStateChanged } from 'firebase/auth';
+import NavMenu from "../components/NavMenu";
 import "../assets/styles/GuestBills.css";
 
 const GuestBills = () => {
@@ -11,6 +12,7 @@ const GuestBills = () => {
   const [error, setError] = useState(null);
   const [user, setUser] = useState(null);
   const [authChecked, setAuthChecked] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
   
   // Format date helper function
   const formatDate = (dateString) => {
@@ -36,54 +38,54 @@ const GuestBills = () => {
   useEffect(() => {
     const auth = getAuth();
     
-    // Use onAuthStateChanged instead of directly checking currentUser
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
       console.log("Auth state changed. User:", currentUser ? currentUser.email : "No user");
       setAuthChecked(true);
       
       if (currentUser) {
         setUser(currentUser);
+        setError(null); // Clear any previous errors
         fetchUserBookings(currentUser.uid);
       } else {
-        // Handle not logged in state
-        setError("Please log in to view your bills");
-        setLoading(false);
+        // Check localStorage for guest ID first
+        const guestId = localStorage.getItem("guestId");
+        if (guestId) {
+          console.log("Using guest ID from localStorage:", guestId);
+          setUser({ uid: guestId, isGuest: true });
+          setError(null); // Clear any previous errors
+          fetchUserBookings(guestId);
+        } else {
+          // Then check session storage as fallback
+          const sessionUser = sessionStorage.getItem('currentUser');
+          if (sessionUser) {
+            try {
+              const parsedUser = JSON.parse(sessionUser);
+              console.log("Using session storage user:", parsedUser.email);
+              if (parsedUser && parsedUser.id) {
+                setUser(parsedUser);
+                setError(null); // Clear any previous errors
+                fetchUserBookings(parsedUser.id);
+              } else {
+                setError("Please log in to view your bills");
+                setLoading(false);
+              }
+            } catch (e) {
+              console.error("Failed to parse session user:", e);
+              setError("Please log in to view your bills");
+              setLoading(false);
+            }
+          } else {
+            // No user found anywhere
+            setError("Please log in to view your bills");
+            setLoading(false);
+          }
+        }
       }
     });
-    
-    // Check if user is available in session storage as fallback
-    const checkSessionUser = () => {
-      const sessionUser = sessionStorage.getItem('currentUser');
-      if (sessionUser && !user) {
-        try {
-          const parsedUser = JSON.parse(sessionUser);
-          console.log("Using session storage user:", parsedUser.email);
-          if (parsedUser && parsedUser.id) {
-            setUser(parsedUser);
-            fetchUserBookings(parsedUser.id);
-            return true;
-          }
-        } catch (e) {
-          console.error("Failed to parse session user:", e);
-        }
-      }
-      return false;
-    };
-    
-    // Try session user if auth isn't resolved quickly
-    const timeoutId = setTimeout(() => {
-      if (!authChecked) {
-        const foundSessionUser = checkSessionUser();
-        if (!foundSessionUser) {
-          console.log("Auth state taking too long, checking session storage...");
-        }
-      }
-    }, 1000);
     
     // Clean up
     return () => {
       unsubscribe();
-      clearTimeout(timeoutId);
     };
   }, []);
 
@@ -107,12 +109,20 @@ const GuestBills = () => {
   };
 
   const fetchUserBookings = async (userId) => {
+    if (!userId) {
+      console.log("No userId provided to fetchUserBookings");
+      setError("Unable to identify user. Please log in again.");
+      setLoading(false);
+      return;
+    }
+
     try {
       console.log("Fetching bookings for user:", userId);
       setLoading(true);
+      setError(null); // Clear any previous errors
       const db = getFirestore();
       
-      // Query for user's bookings
+      // Query for user's bookings - add error handling for undefined userId
       const q = query(
         collection(db, "bookings"),
         where("userId", "==", userId)
@@ -141,8 +151,8 @@ const GuestBills = () => {
           roomCategory: data.roomCategory || "",
           numberOfGuests: data.numberOfGuests || 1,
           specialRequests: data.specialRequests || "",
-          extensionCharges: data.extensionCharges || [], // Get extension charges
-          foodOrders: [] // We'll fetch these separately
+          extensionCharges: data.extensionCharges || [],
+          foodOrders: []
         });
       });
       
@@ -154,7 +164,7 @@ const GuestBills = () => {
             collection(db, "orders"),
             where("roomNumber", "==", booking.room),
             where("paymentMethod", "==", "Tab"),
-            where("paid", "==", false) // EXPLICIT CHECK for unpaid orders only
+            where("paid", "==", false)
           );
           
           const tabOrdersSnapshot = await getDocs(tabOrdersQuery);
@@ -164,7 +174,7 @@ const GuestBills = () => {
             collection(db, "orders"),
             where("roomNumber", "==", booking.room),
             where("deliveryMethod", "==", "roomService"),
-            where("paid", "==", false) // EXPLICIT CHECK for unpaid orders only
+            where("paid", "==", false)
           );
           
           const roomServiceSnapshot = await getDocs(roomServiceQuery);
@@ -193,7 +203,7 @@ const GuestBills = () => {
               date: orderData.timestamp?.toDate() || new Date(),
               description: `Restaurant Order - Tab (${itemsDescription})`,
               amount: orderData.total || 0,
-              type: isExtension ? "extension" : "food", // Set type based on our determination
+              type: isExtension ? "extension" : "food",
               notes: orderData.notes || ""
             });
           });
@@ -202,7 +212,7 @@ const GuestBills = () => {
           roomServiceSnapshot.forEach((doc) => {
             const orderData = doc.data();
             
-            // Skip if this order was already added (could be both room service and on tab)
+            // Skip if this order was already added
             if (foodOrders.some(order => order.id === doc.id)) {
               return;
             }
@@ -225,7 +235,7 @@ const GuestBills = () => {
               date: orderData.timestamp?.toDate() || new Date(),
               description: `Room Service (${itemsDescription})`,
               amount: orderData.total || 0,
-              type: isExtension ? "extension" : "food", // Mark as extension if detected
+              type: isExtension ? "extension" : "food",
               notes: orderData.notes || ""
             });
           });
@@ -243,7 +253,7 @@ const GuestBills = () => {
                   id: charge.id || `ext-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
                   date: charge.date?.toDate() || new Date(),
                   description: charge.description || "Stay Extension",
-                  amount: charge.finalPrice || charge.amount || 0, // Use finalPrice first, then amount
+                  amount: charge.finalPrice || charge.amount || 0,
                   type: "extension",
                   notes: charge.notes || ""
                 });
@@ -270,6 +280,7 @@ const GuestBills = () => {
         setSelectedBooking(bookingData[0]);
       }
       
+      setError(null); // Clear any errors if we successfully fetched data
       setLoading(false);
     } catch (err) {
       console.error("Error fetching bookings:", err);
@@ -312,22 +323,6 @@ const GuestBills = () => {
     setLoading(true);
     setError(null);
     
-    // Try to get user from session storage
-    const sessionUser = sessionStorage.getItem('currentUser');
-    if (sessionUser) {
-      try {
-        const parsedUser = JSON.parse(sessionUser);
-        if (parsedUser && parsedUser.id) {
-          setUser(parsedUser);
-          fetchUserBookings(parsedUser.id);
-          return;
-        }
-      } catch (e) {
-        console.error("Failed to parse session user during retry:", e);
-      }
-    }
-    
-    // If no session user, check auth again
     const auth = getAuth();
     const currentUser = auth.currentUser;
     
@@ -335,8 +330,31 @@ const GuestBills = () => {
       setUser(currentUser);
       fetchUserBookings(currentUser.uid);
     } else {
-      setError("Please log in to view your bills");
-      setLoading(false);
+      // Check localStorage for guest ID
+      const guestId = localStorage.getItem("guestId");
+      if (guestId) {
+        console.log("Retrying with guest ID:", guestId);
+        setUser({ uid: guestId, isGuest: true });
+        fetchUserBookings(guestId);
+      } else {
+        // Try to get user from session storage
+        const sessionUser = sessionStorage.getItem('currentUser');
+        if (sessionUser) {
+          try {
+            const parsedUser = JSON.parse(sessionUser);
+            if (parsedUser && parsedUser.id) {
+              setUser(parsedUser);
+              fetchUserBookings(parsedUser.id);
+              return;
+            }
+          } catch (e) {
+            console.error("Failed to parse session user during retry:", e);
+          }
+        }
+        
+        setError("Please log in to view your bills");
+        setLoading(false);
+      }
     }
   };
 
@@ -345,24 +363,34 @@ const GuestBills = () => {
     return `GHS ${Number(amount).toFixed(2)}`;
   };
 
-  if (loading) {
+  if (loading || !authChecked) {
     return (
-      <div className="loading-container">
-        <div>
-          <div className="loading-spinner"></div>
-          <p className="loading-text">Loading your booking details...</p>
+      <div className="guest-bills-container">
+        <div className="nav-container" style={{ backgroundColor: "transparent", boxShadow: "none" }}>
+          <NavMenu menuOpen={menuOpen} setMenuOpen={setMenuOpen} />
+        </div>
+        <div className="loading-container">
+          <div>
+            <div className="loading-spinner"></div>
+            <p className="loading-text">Loading your booking details...</p>
+          </div>
         </div>
       </div>
     );
   }
 
-  if (error) {
+  if (error && !user && authChecked) {
     return (
-      <div className="error-container">
-        <p>{error}</p>
-        <button className="retry-button" onClick={handleRetry}>
-          Retry
-        </button>
+      <div className="guest-bills-container">
+        <div className="nav-container" style={{ backgroundColor: "transparent", boxShadow: "none" }}>
+          <NavMenu menuOpen={menuOpen} setMenuOpen={setMenuOpen} />
+        </div>
+        <div className="error-container">
+          <p>{error}</p>
+          <button className="retry-button" onClick={handleRetry}>
+            Retry
+          </button>
+        </div>
       </div>
     );
   }
@@ -389,6 +417,10 @@ const GuestBills = () => {
 
   return (
     <div className="guest-bills-container">
+      <div className="nav-container" style={{ backgroundColor: "transparent", boxShadow: "none" }}>
+        <NavMenu menuOpen={menuOpen} setMenuOpen={setMenuOpen} />
+      </div>
+      
       <div className="guest-bills-card">
         <div className="guest-bills-header">
           <h2 className="guest-bills-title">Your Hotel Bill</h2>
@@ -518,12 +550,7 @@ const GuestBills = () => {
                         </div>
                       )}
                       
-                      {/* Show download invoice button */}
-                      <div className="user-actions">
-                        <button className="btn btn-outline">
-                          Download Invoice
-                        </button>
-                      </div>
+         
                     </div>
                   )}
                   

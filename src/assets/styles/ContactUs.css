@@ -1,7 +1,7 @@
 .contact-page {
     width: 100%;
     min-height: 100vh;
-    background-color: #f8f9fa;
+    background-color: white;
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   }
   
@@ -12,39 +12,10 @@
     width: 100%;
     position: relative;
     z-index: 100;
+
   }
   
-  .back-button-container {
-    max-width: 1200px;
-    width: 90%;
-    margin: 0 auto 1rem;
-    padding: 0;
-    display: flex;
-    justify-content: flex-start;
-    position: relative;
-    z-index: 10;
-  }
   
-  .back-button {
-    background-color: white;
-    color: #333;
-    border: 1px solid #ddd;
-    border-radius: 4px;
-    padding: 8px 16px;
-    font-size: 0.9rem;
-    font-weight: 500;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    transition: all 0.2s ease;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-  }
-  
-  .back-button:hover {
-    background-color: #f8f8f8;
-    border-color: #ccc;
-    color: #e67e22;
-  }
   
   .contact-container {
     max-width: 1200px;

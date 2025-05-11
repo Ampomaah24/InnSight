@@ -34,7 +34,7 @@ html, body {
   font-size: 1rem;
   overflow-x: hidden;
   color: #333;
-  background-color: #f8f9fa;
+  background-color: white;
 }
 
 .nav-container {
@@ -127,7 +127,7 @@ html, body {
   justify-content: center;
   cursor: pointer;
   z-index: 2;
-  box-shadow: 0 0.125rem 0.3125rem rgba(0, 0, 0, 0.15);
+
   font-size: 1.2rem;
   transition: all 0.2s ease;
   color: #333;

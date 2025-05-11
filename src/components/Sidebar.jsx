@@ -13,7 +13,8 @@ import {
   FaEdit,
   FaUserPlus,
   FaPlaneDeparture,
-  FaFileInvoiceDollar
+  FaFileInvoiceDollar,
+  FaUtensils
 } from "react-icons/fa";
 import { auth } from "../config/firebase";
 import { useNavigate } from "react-router-dom";
@@ -141,6 +142,16 @@ const Sidebar = () => {
               <span className="sidebar-text">Outstanding Bills</span>
             </Link>
           </li>
+          
+          {/* Food Orders Management - Only for admin and superadmin */}
+          {isAdmin && (
+            <li className={`sidebar-item ${isActive('/admin/food-orders') ? 'active' : ''}`}>
+              <Link to="/admin/food-orders">
+                <span className="sidebar-icon"><FaUtensils /></span>
+                <span className="sidebar-text">Food Orders</span>
+              </Link>
+            </li>
+          )}
           
           <li className={`sidebar-item ${isActive('/add-expense') ? 'active' : ''}`}>
             <Link to="/add-expense">

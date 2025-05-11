@@ -560,7 +560,7 @@ const CheckIn = () => {
                             </span>
                           </td>
                           <td className="actions-cell">
-                          {guest.status === "Confirmed" && !guest.isExpired ? (
+{["Confirmed", "Reserved"].includes(guest.status) && !guest.isExpired ? (
   <button 
     className="action-btn check-in-btn"
     onClick={() => handleCheckIn(guest.id)}
@@ -568,7 +568,7 @@ const CheckIn = () => {
   >
     Check In
   </button>
-) : guest.status === "Confirmed" && guest.isExpired ? (
+) : ["Confirmed", "Reserved"].includes(guest.status) && guest.isExpired ? (
   <button 
     className="action-btn check-in-btn disabled"
     disabled
@@ -577,6 +577,7 @@ const CheckIn = () => {
     Expired
   </button>
 ) : null}
+
 
                             {(guest.status === "Checked in" || guest.status === "Checked-in") && (
                               <button 

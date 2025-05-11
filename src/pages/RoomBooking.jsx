@@ -403,7 +403,7 @@ const RoomBooking = () => {
   if (rooms.length === 0) {
     return (
       <div className="no-rooms-container">
-        <div className="nav-container">
+        <div className="nav-container" style={{ backgroundColor: "transparent", boxShadow: "none" }}>
           <NavMenu menuOpen={menuOpen} setMenuOpen={setMenuOpen} />
         </div>
         <div className="no-rooms-content">

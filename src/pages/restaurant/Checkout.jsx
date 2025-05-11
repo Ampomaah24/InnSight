@@ -31,9 +31,6 @@ import {
 } from 'react-icons/fa';
 import "./Checkout.css";
 
-// Phone number validation regex
-const PHONE_REGEX = /^(\+\d{1,3})?[0-9]{9,12}$/;
-
 let persistentUserId;
 const getOrCreateUserId = () => {
   if (persistentUserId) return persistentUserId;
@@ -53,6 +50,14 @@ const getOrCreateUserId = () => {
   }
 
   return persistentUserId;
+};
+const isValidGhanaianPhoneNumber = (phone) => {
+  const normalized = phone.replace(/[\s\-]/g, '');
+
+  const localPattern = /^(024|025|026|027|028|029|030|050|054|055|056|057|059)[0-9]{7}$/;
+  const internationalPattern = /^\+233(24|25|26|27|28|29|30|50|54|55|56|57|59)[0-9]{7}$/;
+
+  return localPattern.test(normalized) || internationalPattern.test(normalized);
 };
 
 const Checkout = () => {
@@ -89,10 +94,8 @@ const Checkout = () => {
     deliveryMethod: "pickup", // Default to pickup
   });
 
-  // Form validation
-  const [formErrors, setFormErrors] = useState({
-    phone: ""
-  });
+  // Form validation (removed phone validation)
+  const [formErrors, setFormErrors] = useState({});
 
   // User profile and verification states
   const [userProfile, setUserProfile] = useState({
@@ -112,6 +115,7 @@ const Checkout = () => {
   const [orderReference, setOrderReference] = useState("");
   const [isLoading, setIsLoading] = useState(true);
 
+  const [showSuccess, setShowSuccess] = useState(false);
   // Add the fetchTaxRates function to get tax rates from Firestore
   useEffect(() => {
     const fetchTaxRates = async () => {
@@ -287,36 +291,49 @@ const Checkout = () => {
         // Prefill name and phone if user is authenticated
         const auth = getAuth();
         if (auth.currentUser) {
-          // Check if user has a profile in Firestore
           const userDocRef = doc(db, "users", auth.currentUser.uid);
           const userDoc = await getDoc(userDocRef);
-          
+        
           if (userDoc.exists()) {
             const userData = userDoc.data();
-            
-            // Prefill form with user data
+        
             setFormData(prev => ({
               ...prev,
               name: userData.fullName || `${userData.fname || ''} ${userData.lname || ''}`.trim() || auth.currentUser.displayName || '',
-              phone: userData.phone || '',
-              roomNumber: userData.roomNumber || ''
-            }));
-            
-            // Check room service eligibility if room number exists
-            if (userData.roomNumber) {
-              await checkRoomServiceEligibility(userData.roomNumber);
-            }
-          } else if (auth.currentUser.displayName) {
-            // Fallback to auth data if no Firestore profile
-            setFormData(prev => ({
-              ...prev,
-              name: auth.currentUser.displayName
+              phone: userData.phone || ''
             }));
           }
-          
-          // Check if user is a hotel guest and get their room number
-          await checkHotelGuestStatus(auth.currentUser.uid);
+        
+          // Fetch booking with Checked in status for the current user
+          const bookingsQuery = query(
+            collection(db, "bookings"),
+            where("userId", "==", auth.currentUser.uid),
+            where("status", "==", "Checked in")
+          );
+        
+          const bookingsSnapshot = await getDocs(bookingsQuery);
+        
+          if (!bookingsSnapshot.empty) {
+            const bookingData = bookingsSnapshot.docs[0].data();
+            const roomNumberFromBooking = bookingData.roomNumber || "";
+        
+            setFormData(prev => ({
+              ...prev,
+              roomNumber: roomNumberFromBooking,
+              deliveryMethod: "pickup" // or keep as default if you prefer
+            }));
+        
+            setUserProfile(prev => ({
+              ...prev,
+              isHotelGuest: true,
+              isVerified: true,
+              roomNumber: roomNumberFromBooking
+            }));
+        
+            setVerificationSuccess(true);
+          }
         }
+        
       } catch (error) {
         console.error("Error loading user data:", error);
       } finally {
@@ -369,35 +386,31 @@ const Checkout = () => {
     }
   };
 
-  const validatePhone = (phone) => {
-    if (!phone) return "Phone number is required";
-    if (!PHONE_REGEX.test(phone)) return "Please enter a valid phone number";
-    return "";
-  };
-
   const handleChange = (e) => {
     const { name, value } = e.target;
-    
+  
     // Reset verification states when payment method changes
     if (name === "paymentMethod") {
       setVerificationSuccess(false);
       setVerificationError("");
-      
-      // Auto-verify if changing to Tab and user is already verified as hotel guest
+  
       if (value === "Tab" && userProfile.isVerified) {
         setVerificationSuccess(true);
       }
     }
-    
-    // Validate phone number
+  
+    // Ghanaian phone validation
     if (name === "phone") {
-      const phoneError = validatePhone(value);
-      setFormErrors(prev => ({ ...prev, phone: phoneError }));
+      const isValid = isValidGhanaianPhoneNumber(value);
+      setFormErrors((prev) => ({
+        ...prev,
+        phone: !isValid ? "Enter a valid Ghanaian phone number" : ""
+      }));
     }
-    
+  
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
-
+  
   const verifyRoomNumber = async () => {
     if (!formData.roomNumber.trim()) {
       setVerificationError("Please enter a room number");
@@ -526,13 +539,6 @@ const Checkout = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     
-    // Validate form
-    const phoneError = validatePhone(formData.phone);
-    if (phoneError) {
-      setFormErrors(prev => ({ ...prev, phone: phoneError }));
-      return;
-    }
-    
     // Prevent submission if Tab is selected but not verified (unless user is already verified)
     if (formData.paymentMethod === "Tab" && !verificationSuccess) {
       alert("Please verify your room number first");
@@ -635,54 +641,46 @@ const Checkout = () => {
   const goToMenu = () => {
     navigate("/restaurant");
   };
-
-  if (isLoading) {
-    return (
-      <div className="main-container">
-        <div className="loading-container">
-          <div className="spinner" style={{ width: '3rem', height: '3rem' }} />
-          <p>Loading order details...</p>
-        </div>
-      </div>
-    );
-  }
-
+  useEffect(() => {
+    if (orderComplete) {
+      const timer = setTimeout(() => {
+        navigate("/restaurant/orders");
+      }, 3000); // Redirect 3s after order is complete
+  
+      return () => clearTimeout(timer);
+    }
+  }, [orderComplete]);
+  
   if (orderComplete) {
+
+  
     return (
       <div className="main-container">
         <div className="nav-container" style={{ backgroundColor: "transparent", boxShadow: "none" }}>
           <NavMenu menuOpen={menuOpen} setMenuOpen={setMenuOpen} />
         </div>
-        
+  
         <div className="checkout-page">
-          <div className="checkout-wrapper">
-            <div className="success-container">
-              <FaCheckCircle className="success-icon" />
-              <h2 className="success-title">Order Confirmed!</h2>
-              <p className="success-message">
-                Thank you for your order! Your order reference is <strong>{orderReference}</strong>. 
-                {formData.deliveryMethod === "roomService" 
-                  ? ` Your order will be delivered to Room ${formData.roomNumber} shortly.` 
-                  : formData.paymentMethod === "Cash" 
-                  ? " Please present this reference when you come to pick up your order." 
-                  : formData.paymentMethod === "Tab"
-                  ? " Your order has been charged to your room tab."
-                  : " Your payment has been successfully processed."}
-              </p>
-              <div className="success-buttons">
-                <button className="success-btn primary-btn" onClick={goToOrders}>
-                  <FaListAlt /> View My Orders
-                </button>
-                <button className="success-btn secondary-btn" onClick={goToMenu}>
-                  <FaArrowLeft /> Back to Menu
-                </button>
-              </div>
-            </div>
+          <div style={{ textAlign: 'center', padding: '2rem' }}>
+            <p className="success-message" style={{ fontSize: '1.2rem', marginBottom: '1rem', color: '#2c8e5a' }}>
+              Thank you for your order! <br /><br />
+              {formData.deliveryMethod === "roomService"
+                ? `Your order will be delivered to Room ${formData.roomNumber} shortly.`
+                : formData.paymentMethod === "Cash"
+                ? "Please present this reference when picking up your order."
+                : formData.paymentMethod === "Tab"
+                ? "Your order has been charged to your room tab."
+                : "Your payment has been successfully processed."}
+            </p>
+            <p style={{ fontSize: '1rem', color: '#666' }}>
+              Redirecting to orders page...
+            </p>
           </div>
         </div>
       </div>
     );
   }
+  
 
   return (
     <div className="main-container">
@@ -776,18 +774,21 @@ const Checkout = () => {
                   />
                 </label>
                 <label>
-                  Phone Number
-                  <input
-                    type="tel"
-                    name="phone"
-                    value={formData.phone}
-                    onChange={handleChange}
-                    required
-                    placeholder="Enter your phone number"
-                    className={formErrors.phone ? "error" : ""}
-                  />
-                  {formErrors.phone && <span className="error-message">{formErrors.phone}</span>}
-                </label>
+  Phone Number
+  <input
+    type="tel"
+    name="phone"
+    value={formData.phone}
+    onChange={handleChange}
+    required
+    placeholder="Enter your phone number"
+  />
+  {formErrors.phone && (
+    <small className="error-text" style={{ color: "red" }}>{formErrors.phone}</small>
+  )}
+</label>
+
+
                 
                 {/* Delivery Method Selection */}
                 <label>
@@ -898,120 +899,77 @@ const Checkout = () => {
                   </div>
                 )}
                 
-                {/* Room Number field and verification (for Hotel Tab or Room Service) */}
                 {(formData.paymentMethod === "Tab" || formData.deliveryMethod === "roomService") && (
-                  <div className="room-number-field">
-                    <label>
-                      <div className="field-tooltip">
-                        Room Number
-                        <span className="tooltip-icon">
-                          <FaQuestionCircle />
-                          <span className="tooltip-text">
-                            {userProfile.isHotelGuest 
-                              ? "Your room number has been automatically filled in."
-                              : "Enter your hotel room number for verification. The charge will be added to your room bill."}
-                          </span>
-                        </span>
-                      </div>
-                      <div className="room-verification-container">
-                        <input
-                          type="text"
-                          name="roomNumber"
-                          value={formData.roomNumber}
-                          onChange={handleChange}
-                          required
-                          placeholder="Enter your room number"
-                          disabled={userProfile.isVerified} // Disable if already verified
-                          className={verificationSuccess ? "verified" : verificationError ? "error" : ""}
-                        />
-                        {!userProfile.isVerified && (
-                          <button 
-                            type="button" 
-                            className="verify-btn"
-                            onClick={verifyRoomNumber}
-                            disabled={isVerifying || !formData.roomNumber.trim()}
-                          >
-                            {isVerifying ? "Verifying..." : "Verify"}
-                          </button>
-                        )}
-                      </div>
-                      
-                      {/* Verification status messages */}
-                      {verificationError && (
-                        <div className="verification-error">
-                          <FaExclamationCircle /> {verificationError}
-                        </div>
-                      )}
-                      
-                      {verificationSuccess && (
-                        <div className="verification-success">
-                          <FaCheckCircle /> Room verified successfully
-                        </div>
-                      )}
-                      
-                      {userProfile.isHotelGuest && userProfile.checkoutDate && (
-                        <div className="checkout-date-info">
-                          <small>Your checkout date: {userProfile.checkoutDate.toLocaleDateString()}</small>
-                        </div>
-                      )}
-                    </label>
-                  </div>
-                )}
+  <div className="room-number-field">
+    <label>
+      <strong>Room Number:</strong> {userProfile.roomNumber || "N/A"}
+
+      {userProfile.checkoutDate && (
+        <div className="checkout-date-info">
+          <small>Your checkout date: {userProfile.checkoutDate.toLocaleDateString()}</small>
+        </div>
+      )}
+    </label>
+  </div>
+)}
+
                 
-                {formData.paymentMethod === "MoMo" &&
-                formData.phone &&
-                formData.name &&
-                orderTotals.total > 0 &&
-                !formErrors.phone ? (
-                  <>
-                    <PaystackButton
+<div style={{ display: 'flex', justifyContent: 'center' }}>
+                  {formData.paymentMethod === "MoMo" &&
+                  formData.phone &&
+                  formData.name &&
+                  orderTotals.total > 0 &&
+                  !formErrors.phone ? (
+                    <>
+                      <PaystackButton
+                        className="confirm-btn"
+                        {...paystackConfig}
+                        text={
+                          <>
+                            <FaMobileAlt style={{ fontSize: '1.25rem' }} /> Pay with Mobile Money
+                          </>
+                        }
+                        onSuccess={handlePaymentSuccess}
+                        onClose={() => console.log("Payment window closed")}
+                      />
+                    </>
+                  ) : (
+                    <button
+                      type="submit"
                       className="confirm-btn"
-                      {...paystackConfig}
-                      text={
-                        <>
-                          <FaMobileAlt style={{ fontSize: '1.25rem' }} /> Pay with Mobile Money
-                        </>
+                      disabled={
+                        isSubmitting || 
+                        !formData.name || 
+                        !formData.phone || 
+                        formErrors.phone ||
+                        (formData.deliveryMethod === "pickup" && !formData.paymentMethod) || 
+                        ((formData.paymentMethod === "Tab" || formData.deliveryMethod === "roomService") && !verificationSuccess)
                       }
-                      onSuccess={handlePaymentSuccess}
-                      onClose={() => console.log("Payment window closed")}
-                    />
-                  </>
-                ) : (
-                  <button
-                    type="submit"
-                    className="confirm-btn"
-                    disabled={
-                      isSubmitting || 
-                      !formData.name || 
-                      !formData.phone || 
-                      formErrors.phone ||
-                      (formData.deliveryMethod === "pickup" && !formData.paymentMethod) || 
-                      ((formData.paymentMethod === "Tab" || formData.deliveryMethod === "roomService") && !verificationSuccess)
-                    }
-                  >
-                    {isSubmitting ? (
-                      <>
-                        <div className="spinner" style={{ width: '1.5rem', height: '1.5rem' }} /> Processing...
-                      </>
-                    ) : formData.deliveryMethod === "roomService" ? (
-                      <>
-                        <FaBed /> Order Room Service
-                      </>
-                    ) : formData.paymentMethod === "Tab" ? (
-                      <>
-                        <FaHotel /> Charge to Room
-                      </>
-                    ) : formData.paymentMethod === "Cash" ? (
-                      <>
-                        <FaMoneyBillWave /> Confirm Cash Payment
-                      </>
-                    ) : (
-                      <>
-                        <FaCreditCard /> Complete Order
-                      </>
-                    )}
-                  </button>
-                )}
+                    >
+                      {isSubmitting ? (
+                        <>
+                          <div className="spinner" style={{ width: '1.5rem', height: '1.5rem' }} /> Processing...
+                        </>
+                      ) : formData.deliveryMethod === "roomService" ? (
+                        <>
+                          <FaBed /> Order Room Service
+                        </>
+                      ) : formData.paymentMethod === "Tab" ? (
+                        <>
+                          <FaHotel /> Charge to Room
+                        </>
+                      ) : formData.paymentMethod === "Cash" ? (
+                        <>
+                          <FaMoneyBillWave /> Confirm Cash Payment
+                        </>
+                      ) : (
+                        <>
+                          <FaCreditCard /> Complete Order
+                        </>
+                      )}
+                    </button>
+                  )}
+                </div>
               </form>
             </div>
           </div>
