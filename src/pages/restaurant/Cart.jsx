@@ -1,12 +1,6 @@
 import { useEffect, useState } from "react";
 import { db } from "../../config/firebase";
-import {
-  collection,
-  getDocs,
-  doc,
-  updateDoc,
-  deleteDoc,
-} from "firebase/firestore";
+import {collection,getDocs,doc,updateDoc,deleteDoc,} from "firebase/firestore";
 import { getAuth, onAuthStateChanged } from "firebase/auth";
 import { useNavigate, useLocation } from "react-router-dom";
 import NavMenu from "../../components/NavMenu";
@@ -174,7 +168,6 @@ const Cart = () => {
 
   return (
     <div className="main-container">
-      {/* NavMenu in top left */}
       <div className="nav-container" style={{ backgroundColor: "transparent", boxShadow: "none" }}>
         <NavMenu menuOpen={menuOpen} setMenuOpen={setMenuOpen} />
       </div>

@@ -28,15 +28,13 @@ html, body {
 
 /* Navigation */
 .nav-container {
-  display: flex;
-  justify-content: flex-start; 
-  padding: 1.2rem 2.5rem;
   width: 100%;
-  position: relative;
-  z-index: 100;
-  background-color: rgba(255, 255, 255, 0.95);
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.05);
-  transition: all 0.3s ease;
+  display: flex;
+  justify-content: flex-start;
+  position: fixed;
+  z-index: 1000;
+  position: absolute;
+  margin-top: 1rem;
 }
 
 /* Back button */

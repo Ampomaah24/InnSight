@@ -72,18 +72,10 @@ body, html {
   width: 100%;
   display: flex;
   justify-content: flex-start;
-  padding: 0.75rem 1.5rem;
   position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
   z-index: 1000;
-  background-color: white;
-  height: 3.75rem;
-  box-sizing: border-box;
-  backdrop-filter: blur(10px);
-  background-color: rgba(255, 255, 255, 0.95);
-  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+  position: absolute;
+  margin-top: 1rem;
 }
 
 /* Main Container */

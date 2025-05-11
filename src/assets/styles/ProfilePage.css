@@ -21,7 +21,6 @@
   --error: #e74c3c;
   --shadow: 0 0.25rem 0.75rem rgba(0,0,0,0.1);
   --transition: all 0.3s ease;
-  
   --heading-font: 'Playfair Display', serif;
   --body-font: 'Lato', sans-serif;
   --accent-font: 'Cormorant Garamond', serif;
@@ -30,7 +29,7 @@
 
 .profile-page {
   min-height: 100vh;
-  max-width: 55rem;
+  max-width: 100%;
   position: relative;
   padding-top: 3rem;
   margin: 0 auto; 
@@ -54,6 +53,15 @@
   flex-direction: column;
 }
 
+.nav-container {
+  width: 100%;
+  display: flex;
+  justify-content: flex-start;
+  position: fixed;
+  z-index: 1000;
+  position: absolute;
+  margin-top: 1rem;
+}
 
 .profile-header {
   background: linear-gradient(135deg, #e05206 0%, #ff7a3c 100%);

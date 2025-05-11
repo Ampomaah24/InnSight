@@ -3,21 +3,11 @@ import { useNavigate } from "react-router-dom";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { db, auth } from "../config/firebase";
-import { 
-  collection, 
-  addDoc, 
-  doc, 
-  getDoc, 
-  serverTimestamp, 
-  query, 
-  where, 
-  getDocs 
-} from "firebase/firestore";
+import { collection, addDoc, doc, getDoc, serverTimestamp, query, where, getDocs } from "firebase/firestore";
 import NavMenu from "../components/NavMenu";
 import ChatWidget from "../components/ChatWidget";
 import "../assets/styles/ServicesPage.css";
 import ProfileSection from "../components/ProfileSection";
-// Import images directly if using webpack/vite
 import roomImage from "../assets/images/IMG_0111.JPG";
 import conferenceImage from "../assets/images/pixelcut-export.jpeg";
 import { useBooking } from "../components/BookingContext";

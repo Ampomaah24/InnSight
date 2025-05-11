@@ -535,7 +535,7 @@ const ProfilePage = () => {
 
   return (
     <div className="profile-page">
-      <div className="nav-container" style={{ backgroundColor: "transparent", boxShadow: "none" }}>
+      <div className="nav-container" >
         <NavMenu menuOpen={menuOpen} setMenuOpen={setMenuOpen} />
       </div>
       

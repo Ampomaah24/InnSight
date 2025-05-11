@@ -3,8 +3,7 @@ import { collection, query, where, getDocs, doc, updateDoc, deleteDoc, orderBy }
 import { db } from "../config/firebase";
 import { format, parseISO, isAfter, isBefore, addHours } from "date-fns";
 import "../assets/styles/BookingHistory.css";
-import { FaCalendarAlt, FaBed, FaDoorOpen, FaUsers, FaTrash, FaHistory, 
-         FaMoneyBillWave, FaClock, FaMapMarkerAlt, FaInfoCircle } from "react-icons/fa";
+import { FaCalendarAlt, FaBed, FaDoorOpen, FaUsers, FaTrash, FaHistory, FaMoneyBillWave, FaClock, FaMapMarkerAlt, FaInfoCircle } from "react-icons/fa";
 import NavMenu from "../components/NavMenu";
 
 const BookingHistory = () => {

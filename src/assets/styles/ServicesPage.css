@@ -94,20 +94,11 @@ body, html {
 .nav-container {
   width: 100%;
   display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 0.875rem 2.5rem;
-  margin-top:1rem;
+  justify-content: flex-start;
   position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
   z-index: 1000;
-  background-color: rgba(255, 255, 255, 0.98);
-  box-shadow: var(--shadow-sm);
-  backdrop-filter: blur(0.625rem);
-  -webkit-backdrop-filter: blur(0.625rem);
-  transition: var(--transition);
+  position: absolute;
+  margin-top: 1rem;
 }
 
 .nav-container.scrolled {

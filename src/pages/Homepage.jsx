@@ -6,23 +6,17 @@ import "../assets/styles/Homepage.css";
 
 // Homepage component that displays the landing page of the hotel site
 const Homepage = () => {
-  // State hook to manage the menu's open/closed state
   const [menuOpen, setMenuOpen] = useState(false);
-  // State hook to track the loading state of the background image
   const [imageLoaded, setImageLoaded] = useState(false);
 
   useEffect(() => {
-    // Adds a luxury theme class to the body for styling
     const body = document.querySelector('body');
     body.classList.add('luxury-theme');
-    
-    // Cleanup the theme class when the component unmounts
     return () => {
       body.classList.remove('luxury-theme');
     };
   }, []);
 
-  // Handler for image load event to update the imageLoaded state
   const handleImageLoad = () => {
     setImageLoaded(true);
   };
