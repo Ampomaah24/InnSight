@@ -11,10 +11,10 @@ import {
   increment,
 } from "firebase/firestore";
 import { getAuth } from "firebase/auth";
-import NavMenu from "../../components/NavMenu"; // Import NavMenu component
+import NavMenu from "../../components/NavMenu"; 
 import "./Menu.css";
 import NoImage from "../../assets/images/pixelcut-export.jpeg";
-import { FaShoppingCart, FaUtensils, FaWineGlassAlt } from 'react-icons/fa'; // Import icons
+import { FaShoppingCart, FaUtensils, FaWineGlassAlt } from 'react-icons/fa';
 
 // Helper to get a unique guest ID and persist in localStorage
 let persistentUserId;
@@ -120,12 +120,11 @@ const Menu = () => {
   return (
     <div className="main-container">
       {/* NavMenu in top left */}
-      <div className="nav-container" style={{ backgroundColor: "transparent", boxShadow: "none" }}>
-        <NavMenu menuOpen={menuOpen} setMenuOpen={setMenuOpen} />
-      </div>
+
 
       <div className="menu-page">
         {/* Floating cart icon */}
+
         <div className="floating-cart" onClick={goToCart} title="Go to Cart">
           <FaShoppingCart />
           {cartCount > 0 && <span className="cart-badge">{cartCount}</span>}
@@ -139,6 +138,9 @@ const Menu = () => {
         )}
 
         <div className="menu-banner">
+          <div className="nav-container" style={{ backgroundColor: "transparent", boxShadow: "none" }}>
+            <NavMenu menuOpen={menuOpen} setMenuOpen={setMenuOpen} />
+          </div>
           <div className="menu-banner-text">
             <h1>Order your favorite meals from us now</h1>
           </div>

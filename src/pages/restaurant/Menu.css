@@ -1,4 +1,13 @@
 /* General Page Styling */
+#root {
+  width: 100% !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  display: block !important;
+}
+
+
+
 body, html {
   margin: 0;
   padding: 0;
@@ -14,25 +23,23 @@ body, html {
   width: 100%;
   display: flex;
   justify-content: flex-start;
-  padding: 0.75rem 1.5rem;
   position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
   z-index: 1000;
   background-color: white;
-  height: 3.75rem;
   box-sizing: border-box;
   box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.1);
+  position: absolute;
+  margin-top: -5.3rem;
 }
 
 /* Main Container */
 .main-container {
   position: relative;
   min-height: 100vh;
-  width: 100%;
+  width: fit-content;
   overflow-y: visible;
   padding-bottom: 2rem;
+  border: 2px solid red;
 }
 
 /* Menu Page Container */
@@ -40,12 +47,12 @@ body, html {
   background: #f9fafb;
   font-family: 'Segoe UI', sans-serif;
   overflow-x: hidden;
-  padding-bottom: 5rem;
+  padding-bottom: 0;
   min-height: 100vh;
   position: relative;
   width: 100%;
   max-width: 100%;
-  padding-top: 3.75rem; /* Space for the fixed navbar */
+
 }
 
 /* Menu Banner */
@@ -57,13 +64,16 @@ body, html {
   display: flex;
   justify-content: center;
   align-items: center;
-  padding: 2rem 5%;
+  padding: 0;
   border-radius: 0 0 2rem 2rem;
   text-align: center;
   box-sizing: border-box;
   box-shadow: 0 0.25rem 1rem rgba(249, 115, 22, 0.2);
   position: relative;
   overflow: hidden;
+  display: flex;
+  flex-direction: column;
+
 }
 
 /* Add a subtle pattern overlay to the banner */
