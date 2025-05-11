@@ -434,7 +434,6 @@ const CheckIn = () => {
       <div className="main-content">
         <div className="page-header">
           <h1 className="page-title">Check-in / Check-out</h1>
-          <p className="page-subtitle">Daily operations dashboard</p>
           {updatedRoom && (
             <div className={`room-update-notice ${updatedRoom.available ? 'room-freed' : 'room-occupied'}`}>
               Room {updatedRoom.number} is now {updatedRoom.available ? 'available' : 'occupied'}

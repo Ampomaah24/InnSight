@@ -367,7 +367,6 @@ const reminderService = {
 const PickupHeader = ({ upcomingCount, urgentCount }) => (
   <div className="dashboard-header">
     <h1 className="dashboard-title">Airport Pickup Schedule</h1>
-    <p className="dashboard-subtitle">Track upcoming airport pickups requested by guests.</p>
     <div className="summary-stats">
       <div className="stat-item">
         <span className="stat-number">{upcomingCount}</span>
@@ -694,10 +693,7 @@ const AdminPickupTracker = () => {
     <div className="dashboard-container">
       <Sidebar />
       <div className="main-content">
-        {/* Position the notification bell in the top right corner of main content */}
-        <div className="notification-wrapper" style={{ position: 'absolute', top: '20px', right: '20px' }}>
-          <NotificationsComponent />
-        </div>
+
         
         <PickupHeader upcomingCount={upcomingCount} urgentCount={urgentCount} />
         

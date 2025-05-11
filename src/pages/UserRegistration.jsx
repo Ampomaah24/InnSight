@@ -592,7 +592,6 @@ setSuccess(`Guest ${formData.firstName} ${formData.lastName} registration comple
         <div className="dashboard-header">
           <div className="dashboard-title-section">
             <h1 className="dashboard-title">User Registration</h1>
-            <p className="dashboard-subtitle">Register new users and assign rooms to guests</p>
           </div>
           
           <div className="dashboard-actions">

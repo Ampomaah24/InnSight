@@ -1513,7 +1513,6 @@ return (
     <div className="main-content">
       <div className="page-header">
         <h1 className="page-title">Reservations</h1>
-        <p className="page-subtitle">Comprehensive reservation management</p>
       </div>
 
       <div className="stats-summary">
@@ -1736,8 +1735,7 @@ return (
           <div className="modal-body">
             {isProcessing ? (
               <div className="loading-spinner-container">
-                <div className="loading-spinner"></div>
-                <p>Processing your request...</p>
+              <p>Processing your request...</p>
               </div>
             ) : (
               <>
@@ -1745,28 +1743,28 @@ return (
   <h4 className="summary-heading">Reservation Summary</h4>
   <div className="summary-grid">
     <div className="summary-item">
-      <span className="summary-label">Guest:</span>
-      <span className="summary-value">{selectedReservation.guestName}</span>
+      <span className="summary-label">Guest: </span>
+      <span className="summary-values">{selectedReservation.guestName}</span>
     </div>
     <div className="summary-item">
-      <span className="summary-label">{activeTab === "room" ? "Room:" : "Venue:"}</span>
-      <span className="summary-value">
+      <span className="summary-label">{activeTab === "room" ? "Room: " : "Venue:"}</span>
+      <span className="summary-values">
         {activeTab === "room"
           ? (selectedReservation.roomNumber || selectedReservation.room || "N/A")
           : (selectedReservation.venue || getVenueName(selectedReservation.venueId || selectedReservation.room) || "N/A")}
       </span>
     </div>
     <div className="summary-item">
-      <span className="summary-label">Check-in:</span>
-      <span className="summary-value">{selectedReservation.checkInFormatted}</span>
+      <span className="summary-label">Check-in: </span>
+      <span className="summary-values">{selectedReservation.checkInFormatted}</span>
     </div>
     <div className="summary-item">
-      <span className="summary-label">Check-out:</span>
-      <span className="summary-value">{selectedReservation.checkOutFormatted}</span>
+      <span className="summary-label">Check-out: </span>
+      <span className="summary-values">{selectedReservation.checkOutFormatted}</span>
     </div>
     <div className="summary-item">
-      <span className="summary-label">{activeTab === "room" ? "Stay:" : "Duration:"}</span>
-      <span className="summary-value">
+      <span className="summary-label">{activeTab === "room" ? "Stay: " : "Duration:"}</span>
+      <span className="summary-values">
         {activeTab === "room"
           ? `${selectedReservation.stayLength} night${selectedReservation.stayLength !== 1 ? 's' : ''}`
           : `${selectedReservation.eventLength} hour${selectedReservation.eventLength !== 1 ? 's' : ''}`}

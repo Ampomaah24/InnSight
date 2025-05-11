@@ -168,7 +168,7 @@ const Cart = () => {
 
   return (
     <div className="main-container">
-      <div className="nav-container" style={{ backgroundColor: "transparent", boxShadow: "none" }}>
+      <div className="nav-container" >
         <NavMenu menuOpen={menuOpen} setMenuOpen={setMenuOpen} />
       </div>
 

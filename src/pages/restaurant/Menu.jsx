@@ -138,7 +138,7 @@ const Menu = () => {
         )}
 
         <div className="menu-banner">
-          <div className="nav-container" style={{ boxShadow: "none" }}>
+          <div className="nav-container">
             <NavMenu menuOpen={menuOpen} setMenuOpen={setMenuOpen} />
           </div>
           <div className="menu-banner-text">

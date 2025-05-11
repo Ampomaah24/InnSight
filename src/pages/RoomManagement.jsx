@@ -613,7 +613,6 @@ const RoomManagement = () => {
       <div className="main-content">
         <div className="dashboard-header">
           <h1 className="dashboard-title">Room Management</h1>
-          <p className="dashboard-subtitle">Edit room details and amenities</p>
         </div>
 
         {saveMessage.text && (

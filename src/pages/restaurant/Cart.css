@@ -262,9 +262,8 @@ body, html {
 
 .cart-quantity button {
   background-color: #f3f4f6;
-  border: 2px solid #d1d5db;
+  border: 2px solid #d1d5db;  
 }
-
 
 .cart-quantity button svg {
   color: black !important;

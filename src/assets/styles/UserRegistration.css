@@ -1014,6 +1014,7 @@
     background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
     color: var(--white-color);
     box-shadow: var(--shadow-sm);
+    width: 3rem;
   }
   
   .view-pending-button:hover,
