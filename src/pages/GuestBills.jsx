@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { collection, query, where, getDocs, getFirestore, doc, getDoc, orderBy } from 'firebase/firestore';
 import { getAuth, onAuthStateChanged } from 'firebase/auth';
+import { useNavigate } from 'react-router-dom';
 import NavMenu from "../components/NavMenu";
 import "../assets/styles/GuestBills.css";
 
@@ -13,6 +14,7 @@ const GuestBills = () => {
   const [user, setUser] = useState(null);
   const [authChecked, setAuthChecked] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
+  const navigate = useNavigate();
   
   // Format date helper function
   const formatDate = (dateString) => {
@@ -33,6 +35,11 @@ const GuestBills = () => {
       console.error("Date parsing error:", e);
       return "Not available";
     }
+  };
+
+  // Navigate to services page for making a reservation
+  const handleMakeReservation = () => {
+    navigate('/services');
   };
 
   useEffect(() => {
@@ -664,9 +671,12 @@ const GuestBills = () => {
             </div>
           ) : (
             <div className="no-bookings">
-              <h3>No Bookings Found</h3>
+              <h3>You Don't Have Any Reservations</h3>
               <p>You don't have any current or past bookings.</p>
-              <button className="btn btn-primary">Make a Reservation</button>
+              <p>Would you like to make a new reservation?</p>
+              <button className="btn btn-primary" onClick={handleMakeReservation}>
+                Make a Reservation
+              </button>
             </div>
           )}
         </div>

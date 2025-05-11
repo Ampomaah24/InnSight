@@ -8,7 +8,7 @@ import "../assets/styles/RoomBooking.css";
 import { useBooking } from "../components/BookingContext"; 
 import roomImage1 from "../assets/images/pixelcut-export-4.jpg";
 import roomImage2 from "../assets/images/ampomaah-hotel-2.jpg";
-import roomImage3 from "../assets/images/ampomaah-hotel-2.jpg"; 
+import roomImage3 from "../assets/images/Ampomaah-Hotel-Accra-Exterior-2.jpg"; 
 
 
 const RoomBooking = () => {

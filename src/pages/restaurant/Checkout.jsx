@@ -512,17 +512,19 @@ const Checkout = () => {
       console.error("Error clearing cart:", error);
     }
   };
-
-  const saveOrder = async (status = "Pending", paymentReference = "") => {
+  const saveOrder = async (status = "pending", paymentReference = "") => {
     const userId = getOrCreateUserId();
     try {
+      // We'll store the status directly - no need to normalize here
+      // AdminFoodOrders.js will handle the normalization
+      
       const orderRef = await addDoc(collection(db, "orders"), {
         userId,
         ...formData,
         cartItems,
-        ...orderTotals, // Include all calculated totals
-        taxRates, // Include the tax rates used for the calculation
-        status,
+        ...orderTotals,
+        taxRates,
+        status, // Store the status directly
         isGuest: !getAuth().currentUser,
         paymentReference,
         timestamp: serverTimestamp(),
@@ -535,7 +537,8 @@ const Checkout = () => {
       throw error;
     }
   };
-
+  
+  
   const handleSubmit = async (e) => {
     e.preventDefault();
     
@@ -558,21 +561,28 @@ const Checkout = () => {
       // Payment handled by PaystackButton
       return;
     }
-
+  
     try {
       setIsSubmitting(true);
       
       // Set different status based on payment method and delivery method
-      let status = "Pending";
+      // Using normalized status values that match what AdminFoodOrders.js expects
+      let status = "pending";
+      
       if (formData.paymentMethod === "Tab") {
-        status = "On Hotel Tab";
+        status = "on-hotel-tab";
       } else if (formData.paymentMethod === "Cash") {
-        status = "Awaiting Pickup";
+        // Use 'ready' instead of 'awaiting-pickup' to be consistent
+        status = "ready";
       }
       
       // Adjust status for room service
       if (formData.deliveryMethod === "roomService") {
-        status = status === "Awaiting Pickup" ? "Room Service Pending" : `Room Service - ${status}`;
+        if (status === "ready") {
+          status = "room-service-ready";
+        } else {
+          status = `room-service-${status}`;
+        }
       }
       
       const orderId = await saveOrder(status);
@@ -585,20 +595,21 @@ const Checkout = () => {
       setIsSubmitting(false);
     }
   };
-
+  
+  
   const handlePaymentSuccess = async (reference) => {
     try {
       setIsSubmitting(true);
   
       // Set status based on delivery method
       const status = formData.deliveryMethod === "roomService" 
-        ? "Room Service - Paid" 
-        : "Paid";
+        ? "room-service-paid" 
+        : "paid";
         
       // Save order to 'orders' collection
       const orderId = await saveOrder(status, reference.reference);
   
-      // ✅ Save transaction to 'transactions' collection
+      // Save transaction to 'transactions' collection
       await addDoc(collection(db, "transactions"), {
         type: "income",
         amount: orderTotals.total,

@@ -1376,31 +1376,29 @@ const BookingPage = () => {
                   </div>
                 </div>
 
-                {/* Payment Button */}
-                <div className="booking-form__full-width">
-                  <PaystackConsumer {...config} onSuccess={onSuccess} onClose={() => setProcessingPayment(false)}>
-                    {({ initializePayment }) => (
-                      <button 
-                        type="button" 
-                        className="button button--primary button--large button--full-width" 
-                        onClick={() => {
-                          if (selectedRooms.length > 1 && !mainBookerRoomId) {
-                            alert("Please select which room you will stay in as the main booker.");
-                          } else if (!isFormValid) {
-
-                            alert("Please complete all required fields correctly. Ensure all guest names are provided.");
-                          } else {
-                            
-                            initializePayment();
-                          }
-                        }}
-                        disabled={processingPayment}
-                      >
-                        {processingPayment ? "Processing..." : "Complete Booking"}
-                      </button>
-                    )}
-                  </PaystackConsumer>
-                </div>
+{/* Payment Button */}
+<div className="booking-form__full-width payment-button-container">
+  <PaystackConsumer {...config} onSuccess={onSuccess} onClose={() => setProcessingPayment(false)}>
+    {({ initializePayment }) => (
+      <button 
+        type="button" 
+        className="button button--primary button--large button--centered" 
+        onClick={() => {
+          if (selectedRooms.length > 1 && !mainBookerRoomId) {
+            alert("Please select which room you will stay in as the main booker.");
+          } else if (!isFormValid) {
+            alert("Please complete all required fields correctly. Ensure all guest names are provided.");
+          } else {
+            initializePayment();
+          }
+        }}
+        disabled={processingPayment}
+      >
+        {processingPayment ? "Processing..." : "Complete Booking"}
+      </button>
+    )}
+  </PaystackConsumer>
+</div>
               </form>
             )}
           </div>
