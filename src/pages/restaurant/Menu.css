@@ -29,17 +29,21 @@ body, html {
   box-sizing: border-box;
   box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.1);
   position: absolute;
-  margin-top: -5.3rem;
+  margin-top: 1rem;
 }
 
-/* Main Container */
+.menu-page .nav-container {
+  margin-top: -5.5rem;
+}
+
+
+ /* Main Container */
 .main-container {
   position: relative;
   min-height: 100vh;
   width: fit-content;
   overflow-y: visible;
   padding-bottom: 2rem;
-  border: 2px solid red;
 }
 
 /* Menu Page Container */
@@ -70,7 +74,7 @@ body, html {
   box-sizing: border-box;
   box-shadow: 0 0.25rem 1rem rgba(249, 115, 22, 0.2);
   position: relative;
-  overflow: hidden;
+  overflow: visible;
   display: flex;
   flex-direction: column;
 

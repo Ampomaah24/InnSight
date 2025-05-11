@@ -144,7 +144,7 @@ const Cart = () => {
   };
 
   const continueShopping = () => {
-    navigate("/restaurant/menu");
+    navigate("/restaurant");
   };
 
   return (
