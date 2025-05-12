@@ -349,7 +349,7 @@ const ContactUs = () => {
             
             <button 
               type="submit" 
-              className="submit-button"
+              className="submit-button1"
               disabled={isSubmitting}
             >
               {isSubmitting ? "Sending..." : "Send Message"}
