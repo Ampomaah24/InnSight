@@ -7,6 +7,7 @@ import {
 import { setDoc, doc } from "firebase/firestore";
 import { auth, db } from "../config/firebase";
 import "../assets/styles/SignUp.css";
+import signUP1 from "../assets/images/IMG_0123.JPG";
 
 export default function SignUp() {
   // State hook to manage form data (user's input fields)
@@ -182,9 +183,11 @@ export default function SignUp() {
 
   return (
     <div className="signup-container">
-      <div className="signup-image"></div>
+      <div >
+        <img src={signUP1} alt="" className="signup-image" />
+      </div>
                  {/* Success message display */}
-  {successMessage && (
+    {successMessage && (
     <p className="success-message" role="status">
       {successMessage}
     </p>
