@@ -65,7 +65,7 @@ const NavMenu = ({ menuOpen, setMenuOpen }) => {
           <div className="dropdown-menu">
             <Link to="/services" onClick={() => setMenuOpen(false)}>Services</Link>
             <Link to="/restaurant" onClick={() => setMenuOpen(false)}>Restaurant</Link>
-            <Link to="/guest-bills" onClick={() => setMenuOpen(false)}>Billing</Link>
+            {/* <Link to="/guest-bills" onClick={() => setMenuOpen(false)}>Billing</Link> */}
             <Link to="/room-listings" onClick={() => setMenuOpen(false)}>Room Listings</Link>
             <Link to="/conference-listings" onClick={() => setMenuOpen(false)}>Conference Room Listings</Link>
             <Link to="/booking-history" onClick={() => setMenuOpen(false)}> My Bookings</Link>
