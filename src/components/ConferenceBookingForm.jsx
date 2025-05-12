@@ -12,6 +12,7 @@ import "react-phone-number-input/style.css";
 import NavMenu from "../components/NavMenu";
 import { useBooking } from "../components/BookingContext"; // Import the booking context
 import "../assets/styles/BookingPage.css";
+import img1 from "../assets/images/IMG_0123.JPG";
 
 const PAYSTACK_PUBLIC_KEY = import.meta.env.VITE_PAYSTACK_PUBLIC_KEY;
 
@@ -498,7 +499,7 @@ navigate("/booking-confirmation");
       <div className="booking-page">
         <div className="booking-page__wrapper">
           <div className="booking-page__illustration">
-            <img src="src/assets/images/IMG_0123.JPG" alt="Conference Booking" />
+            <img src={img1} alt="Conference Booking" />
           </div>
           <div className="booking-page__container">
             <h2 className="booking-page__title">Book Your Conference</h2>
@@ -513,7 +514,6 @@ navigate("/booking-confirmation");
 
             {processingPayment ? (
               <div className="loading">
-                <div className="loading__spinner" />
                 <p>Processing your payment. Please wait...</p>
               </div>
             ) : (
