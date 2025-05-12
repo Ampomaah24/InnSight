@@ -385,12 +385,12 @@ const AdminFoodOrders = () => {
             </select>
 
             <select value={dateFilter} onChange={(e) => setDateFilter(e.target.value)} className="filter-select">
-              <option value="all">All Time</option>
-              <option value="today">Today</option>
-              <option value="yesterday">Yesterday</option>
-              <option value="week">Last 7 Days</option>
-              <option value="month">Last 30 Days</option>
-            </select>
+  <option value="all">All Time</option>
+  <option value="today">Today</option>
+  <option value="yesterday">Yesterday</option>
+  <option value="week">Last 7 Days</option>
+  <option value="month">Last 30 Days</option>
+</select>
 
             <select value={sortBy} onChange={(e) => setSortBy(e.target.value)} className="filter-select">
               <option value="newest">Newest First</option>

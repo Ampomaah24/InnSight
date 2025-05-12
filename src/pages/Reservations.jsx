@@ -1261,6 +1261,9 @@ const extensionHistoryRecord = {
     }
   };
 
+/// The issue is that the stats summary doesn't update immediately after termination
+// We need to update the terminateReservation function to update the stats locally
+
 // Function to terminate a reservation
 const terminateReservation = async () => {
   if (!selectedReservation) return;
@@ -1283,7 +1286,6 @@ const terminateReservation = async () => {
 
     const reservationRef = doc(db, collectionName, reservationToTerminate.id);
 
-  
     // Get current timestamp
     const now = Timestamp.now();
     
@@ -1349,6 +1351,25 @@ const terminateReservation = async () => {
       console.error("Error adding termination record:", error);
     }
     
+    // ✅ Update the local state to immediately reflect the termination
+    if (activeTab === "room") {
+      setRoomReservations(prevReservations => 
+        prevReservations.map(res => 
+          res.id === reservationToTerminate.id 
+            ? { ...res, status: "Terminated" } 
+            : res
+        )
+      );
+    } else {
+      setConferenceReservations(prevReservations => 
+        prevReservations.map(res => 
+          res.id === reservationToTerminate.id 
+            ? { ...res, status: "Terminated" } 
+            : res
+        )
+      );
+    }
+    
     // Close any open modal and reset state
     setConfirmationModalOpen(false);
     setSelectedReservation(null);
@@ -1370,13 +1391,13 @@ const terminateReservation = async () => {
     alert("Failed to terminate reservation. Please try again.");
   }
 };
-
 // Get status class
 const getStatusClass = (status) => {
   if (!status) return 'pending';
   
   switch (status.toLowerCase()) {
     case 'confirmed':
+    case 'reserved':  
       return 'confirmed';
     case 'checked in':
     case 'checked-in':
@@ -1639,6 +1660,7 @@ return (
     <th>Actions</th>
   </tr>
 </thead>
+{/* Modify this section in your Reservations.jsx code */}
 <tbody>
   {filteredData.length > 0 ? (
     filteredData.map((res) => (
@@ -1675,9 +1697,11 @@ return (
           </span>
         </td>
         <td className="actions-cell">
+          {/* Modified this condition to include "Reserved" status */}
           {(res.status === "Confirmed" ||
             res.status === "Checked in" ||
-            res.status === "Checked-in") && (
+            res.status === "Checked-in" ||
+            res.status === "Reserved") && (
             <>
               <button
                 className="action-btn extend-btn"
