@@ -3,17 +3,31 @@ import { useNavigate } from "react-router-dom";
 import { db } from "../config/firebase";
 import { collection, getDocs, query, where } from "firebase/firestore";
 import NavMenu from "../components/NavMenu";
-import { useBooking } from "../components/BookingContext"; // Import the custom hook
+import { useBooking } from "../components/BookingContext"; 
 import "../assets/styles/CBooking.css";
+import cImage1 from "../assets/images/2127160_1-2.jpg";
+import cImage2 from "../assets/images/ampomaah-hotel-accra-pic-48.jpg";
+import cImage3 from "../assets/images/Prague-small-conference-room-2.jpg"; 
 
 const ConferenceBooking = () => {
   const navigate = useNavigate();
-  const { bookingData, setBookingData } = useBooking(); // Use the booking context
+  const { bookingData, setBookingData } = useBooking(); 
   const [conference_rooms, setConferenceRooms] = useState([]);
   const [menuOpen, setMenuOpen] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [currentIndex, setCurrentIndex] = useState(0);
+
+  const getCPlaceholder = (roomType) => {
+    switch (roomType?.toLowerCase()) {
+      case 'long':
+        return cImage1;
+      case 'big':
+        return cImage2;
+      case 'small':
+        return cImage3;
+    }
+  };
   
   // Get dates from context instead of URL
   const startDate = bookingData?.startDate ? new Date(bookingData.startDate) : null;
@@ -198,7 +212,7 @@ const ConferenceBooking = () => {
         <div className="croom-image-section">
           <button className="nav-button left" onClick={prevRoom} aria-label="Previous room">&#10094;</button>
           <div className="croom-image">
-            <img src={currentRoom.image || "/placeholder-conference-room.jpg"} alt={currentRoom.name || "Conference Room"} />
+            <img src={getCPlaceholder(currentRoom.type)} alt={currentRoom.name || "Conference Room"} />
             <div className="croom-pagination">{currentIndex + 1} of {conference_rooms.length}</div>
           </div>
           <button className="nav-button right" onClick={nextRoom} aria-label="Next room">&#10095;</button>

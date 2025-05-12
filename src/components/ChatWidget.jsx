@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { collection, getDocs, query, where } from "firebase/firestore";
 import { db, auth } from "../config/firebase";
 import "../assets/styles/ChatWidget.css";
+import { useBooking } from "../components/BookingContext"; // Import the BookingContext hook
 
 // Error message mapping
 const ERROR_MESSAGES = {
@@ -33,6 +34,7 @@ const mapRoomTypeToDatabase = (roomType) => {
 
 const ChatWidget = () => {
   const navigate = useNavigate();
+  const { setBookingData } = useBooking(); // Use the context for setting booking data
   
   // State variables
   const [chatOpen, setChatOpen] = useState(false);
@@ -84,19 +86,18 @@ const ChatWidget = () => {
   };
 
   // Handle toggling the chat window
-// Handle toggling the chat window
-const toggleChat = () => {
-  if (chatOpen) {
-    // When closing the chat, reset the bubble to show again
-    setTimeout(() => {
-      setShowBubble(true);
-    }, 500); // Small delay to prevent the bubble from appearing immediately
-  } else {
-    // When opening the chat, hide the bubble
-    setShowBubble(false);
-  }
-  setChatOpen(!chatOpen);
-};
+  const toggleChat = () => {
+    if (chatOpen) {
+      // When closing the chat, reset the bubble to show again
+      setTimeout(() => {
+        setShowBubble(true);
+      }, 500); // Small delay to prevent the bubble from appearing immediately
+    } else {
+      // When opening the chat, hide the bubble
+      setShowBubble(false);
+    }
+    setChatOpen(!chatOpen);
+  };
 
   // Handle input change for chat
   const handleInputChange = (e) => {
@@ -257,36 +258,118 @@ const toggleChat = () => {
         const { check_in, check_out, room_type } = action.data;
         
         try {
+          // Show searching message
+          setMessages((prev) => [
+            ...prev,
+            {
+              text: `I'm searching for available ${room_type} rooms for your dates...`,
+              sender: "bot",
+              timestamp: new Date(),
+            },
+          ]);
+          
           // Query for available rooms
           const roomsRef = collection(db, "rooms");
           const roomQuery = query(roomsRef, where("t_room", "==", mapRoomTypeToDatabase(room_type)));
           const roomSnapshot = await getDocs(roomQuery);
           
-          // Find an available room
-          let selectedRoom = null;
+          // If no rooms found, inform the user
+          if (roomSnapshot.empty) {
+            setMessages((prev) => [
+              ...prev,
+              {
+                text: `I'm sorry, but it seems we don't have any ${room_type} rooms available for your requested dates. Would you like to check a different room type or dates?`,
+                sender: "bot",
+                timestamp: new Date(),
+              },
+            ]);
+            return;
+          }
+          
+          // Find available rooms for these dates
+          const checkInDate = new Date(check_in);
+          const checkOutDate = new Date(check_out);
+          const availableRooms = [];
+          
           roomSnapshot.forEach((doc) => {
-            if (!selectedRoom) {
-              selectedRoom = {
-                id: doc.id,
-                ...doc.data(),
-                t_room: room_type,
-                name: `${room_type} Room`
-              };
+            const room = { id: doc.id, ...doc.data() };
+            
+            // If room has no bookings, it's available
+            if (!room.bookings || room.bookings.length === 0) {
+              availableRooms.push(room);
+              return;
+            }
+            
+            // Check if room has a booking conflict during this period
+            const isBooked = room.bookings.some((booking) => {
+              if (!booking.checkIn || !booking.checkOut) return false;
+              const bookedCheckIn = new Date(booking.checkIn);
+              const bookedCheckOut = new Date(booking.checkOut);
+              return checkInDate <= bookedCheckOut && checkOutDate >= bookedCheckIn;
+            });
+            
+            if (!isBooked) {
+              availableRooms.push(room);
             }
           });
           
-          // If no room found, create a placeholder
-          if (!selectedRoom) {
-            selectedRoom = {
-              id: "room-" + Math.floor(Math.random() * 1000),
-              t_room: room_type,
-              price: 150, // placeholder price
-              name: `${room_type} Room`,
-            };
+          if (availableRooms.length === 0) {
+            setMessages((prev) => [
+              ...prev,
+              {
+                text: `I'm sorry, but it seems we don't have any ${room_type} rooms available for your requested dates. Would you like to check a different room type or dates?`,
+                sender: "bot",
+                timestamp: new Date(),
+              },
+            ]);
+            return;
           }
           
-          // Navigate to booking page
-          proceedToBooking(check_in, check_out, room_type, selectedRoom);
+          // If multiple rooms available, offer choices
+          if (availableRooms.length > 1) {
+            setMessages((prev) => [
+              ...prev,
+              {
+                text: `Great news! I found ${availableRooms.length} ${room_type} rooms available for your dates. Would you like to book one of them?`,
+                sender: "bot",
+                timestamp: new Date(),
+              },
+            ]);
+            
+            // Add a button for booking the first available room
+            setMessages((prev) => [
+              ...prev,
+              {
+                text: `Book ${room_type} Room`,
+                sender: "bot",
+                isButton: true,
+                onClick: () => proceedToBooking(check_in, check_out, [availableRooms[0]]),
+                timestamp: new Date(),
+              },
+            ]);
+          } else {
+            // Only one room available, proceed with that
+            setMessages((prev) => [
+              ...prev,
+              {
+                text: `Great! I found a ${room_type} room available for your dates. Would you like to book it?`,
+                sender: "bot",
+                timestamp: new Date(),
+              },
+            ]);
+            
+            // Add a button for booking the room
+            setMessages((prev) => [
+              ...prev,
+              {
+                text: `Book ${room_type} Room`,
+                sender: "bot",
+                isButton: true,
+                onClick: () => proceedToBooking(check_in, check_out, [availableRooms[0]]),
+                timestamp: new Date(),
+              },
+            ]);
+          }
         } catch (error) {
           console.error("Error finding room:", error);
           
@@ -331,24 +414,59 @@ const toggleChat = () => {
               },
             ]);
           } else {
-            setMessages((prev) => [
-              ...prev,
-              {
-                text: `Good news! We have ${availData.room_type} rooms available from ${availData.check_in} to ${availData.check_out}. Would you like to book now?`,
-                sender: "bot",
-                timestamp: new Date(),
-              },
-              {
-                text: "Book Now",
-                sender: "bot",
-                isButton: true,
-                onClick: () => handleResponseAction({
-                  action: "book_room",
-                  data: availData
-                }, {}),
-                timestamp: new Date(),
+            // Check if rooms are actually available for these dates
+            const checkInDate = new Date(availData.check_in);
+            const checkOutDate = new Date(availData.check_out);
+            const availableRooms = [];
+            
+            roomSnapshot.forEach((doc) => {
+              const room = { id: doc.id, ...doc.data() };
+              
+              // If room has no bookings, it's available
+              if (!room.bookings || room.bookings.length === 0) {
+                availableRooms.push(room);
+                return;
               }
-            ]);
+              
+              // Check if room has a booking conflict during this period
+              const isBooked = room.bookings.some((booking) => {
+                if (!booking.checkIn || !booking.checkOut) return false;
+                const bookedCheckIn = new Date(booking.checkIn);
+                const bookedCheckOut = new Date(booking.checkOut);
+                return checkInDate <= bookedCheckOut && checkOutDate >= bookedCheckIn;
+              });
+              
+              if (!isBooked) {
+                availableRooms.push(room);
+              }
+            });
+            
+            if (availableRooms.length === 0) {
+              setMessages((prev) => [
+                ...prev,
+                {
+                  text: `I'm sorry, but it seems we don't have any ${availData.room_type} rooms available for your requested dates. Would you like to check a different room type or dates?`,
+                  sender: "bot",
+                  timestamp: new Date(),
+                },
+              ]);
+            } else {
+              setMessages((prev) => [
+                ...prev,
+                {
+                  text: `Good news! We have ${availableRooms.length} ${availData.room_type} rooms available from ${availData.check_in} to ${availData.check_out}. Would you like to book now?`,
+                  sender: "bot",
+                  timestamp: new Date(),
+                },
+                {
+                  text: "Book Now",
+                  sender: "bot",
+                  isButton: true,
+                  onClick: () => proceedToBooking(availData.check_in, availData.check_out, availableRooms),
+                  timestamp: new Date(),
+                }
+              ]);
+            }
           }
         } catch (error) {
           console.error("Error checking availability:", error);
@@ -438,25 +556,45 @@ const toggleChat = () => {
     }
   };
 
-  // Proceed to booking page with extracted information
-  const proceedToBooking = (checkIn, checkOut, roomType, room) => {
-    // Prepare selected room data
-    const selectedRooms = [{
+  const proceedToBooking = (checkIn, checkOut, availableRooms) => {
+    // Calculate nights
+    const checkInDate = new Date(checkIn);
+    const checkOutDate = new Date(checkOut);
+    const nights = Math.max(1, Math.round((checkOutDate - checkInDate) / (1000 * 60 * 60 * 24)));
+    
+    // Format available rooms in the way the booking page expects
+    const selectedRooms = availableRooms.map(room => ({
       id: room.id,
-      t_room: roomType,
-      price: room.price || 150, // Use room price or default
-      name: `${roomType} Room`,
-    }];
+      t_room: room.t_room,
+      price: room.price , // Default price if not specified
+      name: `${room.t_room} Room`,
+      // Add any other necessary fields to match the booking page expectations
+      amenities: room.amenities || [],
+      maxOccupancy: room.maxOccupancy || 2
+    }));
     
-    // Create query params
-    const queryParams = new URLSearchParams({
-      rooms: encodeURIComponent(JSON.stringify(selectedRooms)),
-      checkIn: encodeURIComponent(checkIn),
-      checkOut: encodeURIComponent(checkOut),
-    }).toString();
+    // Set booking data in context
+    setBookingData({
+      rooms: selectedRooms,
+      checkIn: checkIn,
+      checkOut: checkOut,
+      nights: nights,
+      roomCategory: 'regular',
+      fromChatbot: true
+    });
     
-    // Navigate to booking page with parameters
-    navigate(`/book-room?${queryParams}`);
+    // Navigate directly to the booking page
+    navigate('/book-room');
+    
+    // Add confirmation message
+    setMessages((prev) => [
+      ...prev,
+      {
+        text: `Great! I've prepared your booking for ${selectedRooms.length} ${selectedRooms[0].t_room} ${selectedRooms.length > 1 ? 'rooms' : 'room'} from ${new Date(checkIn).toLocaleDateString()} to ${new Date(checkOut).toLocaleDateString()}. You'll be redirected to complete your booking.`,
+        sender: "bot",
+        timestamp: new Date(),
+      },
+    ]);
   };
 
   // Render loading indicator for chat
