@@ -2,10 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { getAuth, onAuthStateChanged } from "firebase/auth";
 import { db } from "../config/firebase";
-import {
-  collection, addDoc, serverTimestamp, query, where, getDocs, updateDoc, doc, getDoc,
-  runTransaction
-} from "firebase/firestore";
+import {collection, addDoc, serverTimestamp, query, where, getDocs, updateDoc, doc, getDoc,runTransaction} from "firebase/firestore";
 import { PaystackConsumer } from "react-paystack";
 import PhoneInput, { isValidPhoneNumber } from "react-phone-number-input";
 import "react-phone-number-input/style.css";
@@ -16,10 +13,8 @@ import { useBooking } from "../components/BookingContext";
 import hotelImage from "../assets/images/IMG_0123.JPG";
 
 
-// Use environment variable directly from .env file
 const PAYSTACK_PUBLIC_KEY = import.meta.env.VITE_PAYSTACK_PUBLIC_KEY;
 
-// Input sanitization helper
 const sanitizeInput = (input) => {
   if (typeof input !== 'string') return input;
   return input
@@ -69,7 +64,6 @@ const getRoomAmenities = (type) => {
   }
 };
 
-// Create simplified guest template - just name fields
 const createEmptyGuest = () => ({
   firstName: "",
   lastName: ""
@@ -79,17 +73,14 @@ const BookingPage = () => {
   const navigate = useNavigate();
   const auth = getAuth();
   
-  // Use our booking context hook
   const { bookingData, clearBookingData,setBookingData } = useBooking();
   
-  // If no booking data in context, redirect back to room booking
   useEffect(() => {
     if (!bookingData) {
       navigate('/room-booking');
     }
   }, [bookingData, navigate]);
 
-  // Extract booking data from context
   const selectedRooms = bookingData?.rooms || [];
   const checkInParam = bookingData?.checkIn || "";
   const checkOutParam = bookingData?.checkOut || "";
@@ -107,7 +98,7 @@ const BookingPage = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [csrfToken, setCsrfToken] = useState("");
-  const [isLoggedIn, setIsLoggedIn] = useState(false); // Track login state
+  const [isLoggedIn, setIsLoggedIn] = useState(false); 
   const [discounts, setDiscounts] = useState({
     conferenceAttendeeDiscount: 0,
     corporateDiscount: 0,
@@ -175,7 +166,6 @@ const BookingPage = () => {
     return () => unsubscribe();
   }, [auth]);
 
-  // Generate CSRF token
   useEffect(() => {
 
     const generateToken = () => {
@@ -208,9 +198,8 @@ const BookingPage = () => {
     }
   }, [selectedRooms, mainBookerRoomId]);
 
-  // Fetch discounts from Firestore if we don't have a discount from context
+
   useEffect(() => {
-    // If we already have discount from context, use it and skip Firestore fetch
     if (discountFromContext > 0) {
       setDiscounts(prev => ({ 
         ...prev, 
@@ -290,7 +279,7 @@ const BookingPage = () => {
       return discounts.longStayDiscount;
     }
     
-    // Conference discount - only apply if booking BOTH conference AND rooms
+    // Conference discount (only apply if booking both conference and rooms)
     if (roomCategory === "conference" && formData.alsoBookingStay === "Yes") {
       return discounts.conferenceAttendeeDiscount;
     }
@@ -300,7 +289,7 @@ const BookingPage = () => {
       return discounts.groupDiscountRate;
     }
     
-    return 0; // No discount applies
+    return 0; 
   };
   
   // Add this new function for determining discount names
@@ -324,12 +313,7 @@ const BookingPage = () => {
     return '';
   };
   
-// Find this section in the code around line 359-360:
-  
-  // Calculate the effective discount
   const actualDiscountName = getDiscountName();
-  
-  // Add this line to call getApplicableDiscount() and store its result
   const applicableDiscount = getApplicableDiscount();
 
   // Calculate total amount
@@ -341,7 +325,7 @@ const BookingPage = () => {
 
   // Calculate payment amount based on payment option
   const paymentAmount = (roomCategory === "conference" || formData.paymentOption === "Full Payment")
-    ? totalAmount  // For conference bookings or full payment option
+    ? totalAmount 
     : totalAmount * 0.2; 
 
   // Get total guest count
@@ -382,7 +366,6 @@ const BookingPage = () => {
     setRoomGuests(prev => {
       const updatedRooms = { ...prev };
       
-      // Mark the new room as main booker's
       updatedRooms[roomId] = {
         ...updatedRooms[roomId],
         isMainBookerRoom: true
@@ -408,36 +391,30 @@ const BookingPage = () => {
     // Special handling for airport pickup
     if (name === 'airportPickup') {
       if (value === 'Yes') {
-        // When user selects "Yes" for airport pickup, automatically set pickup date to check-in date
         setFormData(prev => ({ 
           ...prev, 
           [name]: value,
-          pickupDate: prev.checkIn // Auto-set pickup date to match check-in date
+          pickupDate: prev.checkIn 
         }));
-        setPickupDateError(false); // Clear any previous errors
+        setPickupDateError(false);
       } else {
-        // Normal processing for "No" selection
         setFormData(prev => ({ ...prev, [name]: sanitizeInput(value) }));
       }
       return;
     }
     
-    // Special handling for check-in date changes - update pickup date if airport pickup is enabled
     if (name === 'checkIn' && formData.airportPickup === 'Yes') {
       setFormData(prev => ({ 
         ...prev, 
         [name]: value,
-        pickupDate: value // Keep pickup date in sync with check-in date
+        pickupDate: value 
       }));
       setPickupDateError(false);
       return;
     }
     
-    // Regular field updates with sanitization
     setFormData(prev => ({ ...prev, [name]: sanitizeInput(value) }));
     
-    // If this is the main booker's name and we have a selected main booker room, 
-    // update the first guest name in that room
     if (['firstName', 'lastName'].includes(name) && mainBookerRoomId) {
       updateGuest(mainBookerRoomId, 0, name, value);
     }
@@ -454,8 +431,6 @@ const BookingPage = () => {
     setRoomGuests(prev => {
       const room = { ...prev[roomId] };
       const count = Math.min(Math.max(1, Number(newCount) || 1), room.capacity);
-      
-      // If increasing count, add empty guests
       if (count > room.guests.length) {
         const newGuests = [...room.guests];
         for (let i = room.guests.length; i < count; i++) {
@@ -463,7 +438,6 @@ const BookingPage = () => {
         }
         room.guests = newGuests;
       } 
-      // If decreasing count, remove guests from the end
       else if (count < room.guests.length) {
         room.guests = room.guests.slice(0, count);
       }
@@ -473,7 +447,6 @@ const BookingPage = () => {
     });
   };
   
-  // Update an individual guest's information (just names now)
   const updateGuest = (roomId, guestIndex, field, value) => {
     setRoomGuests(prev => {
       const room = { ...prev[roomId] };
@@ -490,8 +463,7 @@ const BookingPage = () => {
         [field]: sanitizeInput(value)
       };
       
-      // If this is updating a guest in the main booker's room and it's the first guest,
-      // also update the main form data
+      // If this is updating a guest in the main booker's room and it's the first guest, also update the main form data
       const isMainBookersRoom = roomId === mainBookerRoomId && guestIndex === 0;
       if (isMainBookersRoom && ['firstName', 'lastName'].includes(field)) {
         setFormData(formData => ({
@@ -517,9 +489,7 @@ const BookingPage = () => {
     (formData.pickupDate && formData.pickupTime && formData.flightNumber && !pickupDateError);
 
   const validateGuests = () => {
-    // For single room, the main booker is automatically assigned
     if (selectedRooms.length === 1 && mainBookerRoomId) {
-      // Just validate that all guests have names filled in
       for (const roomId in roomGuests) {
         const room = roomGuests[roomId];
         
@@ -555,7 +525,6 @@ const BookingPage = () => {
   };
 
   const isFormValid =
-    // Main booker must have complete information
     Object.values({
       firstName: formData.firstName,
       lastName: formData.lastName,
@@ -622,9 +591,7 @@ const BookingPage = () => {
                 const existingCheckOut = new Date(booking.checkOut);
                 const newCheckIn = new Date(checkInFormatted);
                 const newCheckOut = new Date(checkOutFormatted);
-                
-                // Overlap occurs if:
-                // (new check-in is before existing check-out) AND (new check-out is after existing check-in)
+
                 return (newCheckIn < existingCheckOut && newCheckOut > existingCheckIn);
               });
               
@@ -644,8 +611,6 @@ const BookingPage = () => {
             
             // If transaction successful, room is available - proceed with booking creation
             roomBooked = true;
-            
-            // Calculate prices with discount
             const originalPrice = Number(room.price || 0) * numberOfDays;
             const discountedPrice = applicableDiscount ? 
               originalPrice - (originalPrice * applicableDiscount / 100) : 
@@ -653,7 +618,7 @@ const BookingPage = () => {
 
             // Check if this is a deposit payment (never for conference bookings)
             const isDeposit = roomCategory !== "conference" && formData.paymentOption === "Deposit for Reservation";
-            const depositRate = 0.2; // 20% deposit
+            const depositRate = 0.2; 
             const amountPaid = isDeposit ? discountedPrice * depositRate : discountedPrice;
             const remainderDue = isDeposit ? discountedPrice - amountPaid : 0;
             
@@ -685,22 +650,20 @@ const BookingPage = () => {
                   idType: formData.idType,
                   idNumber: formData.idNumber,
                   isMainBooker: true,
-                  accountCreated: true  // Main booker already has account
+                  accountCreated: true  
                 };
               }
               
-              // For other guests, just names and flag for pending account creation
               return {
                 firstName: guest.firstName,
                 lastName: guest.lastName,
-                accountCreated: false,  // Accounts will be created on arrival
+                accountCreated: false, 
                 isMainBooker: false
               };
             });
             
             // Create booking document
             const newBooking = {
-              // Main booker info (who made the transaction - this stays the same for all rooms)
               userId: auth.currentUser?.uid || "guest",
               email: formData.email,
               bookerFirstName: formData.firstName,
@@ -771,10 +734,9 @@ const BookingPage = () => {
             const bookingRef = collection(db, roomCategory === "conference" ? "conferenceBookings" : "bookings");
             bookingPromises.push(addDoc(bookingRef, newBooking));
             
-            break; // Found and booked a room, move to next room in selection
+            break;
             
           } catch (error) {
-            // This specific room was unavailable - try the next one
             console.log(`Room ${roomRef.id} unavailable:`, error.message);
             continue;
           }
@@ -816,16 +778,12 @@ const BookingPage = () => {
   // Handle successful payment
   const onSuccess = async (reference) => {
     try {
-      // Immediately set processing state to show loading indicator
       setProcessingPayment(true);
-      
-      // Calculate how much was actually paid in this transaction
       const amountPaid = paymentAmount;
       
-      // Determine if this is a deposit or full payment (never deposit for conference)
+      // Determine if this is a deposit or full payment (no deposit for conference bookings)
       const isDeposit = roomCategory !== "conference" && formData.paymentOption === "Deposit for Reservation";
       
-      // First add the transaction
       await addDoc(collection(db, "transactions"), {
         type: "income",
         amount: amountPaid,
@@ -850,7 +808,6 @@ const BookingPage = () => {
         totalGuests: getTotalGuests()
       });
       
-      // Complete booking with Firestore transaction
       await completeBooking();
       
       // Calculate total guests across all rooms
@@ -878,7 +835,6 @@ const BookingPage = () => {
       };
 
       if (roomCategory === "conference" && formData.alsoBookingStay === "Yes") {
-        // Update context with minimal info needed for the next step
         setBookingData({
           fromConference: true,
           checkIn: formData.checkIn,
@@ -886,16 +842,13 @@ const BookingPage = () => {
           csrfToken: csrfToken
         });
         
-        // Navigate without URL parameters
         navigate('/room-booking');
-        return; // Exit early
+        return; 
       }
       
       // Store booking details in context for confirmation page
       setBookingData(bookingDetails);
       sessionStorage.setItem('bookingData', JSON.stringify(bookingDetails));
-
-      // Navigate to confirmation page without state
       navigate("/booking-confirmation");
       
     } catch (error) {
@@ -905,9 +858,7 @@ const BookingPage = () => {
     }
   };
 
-  // Function to go to login page
   const goToLogin = () => {
-    // Save current path to redirect back after login
     localStorage.setItem('redirectAfterLogin', window.location.pathname);
     navigate('/login');
   };

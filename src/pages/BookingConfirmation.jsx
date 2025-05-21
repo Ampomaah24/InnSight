@@ -13,7 +13,7 @@ const BookingConfirmation = () => {
   // Get booking info from context
   const { bookingData } = useBooking();
   
-  // If no booking data in context, try to get from session storage
+  // If no booking data in context, try to get from session sstorage
   const [booking, setBooking] = useState({});
   const [totalGuests, setTotalGuests] = useState(0);
   const [isDeposit, setIsDeposit] = useState(false);
@@ -22,7 +22,6 @@ const BookingConfirmation = () => {
   useEffect(() => {
     // First check if we have booking data in context
     if (bookingData) {
-      // Handle different data structures from room vs conference booking
       const bookingDetails = bookingData.booking || bookingData;
       
       setIsConference(!!bookingData.totalAttendees || bookingDetails.numberOfAttendees > 0);
@@ -31,7 +30,6 @@ const BookingConfirmation = () => {
       setIsDeposit(bookingDetails.paymentOption === "Deposit for Reservation");
       console.log("Booking data from context:", bookingData);
     } else {
-      // Try to get booking data from session storage
       const storedBooking = sessionStorage.getItem('bookingData');
       console.log("Stored booking data:", storedBooking);
       if (storedBooking) {
@@ -43,7 +41,6 @@ const BookingConfirmation = () => {
         setTotalGuests(parsedBooking.numberOfGuests || parsedBooking.numberOfAttendees || 0);
         setIsDeposit(parsedBooking.paymentOption === "Deposit for Reservation");
       } else {
-        // No booking data found
         console.error("Missing booking information");
         setError("Missing booking information. Please try again.");
         setLoading(false);
@@ -55,10 +52,8 @@ const BookingConfirmation = () => {
   }, [bookingData]);
   
   useEffect(() => {
-    // Only proceed with email if we've completed the initial loading
     if (loading) return;
     
-    // Check if we have minimum required booking data
     if (!booking.email) {
       console.error("Missing email information");
       setError("Missing booking information. Please try again.");
@@ -70,7 +65,7 @@ const BookingConfirmation = () => {
     
     const templateParams = {
       guest_name: `${booking.firstName || ''} ${booking.lastName || ''}`.trim() || 'Guest',
-      // Handle different field names for room vs conference bookings
+
       room_name: isConference ? 
         (booking.roomTypes || 'Conference Room') : 
         (booking.roomNames || 'Your room'),
@@ -83,7 +78,7 @@ const BookingConfirmation = () => {
         (booking.numberOfAttendees || totalGuests || 1) + ' attendees' : 
         (booking.numberOfGuests || totalGuests || 1) + ' guests',
       email: booking.email,
-      to_email: booking.email, // this is the recipient
+      to_email: booking.email, 
       amount_paid: booking.amount ? `GHS ${booking.amount.toFixed(2)}` : '',
       is_deposit: isDeposit ? 'Yes' : 'No',
       remainder_due: isDeposit && booking.remainderDue ? `GHS ${booking.remainderDue.toFixed(2)}` : 'None',
@@ -94,10 +89,10 @@ const BookingConfirmation = () => {
     
     emailjs
       .send(
-        "service_pgx5uqi", // Your Service ID
-        "template_fpzc7pe", // Your Template ID
+        "service_pgx5uqi", // Service ID
+        "template_fpzc7pe", // Template ID
         templateParams,
-        "OQbDGwLva7RM5VxU5" // Your Public Key
+        "OQbDGwLva7RM5VxU5" // Public Key
       )
       .then(
         (result) => {
@@ -107,7 +102,6 @@ const BookingConfirmation = () => {
         (error) => {
           console.error("❌ Email failed:", error.text);
           setEmailSent(false);
-          // Don't show error to user, just log it - they still have their booking
         }
       );
   }, [booking, totalGuests, isDeposit, loading, isConference]);

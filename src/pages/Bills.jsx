@@ -11,15 +11,13 @@ const HotelBills = () => {
   const [paymentSearchTerm, setPaymentSearchTerm] = useState('');
   const [selectedGuest, setSelectedGuest] = useState(null);
   const [activeTab, setActiveTab] = useState('accommodation');
-  const [mainView, setMainView] = useState('active'); // 'active' or 'processed'
+  const [mainView, setMainView] = useState('active'); 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [paymentType, setPaymentType] = useState('');
   const [paymentAmount, setPaymentAmount] = useState(0);
   
-  // ... Keep all the existing functions and logic ...
-  // (All the helper functions, data fetching functions, etc.)
   
   // Format date helper function
   const formatDate = (dateString) => {
@@ -94,7 +92,6 @@ const HotelBills = () => {
         setLoading(true);
         const db = getFirestore();
         
-        // Fetch both active guests and processed payments in parallel
         await Promise.all([
           fetchGuests(db),
           fetchProcessedPayments(db)
@@ -111,9 +108,6 @@ const HotelBills = () => {
     fetchData();
   }, []);
 
-  // Keep all existing functions (fetchGuests, processExtensionHistory, fetchExtensionBookings, etc.)
-  // ... I'll skip these for brevity since they remain the same ...
-
   const fetchGuests = async (db) => {
     try {
       // Query for guests with "checked in" status
@@ -127,12 +121,10 @@ const HotelBills = () => {
       
       // Helper function to extract guest name properly
       const extractGuestName = (data) => {
-        // First try primary guest fields
         if (data.primaryGuestFirstName || data.primaryGuestLastName) {
           return `${data.primaryGuestFirstName || ''} ${data.primaryGuestLastName || ''}`.trim();
         }
         
-        // Then check guests array
         if (data.guests && Array.isArray(data.guests) && data.guests.length > 0) {
           const firstGuest = data.guests[0];
           if (firstGuest && (firstGuest.firstName || firstGuest.lastName)) {
@@ -140,15 +132,12 @@ const HotelBills = () => {
           }
         }
         
-        // Finally try legacy fields
         return `${data.firstName || ''} ${data.lastName || ''}`.trim() || "Guest";
       };
       
-      // Get all guest data first
       for (const docSnapshot of querySnapshot.docs) {
         const data = docSnapshot.data();
         
-        // Get guest name using the helper function
         const guestName = extractGuestName(data);
         
         guestData.push({
@@ -183,13 +172,8 @@ const HotelBills = () => {
       
       // Now fetch additional data for each guest
       for (let guest of guestData) {
-        // Fetch food orders and room service charges
         await fetchGuestOrders(db, guest);
-        
-        // Fetch extension bookings related to this guest
         await fetchExtensionBookings(db, guest);
-        
-        // Check for any missed extension charges in history
         await processExtensionHistory(db, guest);
       }
       
@@ -230,11 +214,9 @@ const HotelBills = () => {
         }
   
         const extensionId = extension.id || `ext-hist-${extensionDate.getTime()}-${Math.random().toString(36).substr(2, 9)}`;
-  
-        // ✅ Deduplication logic
-        const alreadyAdded = guest.foodOrders.some(order =>
+          const alreadyAdded = guest.foodOrders.some(order =>
           order.type === "extension" &&
-          Math.abs(parseTimestamp(order.date) - extensionDate) < 86400000 && // same day
+          Math.abs(parseTimestamp(order.date) - extensionDate) < 86400000 && 
           Number(order.amount) === cost
         );
   
@@ -291,10 +273,10 @@ else {
 
   const seenExtensions = new Set();
 
-  // Enhanced function to fetch extension bookings
+  // Function to fetch extension bookings
   const fetchExtensionBookings = async (db, guest) => {
     try {
-      // First check if the booking has an extension booking ID
+
       if (guest.extensionBookingId) {
         console.log(`Found extension booking ID for guest in room ${guest.room}:`, guest.extensionBookingId);
         
@@ -307,7 +289,6 @@ else {
             
             // If the extension booking has an unpaid balance, add it as a charge
             if (extensionData.remainderDue > 0) {
-              // Format extension days/hours
               const extensionDays = extensionData.extensionDays || 1;
               
               // Create a properly formatted extension charge
@@ -335,9 +316,9 @@ else {
                   seenExtensions.add(key);
                   console.log("✅ Added:", extensionCharge);
                 }
-                 else {
-  console.log("⛔ Skipped duplicate:", key);
-}
+                else {
+                  console.log("⛔ Skipped duplicate:", key);
+                }
 
                 console.log("Added extension charge from linked booking", extensionCharge);
               }
@@ -348,7 +329,6 @@ else {
               console.log("Processing nested extension history from linked booking", extensionData.extensionHistory);
               
               extensionData.extensionHistory.forEach(extension => {
-                // Skip if already paid
                 if (extension.paid === true) {
                   return;
                 }
@@ -356,7 +336,6 @@ else {
                 // Generate a unique ID for this extension
                 const extensionId = extension.id || `ext-nested-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
                 
-                // Check if already in food orders
                 const alreadyAdded = guest.foodOrders.some(order => 
                   order.id === extensionId || 
                   (order.originalExtensionId && order.originalExtensionId === extensionId)
@@ -366,7 +345,6 @@ else {
                   return;
                 }
                 
-                // Format the date
                 let extensionDate = new Date();
                 try {
                   extensionDate = parseTimestamp(extension.date);
@@ -374,7 +352,6 @@ else {
                   console.warn("Could not parse nested extension date", e);
                 }
                 
-                // Create charge for this nested extension
                 const nestedExtensionCharge = {
                   id: extensionId,
                   date: extensionDate,
@@ -387,7 +364,6 @@ else {
                   linkedBookingId: guest.extensionBookingId
                 };
                 
-                // Add to food orders
                 guest.foodOrders.push(nestedExtensionCharge);
                 console.log("Added nested extension charge", nestedExtensionCharge);
               });
@@ -561,7 +537,7 @@ else {
         collection(db, "orders"),
         where("roomNumber", "==", guest.room),
         where("paymentMethod", "==", "Tab"),
-        where("paid", "==", false) // Only unpaid orders
+        where("paid", "==", false) 
       );
       
       const tabOrdersSnapshot = await getDocs(tabOrdersQuery);
@@ -571,7 +547,7 @@ else {
         collection(db, "orders"),
         where("roomNumber", "==", guest.room),
         where("deliveryMethod", "==", "roomService"),
-        where("paid", "==", false) // Only unpaid orders
+        where("paid", "==", false) 
       );
       
       const roomServiceSnapshot = await getDocs(roomServiceQuery);
@@ -652,7 +628,6 @@ else {
       // Add to guest's existing food orders
       guest.foodOrders = [...guest.foodOrders, ...foodOrders];
       
-      // Remove any duplicates based on ID
       const uniqueOrders = [];
       const orderIds = new Set();
       
@@ -673,7 +648,7 @@ else {
       });
     } catch (err) {
       console.error(`Error fetching orders for guest in room ${guest.room}:`, err);
-      guest.foodOrders = []; // Set to empty if error occurs
+      guest.foodOrders = [];
     }
   };
 
@@ -687,7 +662,7 @@ else {
         collection(db, "payments"),
         where("timestamp", ">=", thirtyDaysAgo),
         orderBy("timestamp", "desc"),
-        limit(100) // Limit to 100 most recent payments
+        limit(100)
       );
       
       const querySnapshot = await getDocs(paymentsQuery);
@@ -773,7 +748,7 @@ else {
     return total;
   };
 
-  // Filter guests based on search term
+  // Filter guests based on search 
   const filteredGuests = guests.filter(guest => {
     const nameMatch = guest.name.toLowerCase().includes(searchTerm.toLowerCase());
     const roomMatch = guest.room.toLowerCase().includes(searchTerm.toLowerCase());
@@ -866,7 +841,6 @@ else {
     const batch = writeBatch(db);
     
     try {
-      // Create payment record data
       const paymentData = {
         guestId: selectedGuest.id,
         guestName: selectedGuest.name,
@@ -876,7 +850,7 @@ else {
         type: type,
         method: paymentDetails.method,
         reference: paymentDetails.reference,
-        collectedBy: "Front Desk", // Ideally use current user ID
+        collectedBy: "Front Desk", 
         timestamp: new Date(),
         status: "Completed",
         emailSent: paymentDetails.email ? true : false,
@@ -918,7 +892,6 @@ else {
           const orderRef = doc(db, "orders", order.id);
           
           try {
-            // Check if document exists before updating
             const orderDoc = await getDoc(orderRef);
             
             if (orderDoc.exists()) {
@@ -937,7 +910,7 @@ else {
           }
         }
         
-        // Update local state - remove paid food orders
+        // Update local state (remove paid food orders)
         const updatedFoodOrders = selectedGuest.foodOrders.filter(order => 
           !(order.type === "food" && 
             !(order.description && order.description.toLowerCase().includes("extension")))
@@ -953,7 +926,6 @@ else {
         setSelectedGuest({...selectedGuest, foodOrders: updatedFoodOrders});
       } 
       else if (type === 'extension') {
-        // Mark all extension orders as paid
         const extensionOrders = getExtensionOrders(selectedGuest.foodOrders);
         console.log("Processing extension payment for orders:", extensionOrders);
         
@@ -964,17 +936,14 @@ else {
         
         // Collect all the different references we need to update
         extensionOrders.forEach(order => {
-          // Standard order in "orders" collection
           if (!order.linkedBookingId && !order.transactionId && !order.originalExtensionId) {
             orderIds.add(order.id);
           }
           
-          // Extension booking reference
           if (order.linkedBookingId) {
             extensionBookingIds.add(order.linkedBookingId);
           }
           
-          // Transaction reference
           if (order.transactionId) {
             transactionIds.add(order.transactionId);
           }
@@ -1086,7 +1055,7 @@ else {
           }
         }
         
-        // Update local state - remove paid extension orders
+        // Update local state (remove paid extension orders)
         const updatedFoodOrders = selectedGuest.foodOrders.filter(order => 
           !(order.type === "extension" || 
             (order.description && order.description.toLowerCase().includes("extension")))
@@ -1102,7 +1071,6 @@ else {
         setSelectedGuest({...selectedGuest, foodOrders: updatedFoodOrders});
       }
       
-      // Commit batch
       await batch.commit();
       
       // Add the new payment to processed payments list
@@ -1117,11 +1085,8 @@ else {
       
       // Show success alert
       alert(`✅ Payment for ${selectedGuest.name}'s ${formatPaymentType(type)} was successful.`);
-      
-      // Close the payment modal
       setShowPaymentModal(false);
       
-      // Refresh data to ensure UI is synchronized with database
       await refreshData();
     } catch(error) {
       console.error("Error processing payment:", error);

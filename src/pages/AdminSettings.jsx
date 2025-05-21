@@ -100,10 +100,10 @@ const AdminSettings = () => {
           
           // Both admin and superadmin can view settings
           if (userData.role === 'superadmin') {
-            setIsViewOnly(false); // Superadmin has full edit access
+            setIsViewOnly(false); 
             fetchSettings();
           } else if (userData.role === 'admin') {
-            setIsViewOnly(true); // Admin has view-only access
+            setIsViewOnly(true); 
             fetchSettings();
           } else {
             // Non-admin users are redirected
@@ -116,7 +116,6 @@ const AdminSettings = () => {
       } catch (error) {
         console.error("Error checking user role:", error);
         setDbError(true);
-        // Don't redirect here to allow offline mode to work
       }
     });
     
@@ -126,7 +125,6 @@ const AdminSettings = () => {
   // Load settings from local storage if available
   useEffect(() => {
     if (dbError) {
-      // Load from localStorage if Firebase connection fails
       try {
         const localTaxes = localStorage.getItem('settings_taxes');
         if (localTaxes) setTaxSettings(JSON.parse(localTaxes));
@@ -164,7 +162,6 @@ const AdminSettings = () => {
         }
       } catch (error) {
         console.warn('Could not fetch tax settings:', error);
-        // Continue with default values
       }
       
       try {
@@ -175,14 +172,12 @@ const AdminSettings = () => {
         }
       } catch (error) {
         console.warn('Could not fetch discount settings:', error);
-        // Continue with default values
       }
       
       try {
         // Fetch promotions
         const promotionDoc = await getDoc(doc(db, 'settings', 'promotions'));
         if (promotionDoc.exists() && promotionDoc.data().items) {
-          // Convert Firestore timestamps to JS dates
           const promotions = promotionDoc.data().items.map(promo => ({
             ...promo,
             startDate: promo.startDate instanceof Timestamp ? 
@@ -194,14 +189,12 @@ const AdminSettings = () => {
         }
       } catch (error) {
         console.warn('Could not fetch promotion settings:', error);
-        // Continue with default values
       }
       
       try {
         // Fetch seasonal pricing
         const seasonalDoc = await getDoc(doc(db, 'settings', 'seasonal'));
         if (seasonalDoc.exists() && seasonalDoc.data().items) {
-          // Convert Firestore timestamps to JS dates
           const seasons = seasonalDoc.data().items.map(season => ({
             ...season,
             startDate: season.startDate instanceof Timestamp ? 
@@ -213,7 +206,6 @@ const AdminSettings = () => {
         }
       } catch (error) {
         console.warn('Could not fetch seasonal settings:', error);
-        // Continue with default values
       }
       
       try {
@@ -224,7 +216,6 @@ const AdminSettings = () => {
         }
       } catch (error) {
         console.warn('Could not fetch general settings:', error);
-        // Continue with default values
       }
       
       setLoading(false);
@@ -235,10 +226,7 @@ const AdminSettings = () => {
     }
   };
 
-  // This check prevents any save operations if not a superadmin
-  // It provides an additional safety measure beyond the UI restrictions
   const saveSettings = async (settingType) => {
-    // Additional security check - prevent any save operations if not superadmin
     if (isViewOnly || userRole !== 'superadmin') {
       showNotification('You do not have permission to save settings. Only superadmin users can modify settings.', 'error');
       return;
@@ -260,10 +248,8 @@ const AdminSettings = () => {
             };
             
             try {
-              // Try to update the document first
               await updateDoc(doc(settingsCollection, 'taxes'), taxData);
             } catch (updateError) {
-              // If update fails, try to create the document
               await setDoc(doc(settingsCollection, 'taxes'), taxData, { merge: true });
             }
           } catch (error) {
@@ -290,7 +276,6 @@ const AdminSettings = () => {
         
         case 'promotions':
           try {
-            // Convert JS dates to Firestore timestamps for promotions
             const promotionsForFirestore = {
               items: promotionSettings.map(promo => ({
                 ...promo,
@@ -377,17 +362,17 @@ const AdminSettings = () => {
     }
   };
   
-  // Shows a notification message that disappears after 3 seconds
+
   const showNotification = (message, type = 'success') => {
     setNotification({ message, type });
     setTimeout(() => {
       setNotification(null);
-    }, 5000); // Increased to 5 seconds for better readability of error messages
+    }, 5000); 
   };
   
-  // Handle tax settings changes - prevent changes in view-only mode
+  // Handle tax settings changes (prevent changes in view-only mode)
   const handleTaxChange = (e) => {
-    if (isViewOnly) return; // Prevent changes in view-only mode
+    if (isViewOnly) return; 
     
     const { name, value, type, checked } = e.target;
     setTaxSettings(prev => ({
@@ -396,9 +381,8 @@ const AdminSettings = () => {
     }));
   };
   
-  // Handle discount settings changes - prevent changes in view-only mode
   const handleDiscountChange = (e) => {
-    if (isViewOnly) return; // Prevent changes in view-only mode
+    if (isViewOnly) return; 
     
     const { name, value, type, checked } = e.target;
     setDiscountSettings(prev => ({
@@ -407,9 +391,9 @@ const AdminSettings = () => {
     }));
   };
   
-  // Handle general settings changes - prevent changes in view-only mode
+  // Handle general settings changes (prevent changes in view-only mode)
   const handleGeneralChange = (e) => {
-    if (isViewOnly) return; // Prevent changes in view-only mode
+    if (isViewOnly) return; 
     
     const { name, value, type, checked } = e.target;
     setGeneralSettings(prev => ({
@@ -418,7 +402,7 @@ const AdminSettings = () => {
     }));
   };
   
-  // Handle adding a new promotion - prevent in view-only mode
+  // Handle adding a new promotion (prevent in view-0nly mode)
   const addPromotion = () => {
     if (isViewOnly) {
       showNotification("You're in view-only mode. Only superadmin users can add promotions.", 'warning');
@@ -440,7 +424,7 @@ const AdminSettings = () => {
     setPromotionSettings([...promotionSettings, newPromotion]);
   };
   
-  // Handle adding a new seasonal rate - prevent in view-only mode
+  // Handle adding a new seasonal rate (prevent in view-only mode)
   const addSeason = () => {
     if (isViewOnly) {
       showNotification("You're in view-only mode. Only superadmin users can add seasonal rates.", 'warning');
@@ -459,25 +443,25 @@ const AdminSettings = () => {
     setSeasonalSettings([...seasonalSettings, newSeason]);
   };
   
-  // Handle promotion changes - prevent in view-only mode
+  // Handle promotion changes (prevent in view-only mode)
   const handlePromotionChange = (index, field, value) => {
-    if (isViewOnly) return; // Prevent changes in view-only mode
+    if (isViewOnly) return; 
     
     const updatedPromotions = [...promotionSettings];
     updatedPromotions[index][field] = value;
     setPromotionSettings(updatedPromotions);
   };
   
-  // Handle seasonal rate changes - prevent in view-only mode
+  // Handle seasonal rate changes (prevent in view-only mode)
   const handleSeasonalChange = (index, field, value) => {
-    if (isViewOnly) return; // Prevent changes in view-only mode
+    if (isViewOnly) return; 
     
     const updatedSeasons = [...seasonalSettings];
     updatedSeasons[index][field] = value;
     setSeasonalSettings(updatedSeasons);
   };
   
-  // Handle removing a promotion - prevent in view-only mode
+  // Handle removing a promotion (prevent in view-only mode)
   const removePromotion = (index) => {
     if (isViewOnly) {
       showNotification("You're in view-only mode. Only superadmin users can remove promotions.", 'warning');
@@ -491,7 +475,7 @@ const AdminSettings = () => {
     }
   };
   
-  // Handle removing a seasonal rate - prevent in view-only mode
+  // Handle removing a seasonal rate (prevent in view-only mode)
   const removeSeason = (index) => {
     if (isViewOnly) {
       showNotification("You're in view-only mode. Only superadmin users can remove seasonal rates.", 'warning');

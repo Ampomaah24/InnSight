@@ -19,7 +19,6 @@ const BookingHistory = () => {
   useEffect(() => {
     fetchUserBookings();
     
-    // Set up interval to refresh bookings automatically every 5 minutes
     const intervalId = setInterval(() => {
       fetchUserBookings();
     }, 300000);
@@ -69,19 +68,17 @@ const BookingHistory = () => {
     const normalized = { ...booking };
     
     if (booking.bookingType === 'room') {
-      // Process room booking dates
       const checkInDate = processFirebaseDate(booking.checkInDate || booking.checkIn);
       const checkOutDate = processFirebaseDate(booking.checkOutDate || booking.checkOut);
       
       normalized.checkInDate = checkInDate ? checkInDate.toISOString() : 'Unknown date';
       normalized.checkOutDate = checkOutDate ? checkOutDate.toISOString() : 'Unknown date';
-    } else if (booking.bookingType === 'conference') {
-      // Process conference booking dates
+    } 
+    else if (booking.bookingType === 'conference') {
       const date = processFirebaseDate(booking.date);
       normalized.date = date ? date.toISOString() : 'Unknown date';
     }
     
-    // Process created/updated dates
     const createdAt = processFirebaseDate(booking.createdAt);
     const updatedAt = processFirebaseDate(booking.updatedAt);
     
@@ -93,13 +90,12 @@ const BookingHistory = () => {
 
   const isBookingActive = (booking) => {
     const today = new Date();
-    today.setHours(0, 0, 0, 0); // Set to beginning of current day
+    today.setHours(0, 0, 0, 0); 
     
     if (booking.bookingType === "room") {
-      // For room bookings, it's active if check-in date is today or in the past
-      // and checkout date is today or in the future
+      // For room bookings, it's active if check-in date is today or in the past and checkout date is today or in the future
+
       try {
-        // Create proper Date objects from the booking dates
         const checkInDate = processFirebaseDate(booking.checkInDate || booking.checkIn);
         const checkInDateNormalized = checkInDate ? new Date(checkInDate) : null;
         if (checkInDateNormalized) checkInDateNormalized.setHours(0, 0, 0, 0);
@@ -108,7 +104,6 @@ const BookingHistory = () => {
         const checkOutDateNormalized = checkOutDate ? new Date(checkOutDate) : null;
         if (checkOutDateNormalized) checkOutDateNormalized.setHours(0, 0, 0, 0);
         
-        // Normal active check
         return checkInDateNormalized && checkOutDateNormalized && 
                 checkInDateNormalized <= today && checkOutDateNormalized >= today;
       } catch (err) {
@@ -132,10 +127,9 @@ const BookingHistory = () => {
   
   const isBookingFuture = (booking) => {
     const today = new Date();
-    today.setHours(0, 0, 0, 0); // Set to beginning of current day
+    today.setHours(0, 0, 0, 0);
     
     if (booking.bookingType === "room") {
-      // For room bookings, it's future if check-in date is in the future
       try {
         const checkInDate = processFirebaseDate(booking.checkInDate || booking.checkIn);
         const checkInDateNormalized = checkInDate ? new Date(checkInDate) : null;
@@ -147,7 +141,6 @@ const BookingHistory = () => {
         return false;
       }
     } else if (booking.bookingType === "conference") {
-      // For conference bookings, it's future if the date is in the future
       try {
         const bookingDate = new Date(booking.date);
         bookingDate.setHours(0, 0, 0, 0);
@@ -161,7 +154,7 @@ const BookingHistory = () => {
     return false;
   };
 
-  // NEW FUNCTION: Check if booking is within 48 hours of check-in
+  // Helper function to check if booking is within 48 hors of check-in
   const isWithin48HoursOfCheckIn = (booking) => {
     const now = new Date();
     
@@ -170,17 +163,14 @@ const BookingHistory = () => {
         const checkInDate = processFirebaseDate(booking.checkInDate || booking.checkIn);
         if (!checkInDate) return false;
         
-        // Calculate the difference in milliseconds
         const diffMs = checkInDate.getTime() - now.getTime();
         const diffHours = diffMs / (1000 * 60 * 60);
         
-        // Return true if less than 48 hours until check-in
         return diffHours < 48;
       } else if (booking.bookingType === "conference") {
         const bookingDate = new Date(booking.date);
         if (!bookingDate) return false;
         
-        // Calculate the difference in milliseconds
         const diffMs = bookingDate.getTime() - now.getTime();
         const diffHours = diffMs / (1000 * 60 * 60);
         
@@ -260,7 +250,7 @@ const BookingHistory = () => {
       const bookingsQuery = query(
         bookingsRef, 
         where("userId", "==", currentUser.id),
-        orderBy("createdAt", "desc") // Order by creation date descending
+        orderBy("createdAt", "desc") 
       );
       
       const bookingsSnapshot = await fetchWithTimeout(getDocs(bookingsQuery), 15000);
@@ -276,11 +266,9 @@ const BookingHistory = () => {
         const booking = {
           id: doc.id,
           ...data,
-          bookingType: data.bookingType || "room", // Default to room if not specified
-          // Use roomName if available, otherwise use roomType. If neither, provide default
+          bookingType: data.bookingType || "room", 
           roomName: data.roomName || data.roomType || (data.bookingType === "room" ? "Standard Room" : "Conference Room"),
           roomType: data.roomType || data.roomCategory || "standard",
-          // Use numberOfGuests if available, otherwise use guests field
           guests: data.numberOfGuests || data.guests || 1,
           attendees: data.attendees || data.numberOfAttendees || 0,
           totalPrice: data.totalPrice || data.finalPrice || data.amountPaid || 0,
@@ -379,7 +367,7 @@ const BookingHistory = () => {
         return format(date, "MMM dd, yyyy");
       }
       
-      // Default case - return as is if we can't process it
+
       return "N/A";
     } catch (err) {
       console.error("Error formatting date:", dateString, err);
@@ -387,7 +375,7 @@ const BookingHistory = () => {
     }
   };
   
-  // Improved formatTime function with better error handling
+
   const formatTime = (timeString) => {
     if (!timeString) return "N/A";
     
@@ -405,17 +393,17 @@ const BookingHistory = () => {
       return "N/A";
     }
     
-    // For string time format (HH:MM)
+    
     try {
       if (typeof timeString === 'string') {
         const [hours, minutes] = timeString.split(':');
         if (!hours || !minutes) {
-          return timeString; // Return original if not in expected format
+          return timeString;
         }
         
         const hour = parseInt(hours);
         if (isNaN(hour) || hour < 0 || hour > 23) {
-          return timeString; // Return original if hours invalid
+          return timeString; 
         }
         
         const ampm = hour >= 12 ? 'PM' : 'AM';
@@ -437,7 +425,7 @@ const BookingHistory = () => {
       return;
     }
     
-    // NEW CONDITION: Check if booking is within 48 hours of check-in
+    // Check if booking is within 48 hours of check-in
     if (isWithin48HoursOfCheckIn(booking)) {
       alert("Cancellations are only allowed up to 48 hours before check-in. Please contact reception for assistance.");
       return;
@@ -458,7 +446,6 @@ const BookingHistory = () => {
         updatedAt: new Date().toISOString()
       });
 
-      // Refresh the bookings list
       setRefreshTrigger(prev => prev + 1);
       
       // Show success message
@@ -466,7 +453,6 @@ const BookingHistory = () => {
     } catch (err) {
       console.error("Error cancelling booking:", err);
       
-      // More specific error messages
       if (!navigator.onLine) {
         alert("You appear to be offline. Please check your internet connection and try again.");
       } else if (err.code === "permission-denied") {
@@ -485,7 +471,6 @@ const BookingHistory = () => {
   };
 
   const renderBookingActionButtons = (booking) => {
-    // If booking is cancelled, no actions to show
     if (booking.status === "cancelled" || booking.status === "Cancelled") {
       return null;
     }
@@ -493,7 +478,6 @@ const BookingHistory = () => {
     // Use our helper function to determine if this booking should show active buttons
     const isActive = shouldShowActiveButtons(booking);
     
-    // If active (checked in or today's check-in), show modify options
     if (isActive) {
       return (
         <div className="booking-actions active-booking-actions">
@@ -504,9 +488,7 @@ const BookingHistory = () => {
       );
     }
     
-    // If booking is in the future, allow cancellation
     if (isBookingFuture(booking)) {
-      // NEW CONDITION: Check if booking can be cancelled (48-hour rule)
       const canAct = canCancel(booking);
       
       return (

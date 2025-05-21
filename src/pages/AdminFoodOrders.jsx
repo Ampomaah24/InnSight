@@ -1,15 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { db } from '../config/firebase';
-import { 
-  collection, 
-  query, 
-  orderBy, 
-  onSnapshot, 
-  updateDoc, 
-  doc,
-  serverTimestamp,
-  getDoc 
-} from 'firebase/firestore';
+import { collection, query, orderBy, onSnapshot, updateDoc, doc,serverTimestamp,getDoc } from 'firebase/firestore';
 import Sidebar from "../components/Sidebar";
 import "../assets/styles/AdminFoodOrders.css";
 
@@ -36,22 +27,22 @@ const AdminFoodOrders = () => {
     'paid': 'confirmed',
     'on-hotel-tab': 'confirmed',
     
-    // Pickup status mapping - Update these to avoid skipping to ready
-    'awaiting-pickup': 'pending',      // Changed from 'ready' to 'pending'
-    'awaiting pickup': 'pending',      // Changed from 'ready' to 'pending'
-    'awaiting_pickup': 'pending',      // Changed from 'ready' to 'pending'
-    'awaitingpickup': 'pending',       // Changed from 'ready' to 'pending'
-    'Awaiting-Pickup': 'pending',      // Changed from 'ready' to 'pending'
-    'Awaiting Pickup': 'pending',      // Changed from 'ready' to 'pending'
-    'AWAITING PICKUP': 'pending',      // Changed from 'ready' to 'pending'
-    'AWAITING-PICKUP': 'pending',      // Changed from 'ready' to 'pending'
-    'Awaiting pickup': 'pending',      // Changed from 'ready' to 'pending'
+    // Pickup status mapping 
+    'awaiting-pickup': 'pending',      
+    'awaiting pickup': 'pending',      
+    'awaiting_pickup': 'pending',      
+    'awaitingpickup': 'pending',       
+    'Awaiting-Pickup': 'pending',      
+    'Awaiting Pickup': 'pending',      
+    'AWAITING PICKUP': 'pending',      
+    'AWAITING-PICKUP': 'pending',      
+    'Awaiting pickup': 'pending',      
     
     // Fix Cash on Pickup mapping
-    'Cash on Pickup': 'pending',       // Changed from 'ready' to 'pending'
+    'Cash on Pickup': 'pending',       
     
     // Delivery status mapping
-    'awaiting-delivery': 'pending',    // Changed from 'ready' to 'pending'
+    'awaiting-delivery': 'pending',   
     'out-for-delivery': 'delivering',
     'delivering': 'delivering',
     'delivered': 'delivered',
@@ -64,11 +55,9 @@ const AdminFoodOrders = () => {
     'room-service-delivering': 'delivering',
     'room-service-delivered': 'delivered',
     
-    // Handle raw statuses that might appear from Checkout.js
     'Room Service Pending': 'pending',
     'Room Service - Paid': 'confirmed',
     'On Hotel Tab': 'confirmed'
-    // Removed 'Cash on Pickup': 'ready' (duplicate with the fixed version above)
   };
 
   const normalizeStatus = (status) => {
@@ -100,7 +89,6 @@ const AdminFoodOrders = () => {
         'delivering': 'delivered',
         'delivered': 'completed'
       };
-      // Return the next status or keep current if not found (instead of jumping to completed)
       return roomServiceFlow[normalized] || normalized;
     } else {
       // For pickup/delivery
@@ -111,7 +99,6 @@ const AdminFoodOrders = () => {
         'ready': 'picked-up',
         'picked-up': 'completed'
       };
-      // Return the next status or keep current if not found (instead of jumping to completed)
       return pickupFlow[normalized] || normalized;
     }
   };
@@ -248,11 +235,10 @@ const AdminFoodOrders = () => {
       // Check if this is a valid status transition
       const validNextStatus = getNextStatus(currentStatus, currentOrder.deliveryMethod || currentOrder.orderType);
       
-      // Only allow: next step, cancellation, or manual override by admins
+      // Cancellation, or manual override by admins
       if (newStatus !== validNextStatus && newStatus !== 'cancelled') {
         console.warn(`Warning: Attempting to update from ${currentStatus} to ${newStatus}, but expected next status is ${validNextStatus}`);
-        // Optionally, you can add a confirmation step here instead of automatically proceeding
-        // return alert(`Invalid status transition from ${currentStatus} to ${newStatus}. Expected next status: ${validNextStatus}`);
+
       }
       
       const updateData = {
@@ -292,16 +278,16 @@ const AdminFoodOrders = () => {
   const getStatusColor = (status) => {
     const normalized = normalizeStatus(status);
     switch (normalized) {
-      case 'pending': return '#f59e0b';   // Amber
-      case 'confirmed': return '#3b82f6'; // Blue
-      case 'preparing': return '#8b5cf6'; // Purple
-      case 'ready': return '#10b981';     // Green
-      case 'delivering': return '#0ea5e9'; // Sky Blue
-      case 'delivered': return '#14b8a6';  // Teal
-      case 'picked-up': return '#6b7280'; // Gray
-      case 'completed': return '#22c55e'; // Green
-      case 'cancelled': return '#ef4444'; // Red
-      default: return '#6b7280';          // Gray
+      case 'pending': return '#f59e0b';   
+      case 'confirmed': return '#3b82f6'; 
+      case 'preparing': return '#8b5cf6'; 
+      case 'ready': return '#10b981';     
+      case 'delivering': return '#0ea5e9'; 
+      case 'delivered': return '#14b8a6';  
+      case 'picked-up': return '#6b7280'; 
+      case 'completed': return '#22c55e'; 
+      case 'cancelled': return '#ef4444'; 
+      default: return '#6b7280';          
     }
   };
 
@@ -385,12 +371,12 @@ const AdminFoodOrders = () => {
             </select>
 
             <select value={dateFilter} onChange={(e) => setDateFilter(e.target.value)} className="filter-select">
-  <option value="all">All Time</option>
-  <option value="today">Today</option>
-  <option value="yesterday">Yesterday</option>
-  <option value="week">Last 7 Days</option>
-  <option value="month">Last 30 Days</option>
-</select>
+              <option value="all">All Time</option>
+              <option value="today">Today</option>
+              <option value="yesterday">Yesterday</option>
+              <option value="week">Last 7 Days</option>
+              <option value="month">Last 30 Days</option>
+            </select>
 
             <select value={sortBy} onChange={(e) => setSortBy(e.target.value)} className="filter-select">
               <option value="newest">Newest First</option>
@@ -493,7 +479,7 @@ const AdminFoodOrders = () => {
                     <button onClick={() => updateOrderStatus(order.id, 'completed')} className="action-button completed">Mark as Completed</button>
                   )}
                   
-                  {/* Add a general "Next Step" button for unknown status values */}
+                  {/* "Next Step" button for unknown status values */}
                   {!['completed', 'cancelled', 'pending', 'confirmed', 'preparing', 'ready', 'picked-up', 'delivering', 'delivered'].includes(normalizeStatus(order.orderStatus)) && (
                     <button 
                       onClick={() => updateOrderStatus(order.id, getNextStatus(order.orderStatus, order.deliveryMethod || order.orderType))} 

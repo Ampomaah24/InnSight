@@ -36,14 +36,13 @@ const AddExpense = () => {
 
   const handleChange = (e) => {
     setExpense({ ...expense, [e.target.name]: e.target.value });
-    // Clear success message when form is being edited
     if (success) setSuccess(false);
   };
 
   const submitExpense = async (e) => {
     e.preventDefault();
 
-    // Validation: Ensure all fields are filled
+    // Ensure all fields are filled
     if (!expense.amount || !expense.category || !expense.description) {
       alert("Please fill in all fields.");
       return;
@@ -63,8 +62,6 @@ const AddExpense = () => {
       });
 
       console.log("Expense added with ID:", docRef.id);
-      
-      // Show success message
       setSuccess(true);
 
       // Reset form after successful submission

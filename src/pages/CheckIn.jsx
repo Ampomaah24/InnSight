@@ -552,23 +552,23 @@ const CheckIn = () => {
                             </span>
                           </td>
                           <td className="actions-cell">
-{["Confirmed", "Reserved"].includes(guest.status) && !guest.isExpired ? (
-  <button 
-    className="action-btn check-in-btn"
-    onClick={() => handleCheckIn(guest.id)}
-    disabled={updatingStatus}
-  >
-    Check In
-  </button>
-) : ["Confirmed", "Reserved"].includes(guest.status) && guest.isExpired ? (
-  <button 
-    className="action-btn check-in-btn disabled"
-    disabled
-    title="This reservation is expired and cannot be checked in."
-  >
-    Expired
-  </button>
-) : null}
+                            {["Confirmed", "Reserved"].includes(guest.status) && !guest.isExpired ? (
+                              <button 
+                                className="action-btn check-in-btn"
+                                onClick={() => handleCheckIn(guest.id)}
+                                disabled={updatingStatus}
+                              >
+                                Check In
+                              </button>
+                            ) : ["Confirmed", "Reserved"].includes(guest.status) && guest.isExpired ? (
+                              <button 
+                                className="action-btn check-in-btn disabled"
+                                disabled
+                                title="This reservation is expired and cannot be checked in."
+                              >
+                                Expired
+                              </button>
+                            ) : null}
 
 
                             {(guest.status === "Checked in" || guest.status === "Checked-in") && (

@@ -22,7 +22,6 @@ const mapRoomTypeToDatabase = (roomType) => {
     "double bed": "Double bed",
     "twin bed": "Twin bed",
     "single bed": "Single bed",
-    // Add any other variations here
   };
   
   // Convert to lowercase for comparison
@@ -34,7 +33,7 @@ const mapRoomTypeToDatabase = (roomType) => {
 
 const ChatWidget = () => {
   const navigate = useNavigate();
-  const { setBookingData } = useBooking(); // Use the context for setting booking data
+  const { setBookingData } = useBooking();
   
   // State variables
   const [chatOpen, setChatOpen] = useState(false);
@@ -91,9 +90,8 @@ const ChatWidget = () => {
       // When closing the chat, reset the bubble to show again
       setTimeout(() => {
         setShowBubble(true);
-      }, 500); // Small delay to prevent the bubble from appearing immediately
+      }, 500); 
     } else {
-      // When opening the chat, hide the bubble
       setShowBubble(false);
     }
     setChatOpen(!chatOpen);
@@ -108,7 +106,7 @@ const ChatWidget = () => {
   const handleSendMessage = async (e) => {
     e.preventDefault();
     
-    if (!input.trim()) return; // Prevent empty messages
+    if (!input.trim()) return; 
     
     // Add user message to chat
     const userMessage = {
@@ -123,7 +121,7 @@ const ChatWidget = () => {
     
     try {
       // Call NLU API to process message
-      const response = await fetch("http://localhost:8000/predict", {
+      const response = await fetch("FAST_API_ENDPOINT_HERE", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -137,7 +135,7 @@ const ChatWidget = () => {
       }
       
       const data = await response.json();
-      console.log("NLU Response:", data); // Log for debugging
+      console.log("NLU Response:", data); 
       
       // Reset consecutive errors counter on success
       setConsecutiveErrors(0);
@@ -148,10 +146,8 @@ const ChatWidget = () => {
     } catch (error) {
       console.error("Error processing message:", error);
       
-      // Increment consecutive errors counter
       setConsecutiveErrors(prev => prev + 1);
       
-      // Add error message to chat
       const errorMessage = consecutiveErrors >= 2 
         ? "I'm having trouble understanding. Would you like to speak with a human agent?"
         : "Sorry, I'm having difficulty processing your request right now. Could you try again or rephrase your question?";
@@ -179,11 +175,11 @@ const ChatWidget = () => {
         ]);
       }
     } finally {
-      setIsLoading(false); // End loading
+      setIsLoading(false);
     }
   };
 
-  // Handle pressing Enter to send message
+  // Handle pressing Enter to send messages
   const handleKeyDown = (e) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
@@ -195,7 +191,6 @@ const ChatWidget = () => {
 
   // Process the NLU API response
   const handleNLUResponse = (data) => {
-    // Check for error in response
     if (data.error) {
       const errorCode = data.error.code || "default";
       const errorMessage = ERROR_MESSAGES[errorCode] || ERROR_MESSAGES.default;
@@ -238,7 +233,7 @@ const ChatWidget = () => {
         });
       }
     } else {
-      // This is a fallback in case the response format is unexpected
+      // Fallback message if no response text
       setMessages((prev) => [
         ...prev,
         {
@@ -254,11 +249,9 @@ const ChatWidget = () => {
   const handleResponseAction = async (action, entities) => {
     switch (action.action) {
       case "book_room":
-        // Get the data from the action
         const { check_in, check_out, room_type } = action.data;
         
         try {
-          // Show searching message
           setMessages((prev) => [
             ...prev,
             {
@@ -348,7 +341,7 @@ const ChatWidget = () => {
               },
             ]);
           } else {
-            // Only one room available, proceed with that
+            // if only one room is available, proceed to booking
             setMessages((prev) => [
               ...prev,
               {
@@ -385,7 +378,6 @@ const ChatWidget = () => {
         break;
         
       case "check_availability":
-        // Show a message about checking availability
         setMessages((prev) => [
           ...prev,
           {
@@ -482,7 +474,6 @@ const ChatWidget = () => {
         break;
         
       case "modify_booking":
-        // Data should include booking_id and possibly changes
         if (action.data && action.data.booking_id) {
           setMessages((prev) => [
             ...prev,
@@ -557,18 +548,14 @@ const ChatWidget = () => {
   };
 
   const proceedToBooking = (checkIn, checkOut, availableRooms) => {
-    // Calculate nights
     const checkInDate = new Date(checkIn);
     const checkOutDate = new Date(checkOut);
     const nights = Math.max(1, Math.round((checkOutDate - checkInDate) / (1000 * 60 * 60 * 24)));
-    
-    // Format available rooms in the way the booking page expects
     const selectedRooms = availableRooms.map(room => ({
       id: room.id,
       t_room: room.t_room,
-      price: room.price , // Default price if not specified
+      price: room.price , 
       name: `${room.t_room} Room`,
-      // Add any other necessary fields to match the booking page expectations
       amenities: room.amenities || [],
       maxOccupancy: room.maxOccupancy || 2
     }));
@@ -616,7 +603,6 @@ const ChatWidget = () => {
   const renderMessages = () => {
     return messages.map((message, index) => {
       if (message.isButton) {
-        // Render action button
         return (
           <div key={index} className="chat-message bot-message">
             <button className="action-button" onClick={message.onClick}>
@@ -625,7 +611,6 @@ const ChatWidget = () => {
           </div>
         );
       } else {
-        // Render regular text message
         return (
           <div
             key={index}
