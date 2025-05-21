@@ -121,7 +121,7 @@ const ChatWidget = () => {
     
     try {
       // Call NLU API to process message
-      const response = await fetch("FAST_API_ENDPOINT_HERE", {
+      const response = await fetch("http://localhost:8000/predict", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
