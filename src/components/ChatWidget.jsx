@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { collection, getDocs, query, where } from "firebase/firestore";
 import { db, auth } from "../config/firebase";
 import "../assets/styles/ChatWidget.css";
-import { useBooking } from "../components/BookingContext"; // Import the BookingContext hook
+import { useBooking } from "../components/BookingContext"; 
 
 // Error message mapping
 const ERROR_MESSAGES = {
@@ -26,9 +26,7 @@ const mapRoomTypeToDatabase = (roomType) => {
   
   // Convert to lowercase for comparison
   const normalizedType = roomType.toLowerCase();
-  
-  // Return the mapped value or the original if theres no match
-  return roomTypeMap[normalizedType] || roomType;
+    return roomTypeMap[normalizedType] || roomType;
 };
 
 const ChatWidget = () => {
@@ -87,7 +85,6 @@ const ChatWidget = () => {
   // Handle toggling the chat window
   const toggleChat = () => {
     if (chatOpen) {
-      // When closing the chat, reset the bubble to show again
       setTimeout(() => {
         setShowBubble(true);
       }, 500); 
@@ -116,11 +113,11 @@ const ChatWidget = () => {
     };
     
     setMessages((prev) => [...prev, userMessage]);
-    setInput(""); // Clear input field
-    setIsLoading(true); // Start loading
+    setInput(""); 
+    setIsLoading(true); 
     
     try {
-      // Call NLU API to process message
+      // Call API to process message
       const response = await fetch("http://localhost:8000/predict", {
         method: "POST",
         headers: {
@@ -139,8 +136,6 @@ const ChatWidget = () => {
       
       // Reset consecutive errors counter on success
       setConsecutiveErrors(0);
-      
-      // Process the response data
       handleNLUResponse(data);
       
     } catch (error) {
@@ -179,7 +174,7 @@ const ChatWidget = () => {
     }
   };
 
-  // Handle pressing Enter to send messages
+  // Handle pressing enter to send messages
   const handleKeyDown = (e) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
@@ -245,7 +240,7 @@ const ChatWidget = () => {
     }
   };
 
-  // Handle button actions from the response
+  // Handle butto actions from the response
   const handleResponseAction = async (action, entities) => {
     switch (action.action) {
       case "book_room":
@@ -293,7 +288,7 @@ const ChatWidget = () => {
               return;
             }
             
-            // Check if room has a booking conflict during this period
+            // Check if room has a boooking conflict during this period
             const isBooked = room.bookings.some((booking) => {
               if (!booking.checkIn || !booking.checkOut) return false;
               const bookedCheckIn = new Date(booking.checkIn);
@@ -500,7 +495,6 @@ const ChatWidget = () => {
         break;
         
       case "cancel_booking":
-        // Data should include booking_id 
         if (action.data && action.data.booking_id) {
           setMessages((prev) => [
             ...prev,
@@ -511,10 +505,8 @@ const ChatWidget = () => {
             },
           ]);
           
-          // Navigate to cancel booking page
           navigate(`/cancel-booking/${action.data.booking_id}`);
         } else {
-          // Ask for booking ID
           setMessages((prev) => [
             ...prev,
             {
@@ -570,7 +562,6 @@ const ChatWidget = () => {
       fromChatbot: true
     });
     
-    // Navigate directly to the booking page
     navigate('/book-room');
     
     // Add confirmation message
@@ -584,7 +575,6 @@ const ChatWidget = () => {
     ]);
   };
 
-  // Render loading indicator for chat
   const renderLoading = () => {
     if (!isLoading) return null;
     
