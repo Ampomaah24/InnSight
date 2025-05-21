@@ -19,12 +19,10 @@ const Rooms = () => {
 
   // Helper function to get guest name consistently from booking data
   const getGuestNameFromBookingData = (data) => {
-    // First try primary guest fields
     if (data.primaryGuestFirstName || data.primaryGuestLastName) {
       return `${data.primaryGuestFirstName || ''} ${data.primaryGuestLastName || ''}`.trim();
     }
     
-    // Then check guests array
     if (data.guests && Array.isArray(data.guests) && data.guests.length > 0) {
       const firstGuest = data.guests[0];
       if (firstGuest && (firstGuest.firstName || firstGuest.lastName)) {
@@ -32,27 +30,23 @@ const Rooms = () => {
       }
     }
     
-    // Then try booker fields
     if (data.bookerFirstName || data.bookerLastName) {
       return `${data.bookerFirstName || ''} ${data.bookerLastName || ''}`.trim();
     }
     
-    // Finally fall back to legacy fields
     return `${data.firstName || ''} ${data.lastName || ''}`.trim() || "Guest";
   };
 
-  // Helper function to normalize status strings for comparison
+
   const normalizeStatus = (status) => {
     if (!status) return "";
     // Convert to lowercase and remove all spaces/special characters
     return status.toLowerCase().replace(/[\s\-_]/g, '');
   };
 
-  // Helper function to check if a booking should show as reserved
+
   const isBookingReserved = (status) => {
     if (!status) return false;
-    
-    // First check exact match (case-insensitive)
     const lowerStatus = status.toLowerCase();
     const exactMatches = ['confirmed', 'reserved', 'pending', 'paid', 'booked', 'active'];
     if (exactMatches.includes(lowerStatus)) {
@@ -60,7 +54,6 @@ const Rooms = () => {
       return true;
     }
     
-    // Then check normalized status
     const normalized = normalizeStatus(status);
     const reservedStatuses = [
       'confirmed',
@@ -72,20 +65,17 @@ const Rooms = () => {
       'active'
     ];
     
-    // Check if the normalized status matches any reserved status
     const isReserved = reservedStatuses.includes(normalized);
     console.log(`Status "${status}" normalized to "${normalized}", isReserved: ${isReserved}`);
     return isReserved;
   };
 
-  // Helper function to check if a booking is checked in
   const isBookingCheckedIn = (status) => {
     if (!status) return false;
     
     const lowerStatus = status.toLowerCase();
     const normalized = normalizeStatus(status);
     
-    // Check various forms of "checked in"
     return lowerStatus === 'checked in' || 
            lowerStatus === 'checkedin' || 
            normalized === 'checkedin' || 
@@ -98,7 +88,7 @@ const Rooms = () => {
     try {
       setLoading(true);
       
-      // Get current date (start of day) for comparing booking dates
+      // Get current date for comparing booking dates
       const today = new Date();
       today.setHours(0, 0, 0, 0);
       console.log(`Current date for comparison: ${today.toISOString()}`);
@@ -109,7 +99,6 @@ const Rooms = () => {
         const data = doc.data();
         console.log(`Room ${data.name || doc.id} - DB Status: "${data.status}"`);
         
-        // Fix: If status is a room number or invalid, set it to Available
         let roomStatus = data.status;
         if (!roomStatus || roomStatus === data.name || roomStatus === doc.id) {
           roomStatus = "Available";
@@ -132,8 +121,7 @@ const Rooms = () => {
       const fetchedBookings = bookingsSnapshot.docs.map(doc => {
         const data = doc.data();
         let checkInDate, checkOutDate;
-        
-        // Parse check-in date
+
         try {
           if (data.checkIn instanceof Timestamp) {
             checkInDate = data.checkIn.toDate();
@@ -149,8 +137,7 @@ const Rooms = () => {
           console.warn("Error parsing check-in date", e, data.checkIn);
           checkInDate = null;
         }
-        
-        // Parse check-out date
+
         try {
           if (data.checkOut instanceof Timestamp) {
             checkOutDate = data.checkOut.toDate();
@@ -166,11 +153,8 @@ const Rooms = () => {
           console.warn("Error parsing check-out date", e, data.checkOut);
           checkOutDate = null;
         }
-        
-        // Use the helper function to get guest name
+
         const guestName = getGuestNameFromBookingData(data);
-        
-        // Debug: Log the booking status
         console.log(`Booking ${doc.id} - Status: "${data.status}", Room: ${data.roomNumber}, CheckIn: ${checkInDate}, CheckOut: ${checkOutDate}`);
         
         return {
@@ -183,7 +167,7 @@ const Rooms = () => {
           lastUpdated: data.lastUpdated
         };
       }).filter(booking => {
-        // Basic validation
+
         if (!booking.roomNumber) {
           console.log(`Filtering out booking ${booking.id} - missing room number`);
           return false;
@@ -196,8 +180,7 @@ const Rooms = () => {
       
         const normalizedStatus = normalizeStatus(booking.status);
         const lowerStatus = (booking.status || '').toLowerCase();
-        
-        // Only filter out explicitly cancelled/terminated/checked out bookings
+
         if (normalizedStatus === "cancelled" || 
             normalizedStatus === "terminated" || 
             normalizedStatus === "checkedout" ||
@@ -206,7 +189,6 @@ const Rooms = () => {
           return false;
         }
       
-        // Debug log for kept bookings
         console.log(`Keeping booking ${booking.id} for room ${booking.roomNumber}`, {
           status: booking.status,
           normalizedStatus: normalizedStatus,
@@ -222,16 +204,12 @@ const Rooms = () => {
       
       // Update rooms based on actual booking data
       const updatedRooms = await Promise.all(fetchedRooms.map(async (room) => {
-        // Find bookings for this room - handle room number variations
         const roomBookings = fetchedBookings.filter(booking => {
-          // Handle variations in room numbers (R1 vs R001, R2 vs R002, etc.)
           const bookingRoomNum = booking.roomNumber;
           const roomNum = room.number;
-          
-          // Direct match
+
           if (bookingRoomNum === roomNum) return true;
-          
-          // Extract numeric parts for comparison
+
           const bookingNumMatch = bookingRoomNum.match(/\d+/);
           const roomNumMatch = roomNum.match(/\d+/);
           
@@ -252,7 +230,7 @@ const Rooms = () => {
           console.log(`  isReserved: ${isBookingReserved(b.status)}, isCheckedIn: ${isBookingCheckedIn(b.status)}`);
         });
 
-        // Find active bookings (checked in)
+        // Find checked in bookings
         const activeBooking = roomBookings.find(booking => {
           const dateActive = booking.checkInDate <= today && booking.checkOutDate > today;
           const isCheckedIn = isBookingCheckedIn(booking.status);
@@ -269,12 +247,10 @@ const Rooms = () => {
           return dateActive && isCheckedIn;
         });
 
-        // Find reservations (confirmed but not checked in)
+        // Find reservations 
         const reservedBooking = roomBookings.find(booking => {
           const isReserved = isBookingReserved(booking.status);
           const notCheckedIn = !isBookingCheckedIn(booking.status);
-          
-          // Check if it's a future booking OR a same-day booking that hasn't checked in yet
           const isFuture = booking.checkInDate > today;
           const isTodayNotCheckedIn = booking.checkInDate <= today && 
                                      booking.checkOutDate > today && 
@@ -296,7 +272,7 @@ const Rooms = () => {
         });
 
         // Determine the display status
-        let displayStatus = "Available"; // Default to available
+        let displayStatus = "Available"; 
         let bookingDetails = {
           activeBookingId: null,
           reservedBookingId: null,
@@ -304,7 +280,7 @@ const Rooms = () => {
           reservedBooking: null
         };
         
-        // Priority: Occupied > Reserved > Available
+     
         if (activeBooking) {
           displayStatus = "Occupied";
           bookingDetails.activeBookingId = activeBooking.id;
@@ -316,7 +292,6 @@ const Rooms = () => {
           bookingDetails.reservedBooking = reservedBooking;
           console.log(`Room ${room.number} set to Reserved`);
           
-          // AUTOMATICALLY UPDATE THE ROOM STATUS IN DATABASE
           if (room.status !== "Reserved") {
             console.log(`Auto-updating room ${room.number} to Reserved status in database`);
             try {
@@ -330,10 +305,10 @@ const Rooms = () => {
             }
           }
         } else {
-          // No active or reserved bookings
+  
           displayStatus = "Available";
           
-          // AUTOMATICALLY UPDATE THE ROOM STATUS IN DATABASE to Available if needed
+        
           if (room.status !== "Available" && room.status !== "Maintenance") {
             console.log(`Auto-updating room ${room.number} to Available status in database`);
             try {
@@ -354,12 +329,12 @@ const Rooms = () => {
         return {
           ...room,
           status: displayStatus,
-          dbStatus: room.status, // Keep original DB status for reference
+          dbStatus: room.status, 
           ...bookingDetails
         };
       }));
 
-      // Calculate stats
+    
       const totalRooms = updatedRooms.length;
       const availableRooms = updatedRooms.filter(room => room.status === "Available").length;
       const reservedRooms = updatedRooms.filter(room => room.status === "Reserved").length;
@@ -374,7 +349,6 @@ const Rooms = () => {
       
       // Sort rooms by room number
       const sortedRooms = updatedRooms.sort((a, b) => {
-        // Extract numeric parts for proper numeric sorting
         const numA = a.number.replace(/\D/g, '');
         const numB = b.number.replace(/\D/g, '');
         
@@ -395,16 +369,14 @@ const Rooms = () => {
 
   useEffect(() => {
     fetchRoomsAndBookings();
-    
-    // Set up auto-refresh every 2 minutes
+  
     const refreshInterval = setInterval(() => {
       fetchRoomsAndBookings();
-    }, 120000); // 2 minutes
+    }, 120000); 
     
     return () => clearInterval(refreshInterval);
   }, []);
 
-  // Show status update message for 3 seconds
   const showStatusMessage = (message, type = "success") => {
     setStatusUpdateMessage({ message, type });
     setTimeout(() => {
@@ -453,14 +425,12 @@ const Rooms = () => {
         showStatusMessage(`Room ${roomNumber} marked as Reserved`);
       }
 
-      // Update local state
       setRooms((prevRooms) =>
         prevRooms.map((room) =>
           room.id === roomId ? { ...room, status: newStatus } : room
         )
       );
       
-      // Refresh data after a delay
       setTimeout(() => {
         fetchRoomsAndBookings();
       }, 1000);
@@ -488,7 +458,6 @@ const Rooms = () => {
         return;
       }
     } else {
-      // Standard confirmation
       if (!window.confirm("Are you sure you want to delete this room?")) {
         return;
       }
@@ -570,7 +539,7 @@ const Rooms = () => {
           </div>
         </div>
 
-        {/* Rooms Table */}
+   
         <div className="table-container">
           {loading ? (
             <div className="loading">Loading rooms...</div>

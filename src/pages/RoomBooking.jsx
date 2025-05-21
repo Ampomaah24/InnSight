@@ -35,10 +35,10 @@ const RoomBooking = () => {
   const [loading, setLoading] = useState(true);
   const [roomIndexes, setRoomIndexes] = useState({});
   const [selectedRooms, setSelectedRooms] = useState([]);
-  const [roomCounts, setRoomCounts] = useState({}); // Track how many of each room type we're booking
-  const [isLoggedIn, setIsLoggedIn] = useState(false); // Track login state
+  const [roomCounts, setRoomCounts] = useState({}); 
+  const [isLoggedIn, setIsLoggedIn] = useState(false); 
 
-  // Discount configuration pulled from Firestore
+  // Discounts pullled from Firestore
   const [discounts, setDiscounts] = useState({
     conferenceAttendeeDiscount: 0,
     corporateDiscount: 0,
@@ -46,22 +46,21 @@ const RoomBooking = () => {
     groupDiscountRate: 0,
     longStayDiscount: 0,
     longStayMinNights: 0,
-    // weekdayDiscount: 0
+  
   });
 
-  // Extract booking data from context
+  // Extracting booking data 
   const checkIn = bookingData?.checkIn || null;
   const checkOut = bookingData?.checkOut || null;
   const fromConference = bookingData?.fromConference === true;
 
-  // Check if we have required booking data, if not redirect to services page
   useEffect(() => {
     if (!bookingData || !checkIn || !checkOut) {
       navigate('/services');
     }
   }, [bookingData, checkIn, checkOut, navigate]);
 
-  // Check authentication state
+
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       setIsLoggedIn(!!user);
@@ -70,13 +69,13 @@ const RoomBooking = () => {
     return () => unsubscribe();
   }, [auth]);
 
-  // Fetch discounts from Firestore ONLY if user is logged in
+
   useEffect(() => {
     if (!isLoggedIn) {
       console.log("User not logged in, skipping discount fetch");
       return;
     }
-    
+      // Fetch discounts from saved admin settings in firebase 
     const fetchDiscounts = async () => {
       try {
         const discountsRef = doc(db, "settings", "discounts");
@@ -93,7 +92,7 @@ const RoomBooking = () => {
             groupDiscountRate: discountData.groupDiscountRate || 0,
             longStayDiscount: discountData.longStayDiscount || 0,
             longStayMinNights: discountData.longStayMinNights || 0,
-            // weekdayDiscount: discountData.weekdayDiscount || 0
+       
           });
         } else {
           console.warn("Discounts document doesn't exist");
@@ -106,9 +105,8 @@ const RoomBooking = () => {
     fetchDiscounts();
   }, [isLoggedIn]); 
 
-  // Fix for scrolling issues
+
   useEffect(() => {
-    // Reset any scrollTop that might be causing the cutoff
     if (document.documentElement) {
       document.documentElement.scrollTop = 0;
     }
@@ -116,7 +114,7 @@ const RoomBooking = () => {
       document.body.scrollTop = 0;
     }
     
-    // Force scrolling to work properly
+
     document.documentElement.style.overflow = 'auto';
     document.body.style.overflow = 'auto';
     document.body.style.height = 'auto';
@@ -152,20 +150,20 @@ const RoomBooking = () => {
       return;
     }
 
-    // Fetch available rooms from Firestore
+    // Fetch available rooms from db
     const getAvailableRooms = async () => {
       try {
         const roomsCollection = collection(db, "rooms");
         const q = query(roomsCollection, where("availability", "==", true));
         const querySnapshot = await getDocs(q);
         let availableRooms = [];
-        const initialRoomCounts = {}; // Initialize room counts
+        const initialRoomCounts = {}; 
 
         querySnapshot.forEach((doc) => {
           let room = { id: doc.id, ...doc.data() };
           if (!room.bookings || room.bookings.length === 0) {
             availableRooms.push(room);
-            // Track how many rooms of each type are available
+         
             initialRoomCounts[room.t_room] = (initialRoomCounts[room.t_room] || 0) + 1;
             return;
           }
@@ -182,7 +180,6 @@ const RoomBooking = () => {
 
           if (!isBooked) {
             availableRooms.push(room);
-            // Track how many rooms of each type are available
             initialRoomCounts[room.t_room] = (initialRoomCounts[room.t_room] || 0) + 1;
           }
         });
@@ -195,8 +192,7 @@ const RoomBooking = () => {
           if (!initialIndexes[room.t_room]) initialIndexes[room.t_room] = 0;
         });
         setRoomIndexes(initialIndexes);
-        
-        // Initialize room selection counts to zero
+      
         const initialSelectionCounts = {};
         Object.keys(initialRoomCounts).forEach(roomType => {
           initialSelectionCounts[roomType] = 0;
@@ -212,7 +208,7 @@ const RoomBooking = () => {
     getAvailableRooms();
   }, [checkIn, checkOut]);
 
-  // Group rooms by type
+  // Grouping rooms by type
   const groupedRooms = rooms.reduce((acc, room) => {
     const type = room.t_room || "Other";
     if (!acc[type]) acc[type] = [];
@@ -220,7 +216,7 @@ const RoomBooking = () => {
     return acc;
   }, {});
 
-  // Count available rooms by type
+  
   const roomAvailabilityCounts = Object.keys(groupedRooms).reduce((acc, type) => {
     acc[type] = groupedRooms[type].length;
     return acc;
@@ -237,52 +233,42 @@ const RoomBooking = () => {
     });
   };
 
-  // Modified function to handle multiple rooms of the same type
+  //  function to handle multiple rooms of the same type
   const toggleRoomSelection = (room) => {
     const roomType = room.t_room;
     
     setRoomCounts(prevCounts => {
-      // Calculate new count after toggling
       const currentCount = prevCounts[roomType] || 0;
       let newCount;
-      
-      // If we've selected all available rooms of this type, reset to 0
+
       if (currentCount >= roomAvailabilityCounts[roomType]) {
         newCount = 0;
       } else {
-        // Otherwise increment the count
         newCount = currentCount + 1;
       }
-      
-      // Update selected rooms based on new count
       updateSelectedRooms(roomType, newCount);
       
       return { ...prevCounts, [roomType]: newCount };
     });
   };
   
-  // Helper function to update selected rooms based on count
   const updateSelectedRooms = (roomType, count) => {
     setSelectedRooms(prevSelected => {
-      // Remove all rooms of this type first
       const filteredRooms = prevSelected.filter(r => r.t_room !== roomType);
-      
-      // If count is 0, just return the filtered array
       if (count === 0) {
         return filteredRooms;
       }
-      
-      // Add the required number of rooms of this type
+
       const roomsToAdd = groupedRooms[roomType].slice(0, count);
       return [...filteredRooms, ...roomsToAdd];
     });
   };
 
-  // New function to decrease room count
+  //  function to decrease room count
   const decreaseRoomCount = (roomType) => {
     setRoomCounts(prevCounts => {
       const currentCount = prevCounts[roomType] || 0;
-      if (currentCount <= 0) return prevCounts; // Can't go below 0
+      if (currentCount <= 0) return prevCounts; 
       
       const newCount = currentCount - 1;
       updateSelectedRooms(roomType, newCount);
@@ -290,13 +276,13 @@ const RoomBooking = () => {
     });
   };
 
-  // New function to increase room count
+  // function to increase room count
   const increaseRoomCount = (roomType) => {
     setRoomCounts(prevCounts => {
       const currentCount = prevCounts[roomType] || 0;
       const maxAvailable = roomAvailabilityCounts[roomType] || 0;
       
-      if (currentCount >= maxAvailable) return prevCounts; // Can't exceed available rooms
+      if (currentCount >= maxAvailable) return prevCounts; 
       
       const newCount = currentCount + 1;
       updateSelectedRooms(roomType, newCount);
@@ -317,33 +303,29 @@ const RoomBooking = () => {
   };
 
   const nights = calculateNights();
-  
-  // Determine which discount to apply - only if user is logged in
+
   const getApplicableDiscount = () => {
-    // No discounts for logged-out users
+    // No discounts for guest users
     if (!isLoggedIn) {
       return 0;
     }
-    
-    // Priority of discounts
+
     if (fromConference) {
-      return discounts.conferenceAttendeeDiscount; // Conference attendee discount
+      return discounts.conferenceAttendeeDiscount; 
     }
     
-    // Long stay discount if staying longer than min nights
     if (nights >= discounts.longStayMinNights) {
       return discounts.longStayDiscount;
     }
-    
-    // Group discount if selecting more than min rooms
+ 
     if (selectedRooms.length >= discounts.groupDiscountMinRooms) {
       return discounts.groupDiscountRate;
     }
     
-    return 0; // No discount applies
+    return 0; 
   };
 
-  // Get discount name for display
+
   const getDiscountName = () => {
     if (!isLoggedIn) return '';
     
@@ -356,28 +338,23 @@ const RoomBooking = () => {
   const applicableDiscount = getApplicableDiscount();
   const discountName = getDiscountName();
 
-  // Function to return to home page
   const goToHome = () => {
     navigate('/');
   };
 
-  // Function to go to login page
   const goToLogin = () => {
-    // Save current path to redirect back after login
     localStorage.setItem('redirectAfterLogin', window.location.pathname);
     navigate('/login');
   };
   
-  // Function to proceed to booking page
   const proceedToBooking = () => {
     if (selectedRooms.length === 0) {
       alert("Please select at least one room to book");
       return;
     }
     
-    // Update booking data in context with selected rooms and more details
     setBookingData({
-      ...bookingData, // Preserve original booking data
+      ...bookingData, 
       rooms: selectedRooms,
       nights,
       discount: {
@@ -450,7 +427,7 @@ const RoomBooking = () => {
           const currentIndex = roomIndexes[roomType] || 0;
           const currentRoom = groupedRooms[roomType][currentIndex];
           
-          // Apply discount if applicable
+       
           const discount = getApplicableDiscount();
           const discountedPrice = discount > 0
             ? currentRoom.price - (currentRoom.price * discount / 100)
@@ -508,7 +485,7 @@ const RoomBooking = () => {
                     </ul>
                   </div>
 
-                  {/* New room quantity selector */}
+         
                   <div className="room-quantity-selector">
                     <span>Number of Rooms: </span>
                     <div className="quantity-controls">

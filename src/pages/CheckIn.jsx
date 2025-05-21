@@ -9,22 +9,21 @@ const CheckIn = () => {
   const [rooms, setRooms] = useState({});
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
-  const [timeFilter, setTimeFilter] = useState('today'); // 'today', 'tomorrow', 'all'
+  const [timeFilter, setTimeFilter] = useState('today'); 
   const [updatingStatus, setUpdatingStatus] = useState(false);
   const [updatedRoom, setUpdatedRoom] = useState(null);
   const [showExpiredOnly, setShowExpiredOnly] = useState(false);
   const [categoryFilter, setCategoryFilter] = useState('');
 
   
-  // Get today's date at midnight for accurate comparison
+  
   const today = new Date();
   today.setHours(0, 0, 0, 0);
-  
-  // Get tomorrow's date
+
   const tomorrow = new Date(today);
   tomorrow.setDate(tomorrow.getDate() + 1);
   
-  // Get day after tomorrow for range check
+
   const dayAfterTomorrow = new Date(tomorrow);
   dayAfterTomorrow.setDate(dayAfterTomorrow.getDate() + 1);
 
@@ -32,7 +31,7 @@ const CheckIn = () => {
     try {
       setLoading(true);
       
-      // Fetch all rooms first to have their info available
+      // Fetch all rooms first 
       const roomsSnapshot = await getDocs(collection(db, "rooms"));
       const roomsData = {};
       const roomNumberToId = {}; // Map room numbers to document IDs
@@ -45,23 +44,22 @@ const CheckIn = () => {
           name: roomData.name || doc.id
         };
         
-        // Create mapping from room number/name to document ID
+        // Createa  mapping 
         if (roomData.name) {
           roomNumberToId[roomData.name] = doc.id;
         }
       });
       
-      setRooms({ roomsData, roomNumberToId }); // Store both the room data and the mapping
-      
+      setRooms({ roomsData, roomNumberToId }); 
       // Fetch all bookings from Firestore
       const bookingsQuery = query(collection(db, "bookings"));
       const bookingsSnapshot = await getDocs(bookingsQuery);
       
-      // Looking at the Firestore database structure, direct field mapping
+
       const bookingsData = bookingsSnapshot.docs.map(doc => {
         const data = doc.data();
         
-        // Parse dates safely
+       
         let checkInDate, checkOutDate;
         try {
           if (data.checkIn instanceof Timestamp) {
@@ -117,28 +115,26 @@ const CheckIn = () => {
         const isPM = new Date().getHours() >= 12;
         
         if (isPM) {
-          // Show checkouts first in the afternoon
+       
           if (a.isCheckingOutToday && !b.isCheckingOutToday) return -1;
           if (!a.isCheckingOutToday && b.isCheckingOutToday) return 1;
           
-          // Then show today's check-ins
           if (a.isCheckingInToday && !b.isCheckingInToday) return -1;
           if (!a.isCheckingInToday && b.isCheckingInToday) return 1;
         } else {
-          // Show check-ins first in the morning
+         
           if (a.isCheckingInToday && !b.isCheckingInToday) return -1;
           if (!a.isCheckingInToday && b.isCheckingInToday) return 1;
           
-          // Then show today's checkouts
           if (a.isCheckingOutToday && !b.isCheckingOutToday) return -1;
           if (!a.isCheckingOutToday && b.isCheckingOutToday) return 1;
         }
         
-        // Then show tomorrow's check-ins
+     
         if (a.isCheckingInTomorrow && !b.isCheckingInTomorrow) return -1;
         if (!a.isCheckingInTomorrow && b.isCheckingInTomorrow) return 1;
         
-        // Then sort by check-in date
+      
         return a.checkInDate - b.checkInDate;
       });
       
@@ -153,7 +149,7 @@ const CheckIn = () => {
   useEffect(() => {
     fetchData();
     
-    // Auto-refresh every 5 minutes
+
     const interval = setInterval(() => {
       fetchData();
     }, 300000);
@@ -161,14 +157,13 @@ const CheckIn = () => {
     return () => clearInterval(interval);
   }, []);
   
-  // Check if two dates are the same day
+  
   function isSameDay(date1, date2) {
     return date1.getDate() === date2.getDate() &&
       date1.getMonth() === date2.getMonth() &&
       date1.getFullYear() === date2.getFullYear();
   }
   
-  // Helper function to format dates
   const formatDate = (date) => {
     if (!date) return "N/A";
     
@@ -197,7 +192,7 @@ const CheckIn = () => {
         return;
       }
       
-      // Update booking status in Firestore
+      // Update booking status in db
       const bookingRef = doc(db, "bookings", bookingId);
       await updateDoc(bookingRef, { 
         status: "Checked in",
@@ -210,7 +205,7 @@ const CheckIn = () => {
         const roomSnap = await getDoc(roomRef);
         
         if (roomSnap.exists()) {
-          // Update room status to Occupied
+          
           await updateDoc(roomRef, { 
             status: "Occupied",
             lastUpdated: Timestamp.now()
@@ -229,7 +224,7 @@ const CheckIn = () => {
         console.warn(`No room ID found for room number ${booking.roomNumber}`);
       }
 
-      // Update UI
+
       setBookedGuests(prevGuests =>
         prevGuests.map(guest =>
           guest.id === bookingId ? { ...guest, status: "Checked in" } : guest
@@ -238,7 +233,7 @@ const CheckIn = () => {
       
       setUpdatingStatus(false);
       
-      // Refresh data after a short delay to ensure all UI elements are updated
+
       setTimeout(() => fetchData(), 1000);
     } catch (error) {
       console.error("Error checking in:", error);
@@ -259,20 +254,19 @@ const CheckIn = () => {
         return;
       }
       
-      // Update booking status in Firestore
+      // Update booking status in db
       const bookingRef = doc(db, "bookings", bookingId);
       await updateDoc(bookingRef, { 
         status: "Checked out",
         lastUpdated: Timestamp.now() 
       });
 
-      // Update room status if room ID is available
       if (booking.roomId) {
         const roomRef = doc(db, "rooms", booking.roomId);
         const roomSnap = await getDoc(roomRef);
         
         if (roomSnap.exists()) {
-          // Update room status to Available
+     
           await updateDoc(roomRef, { 
             status: "Available",
             lastUpdated: Timestamp.now()
@@ -291,7 +285,7 @@ const CheckIn = () => {
         console.warn(`No room ID found for room number ${booking.roomNumber}`);
       }
 
-      // Update UI
+   
       setBookedGuests(prevGuests =>
         prevGuests.map(guest =>
           guest.id === bookingId ? { ...guest, status: "Checked out" } : guest
@@ -300,15 +294,14 @@ const CheckIn = () => {
       
       setUpdatingStatus(false);
       
-      // Refresh data after a short delay to ensure all UI elements are updated
+      
       setTimeout(() => fetchData(), 1000);
     } catch (error) {
       console.error("Error checking out:", error);
       setUpdatingStatus(false);
     }
   };
-  
-  // Handle expired stays
+
   const processExpiredStay = async (bookingId) => {
     try {
       setUpdatingStatus(true);
@@ -328,7 +321,7 @@ const CheckIn = () => {
         notes: (booking.notes || '') + `\n${new Date().toLocaleString()}: Auto-checked out due to expired stay.`
       });
       
-      // Update room status if room ID is available
+ 
       if (booking.roomId) {
         const roomRef = doc(db, "rooms", booking.roomId);
         const roomSnap = await getDoc(roomRef);
@@ -346,7 +339,7 @@ const CheckIn = () => {
         }
       }
       
-      // Update UI
+    
       setBookedGuests(prevGuests =>
         prevGuests.map(guest =>
           guest.id === bookingId ? { 
@@ -386,13 +379,13 @@ const CheckIn = () => {
     }
   };
   
-  // Filter guests based on search, time frame, and expired status
+  
   const filteredGuests = bookedGuests.filter(guest => {
-    // Name search filter with null check to prevent toLowerCase errors
+
     const guestName = (guest.fullName || '').toLowerCase();
     const nameMatch = searchTerm ? guestName.includes(searchTerm.toLowerCase()) : true;
     
-    // Time frame filter
+    
     let timeFrameMatch = true;
     if (!categoryFilter && !showExpiredOnly) {
       if (timeFilter === 'today') {
@@ -416,7 +409,7 @@ const CheckIn = () => {
       default:
         categoryMatch = true;
     }
-    // Expired reservation filter
+  
     const expiredMatch = showExpiredOnly ? guest.isExpired : true;
     
     return nameMatch && categoryMatch && (showExpiredOnly ? guest.isExpired : timeFrameMatch);

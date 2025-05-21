@@ -4,7 +4,7 @@ import NavMenu from "../components/NavMenu";
 import backgroundImage from "../assets/images/360_F_29133877_bfA2n7cWV53fto2BomyZ6pyRujJTBwjd.jpg";
 import "../assets/styles/Homepage.css";
 
-// Homepage component that displays the landing page of the hotel site
+
 const Homepage = () => {
   const [menuOpen, setMenuOpen] = useState(false);
   const [imageLoaded, setImageLoaded] = useState(false);

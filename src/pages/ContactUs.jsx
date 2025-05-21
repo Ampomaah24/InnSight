@@ -22,36 +22,35 @@ const ContactUs = () => {
   const [submitError, setSubmitError] = useState("");
 
   useEffect(() => {
-    // Fix scroll to top on page load
+
     window.scrollTo(0, 0);
   }, []);
 
-  // Ghanaian phone number validation
+
   const isValidGhanaianPhoneNumber = (phone) => {
-    // Remove any spaces or dashes
+
     const cleanedPhone = phone.replace(/[\s\-]/g, '');
     
-    // Ghanaian phone number patterns
-    // Local format: 024XXXXXXX, 055XXXXXXX, etc.
+
     const localPattern = /^(024|025|026|027|028|029|030|050|054|055|056|057|059)[0-9]{7}$/;
-    // International format: +233XXXXXXXXX
+    
     const internationalPattern = /^\+233(24|25|26|27|28|29|30|50|54|55|56|57|59)[0-9]{7}$/;
     
     return localPattern.test(cleanedPhone) || internationalPattern.test(cleanedPhone);
   };
 
-  // Email validation
+  
   const isValidEmail = (email) => {
-    // More comprehensive email validation regex
+
     const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
     return emailRegex.test(email.trim());
   };
 
-  // Format phone number before saving
+  
   const formatPhoneNumber = (phone) => {
     let formattedPhone = phone.trim();
     if (formattedPhone && !formattedPhone.startsWith('+')) {
-      // Convert local format to international format for storage
+     
       if (formattedPhone.startsWith('0')) {
         formattedPhone = '+233' + formattedPhone.substring(1);
       }
@@ -62,53 +61,51 @@ const ContactUs = () => {
   const handleChange = (e) => {
     const { name, value } = e.target;
     
-    // Special handling for phone number - only allow numbers and certain characters
     if (name === 'phone') {
-      // Allow only numbers, +, spaces, and dashes
+     
       const cleanedValue = value.replace(/[^\d\s\-+]/g, '');
       setFormData(prev => ({ ...prev, [name]: cleanedValue }));
     } else {
       setFormData(prev => ({ ...prev, [name]: value }));
     }
     
-    // Clear error when user starts typing
+   
     if (formErrors[name]) {
       setFormErrors(prev => ({ ...prev, [name]: "" }));
     }
   };
-
+// necessary validations
   const validateForm = () => {
     let errors = {};
     
-    // Name validation
+
     if (!formData.name.trim()) {
       errors.name = "Name is required";
     } else if (formData.name.trim().length < 2) {
       errors.name = "Name must be at least 2 characters";
     }
     
-    // Email validation
+
     if (!formData.email.trim()) {
       errors.email = "Email is required";
     } else if (!isValidEmail(formData.email)) {
       errors.email = "Please enter a valid email address";
     }
-    
-    // Phone validation (optional field, but validate if provided)
+ 
     if (formData.phone.trim()) {
       if (!isValidGhanaianPhoneNumber(formData.phone)) {
         errors.phone = "Please enter a valid Ghanaian phone number (e.g., 024XXXXXXX or +233XXXXXXXXX)";
       }
     }
     
-    // Subject validation
+
     if (!formData.subject.trim()) {
       errors.subject = "Subject is required";
     } else if (formData.subject.trim().length < 3) {
       errors.subject = "Subject must be at least 3 characters";
     }
     
-    // Message validation
+
     if (!formData.message.trim()) {
       errors.message = "Message is required";
     } else if (formData.message.trim().length < 10) {
@@ -130,10 +127,10 @@ const ContactUs = () => {
     setSubmitError("");
     
     try {
-      // Format phone number for storage (if provided)
+      // Format phone number for storage 
       let formattedPhone = formatPhoneNumber(formData.phone);
       
-      // 1. Add the message to Firestore with formatted phone
+  
       const docRef = await addDoc(collection(db, "contactMessages"), {
         ...formData,
         phone: formattedPhone || "Not provided",
@@ -141,7 +138,7 @@ const ContactUs = () => {
         createdAt: serverTimestamp(),
       });
       
-      // 2. Prepare data for EmailJS
+
       const templateParams = {
         from_name: formData.name,
         from_email: formData.email,
@@ -152,28 +149,28 @@ const ContactUs = () => {
         reference_id: docRef.id
       };
       
-      // 3. Send email using EmailJS
+      // Send email using EmailJS
       const response = await emailjs.send(
-        'service_pgx5uqi', // Your EmailJS service ID
-        'template_hj63f35', // Your EmailJS template ID
+        'service_pgx5uqi', 
+        'template_hj63f35', 
         templateParams,
-        'OQbDGwLva7RM5VxU5' // Your EmailJS public key
+        'OQbDGwLva7RM5VxU5' 
       );
       
       if (response.status !== 200) {
         throw new Error("Email service failed to send the notification");
       }
       
-      // 4. Update Firestore document to mark email as sent
+  
       await updateDoc(doc(db, "contactMessages", docRef.id), {
         emailSent: true,
         emailSentAt: serverTimestamp()
       });
       
-      // 5. Show success message
+
       setSubmitSuccess(true);
       
-      // 6. Reset form
+
       setFormData({
         name: "",
         email: "",
@@ -182,7 +179,7 @@ const ContactUs = () => {
         message: "",
       });
       
-      // 7. Hide success message after 5 seconds
+ 
       setTimeout(() => {
         setSubmitSuccess(false);
       }, 5000);
@@ -190,7 +187,7 @@ const ContactUs = () => {
     } catch (error) {
       console.error("Error submitting contact form:", error);
       
-      // More specific error messages based on error type
+ 
       if (error.code && error.code.includes("permission-denied")) {
         setSubmitError("Sorry, we're experiencing permission issues with our database. Our team has been notified.");
       } else if (error.message && error.message.includes("email")) {
@@ -206,19 +203,13 @@ const ContactUs = () => {
 
   return (
     <div className="contact-page">
-      {/* NavMenu in top left */}
+
       <div className="nav-container" style={{ backgroundColor: "transparent", boxShadow: "none" }}>
         <NavMenu menuOpen={menuOpen} setMenuOpen={setMenuOpen} />
       </div>
       
       <div className="back-button-container">
-      {/*   <button
-          type="button"
-          className="back-button"
-          onClick={() => navigate(-1)}
-        >
-          ← Back
-        </button> */}
+      {}
       </div>
 
       <div className="contact-container">
@@ -358,7 +349,7 @@ const ContactUs = () => {
         </div>
       </div>
       
-      {/* Map Section */}
+      {/* Map */}
       <div className="map-container">
         <h2>Find Us</h2>
         <div className="map-wrapper">

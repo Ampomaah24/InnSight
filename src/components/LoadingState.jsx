@@ -1,4 +1,4 @@
-// LoadingState.jsx
+
 import React from "react";
 import "../assets/styles/Finance.css";
 

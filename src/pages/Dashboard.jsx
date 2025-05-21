@@ -1,4 +1,4 @@
-// Updated Dashboard.jsx
+
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { collection, getDocs, query, where, Timestamp, doc, getDoc } from "firebase/firestore";
@@ -27,7 +27,6 @@ const Dashboard = () => {
   useEffect(() => {
     const fetchUserProfile = async () => {
       try {
-        // Check sessionStorage first
         const sessionUser = sessionStorage.getItem('currentUser');
         if (sessionUser) {
           const parsedUser = JSON.parse(sessionUser);
@@ -35,8 +34,8 @@ const Dashboard = () => {
           setUser(parsedUser);
           return;
         }
+   
         
-        // Otherwise use current auth user
         const currentUser = auth.currentUser;
         if (currentUser) {
           const userDocRef = doc(db, "users", currentUser.uid);
@@ -58,7 +57,7 @@ const Dashboard = () => {
             setUser(userObj);
             sessionStorage.setItem('currentUser', JSON.stringify(userObj));
           } else {
-            // No user document, create from auth
+         
             const userObj = {
               id: currentUser.uid,
               fname: currentUser.displayName?.split(' ')[0] || "User",
@@ -72,7 +71,7 @@ const Dashboard = () => {
             sessionStorage.setItem('currentUser', JSON.stringify(userObj));
           }
         } else {
-          // No auth user
+   
           setUser({
             fname: "Guest",
             lname: "User",
@@ -93,8 +92,7 @@ const Dashboard = () => {
       try {
         setLoading(true);
         console.log("Fetching reservations data...");
-        
-        // Get reference to bookings collection
+      
         const bookingsRef = collection(db, "bookings");
         const querySnapshot = await getDocs(bookingsRef);
         
@@ -105,20 +103,19 @@ const Dashboard = () => {
           setLoading(false);
           return;
         }
+
         
-        // Process each booking document
         const fetchedReservations = [];
         const fetchedUpcomingReservations = [];
         let checkInsCount = 0;
         let todaysReservationsCount = 0;
-        
-        // Track occupied rooms by their room numbers to avoid duplicates
+
         const occupiedRooms = new Set();
         
-        // Get today's date at midnight for accurate comparison
+
         const today = new Date();
         today.setHours(0, 0, 0, 0);
-        const todayStr = today.toISOString().split('T')[0]; // YYYY-MM-DD format
+        const todayStr = today.toISOString().split('T')[0]; 
         
         console.log("Today's date for comparison:", todayStr);
         
@@ -127,23 +124,23 @@ const Dashboard = () => {
           const data = doc.data();
           console.log(`Processing booking ${doc.id}:`, data);
           
-          // Handle different date formats
+      
           let checkInDate, checkOutDate, createdAtDate;
           
-          // Convert checkIn date based on its type
+   
           if (data.checkIn instanceof Timestamp) {
             checkInDate = data.checkIn.toDate();
           } else if (data.checkIn && data.checkIn.seconds) {
-            // Handle Firestore timestamp objects
+       
             checkInDate = new Date(data.checkIn.seconds * 1000);
           } else if (typeof data.checkIn === 'string') {
             checkInDate = new Date(data.checkIn);
           } else {
             console.log(`Invalid checkIn date format for ${doc.id}:`, data.checkIn);
-            checkInDate = new Date(); // Fallback
+            checkInDate = new Date(); 
           }
           
-          // Convert checkOut date based on its type
+    
           if (data.checkOut instanceof Timestamp) {
             checkOutDate = data.checkOut.toDate();
           } else if (data.checkOut && data.checkOut.seconds) {
@@ -152,17 +149,17 @@ const Dashboard = () => {
             checkOutDate = new Date(data.checkOut);
           } else {
             console.log(`Invalid checkOut date format for ${doc.id}:`, data.checkOut);
-            checkOutDate = new Date(); // Fallback
+            checkOutDate = new Date(); 
           }
           
-          // Convert createdAt date if available (when the reservation was made)
+    
           if (data.createdAt instanceof Timestamp) {
             createdAtDate = data.createdAt.toDate();
           } else if (data.createdAt && data.createdAt.seconds) {
             createdAtDate = new Date(data.createdAt.seconds * 1000);
           } else if (typeof data.createdAt === 'string') {
             createdAtDate = new Date(data.createdAt);
-          } else if (data.timestamp instanceof Timestamp) { // Alternative field name
+          } else if (data.timestamp instanceof Timestamp) { 
             createdAtDate = data.timestamp.toDate();
           } else if (data.timestamp && data.timestamp.seconds) {
             createdAtDate = new Date(data.timestamp.seconds * 1000);
@@ -170,23 +167,21 @@ const Dashboard = () => {
             createdAtDate = new Date(data.timestamp);
           } else {
             console.log(`No creation date found for ${doc.id}, using document ID timestamp as fallback`);
-            // As a fallback, try to extract timestamp from document ID if it's a Firestore auto-ID
+           
             try {
-              // If it's a Firestore auto-ID, the first 8 chars are a timestamp
+             
               const timestampHex = doc.id.substring(0, 8);
               const timestampSeconds = parseInt(timestampHex, 16);
               createdAtDate = new Date(timestampSeconds * 1000);
             } catch (e) {
               console.log("Couldn't extract timestamp from ID, using current date");
-              createdAtDate = new Date(); // Last resort fallback
+              createdAtDate = new Date(); 
             }
           }
           
-          // Format dates for display
           const checkInFormatted = formatDate(checkInDate);
           const checkOutFormatted = formatDate(checkOutDate);
           
-          // Compare dates for statistics
           const checkInDay = new Date(checkInDate);
           checkInDay.setHours(0, 0, 0, 0);
           
@@ -198,33 +193,32 @@ const Dashboard = () => {
           const isCurrentlyStaying = checkInDate <= today && checkOutDate > today;
           const isFutureReservation = checkInDate > today;
           
-          // Get the lowercase status for consistent comparison
+          
           const lowerCaseStatus = (data.status || "").toLowerCase();
           
-          // Get the guest name for this specific room (primary guest)
-          // First try primary guest fields, then guests array, then fall back to booker fields, then legacy fields
+
           let guestName = "";
           if (data.primaryGuestFirstName || data.primaryGuestLastName) {
-            // Use primary guest fields (first person assigned to the room)
+           
             guestName = `${data.primaryGuestFirstName || ''} ${data.primaryGuestLastName || ''}`.trim();
           } else if (data.guests && Array.isArray(data.guests) && data.guests.length > 0) {
-            // If no primary guest fields but guests array exists, use the first guest's information
+          
             const firstGuest = data.guests[0];
             if (firstGuest && (firstGuest.firstName || firstGuest.lastName)) {
               guestName = `${firstGuest.firstName || ''} ${firstGuest.lastName || ''}`.trim();
             }
           } else if (data.bookerFirstName || data.bookerLastName) {
-            // Fall back to booker fields
+            
             guestName = `${data.bookerFirstName || ''} ${data.bookerLastName || ''}`.trim();
           } else {
-            // Last resort - legacy fields
+          
             guestName = `${data.firstName || ''} ${data.lastName || ''}`.trim();
           }
           
-          // Create a reservation object
+          // Create a reservation 
           const reservation = {
             id: doc.id,
-            guestName: guestName, // Use the room-specific guest name
+            guestName: guestName, 
             checkInDate: checkInDate,
             checkOutDate: checkOutDate,
             createdAt: createdAtDate,
@@ -235,20 +229,17 @@ const Dashboard = () => {
             isMainBookerRoom: !!data.isMainBookerRoom,
           };
           
-          // Log the comparison results for debugging
           console.log(`Booking ${doc.id}: Check-in today: ${isCheckInToday}, Created today: ${isCreatedToday}, Currently staying: ${isCurrentlyStaying}, Status: ${lowerCaseStatus}`);
           
-          // Increment counters based on conditions
           if (isCheckInToday) {
             checkInsCount++;
           }
           
-          // Use creation date for today's reservations count
           if (isCreatedToday) {
             todaysReservationsCount++;
           }
           
-          // Check if room is currently occupied (checked in but not checked out)
+          // Check if room is currently occupied 
           if ((lowerCaseStatus === "checked in" || lowerCaseStatus === "checked-in") && 
               data.roomNumber && 
               isCurrentlyStaying) {
@@ -256,12 +247,10 @@ const Dashboard = () => {
             console.log(`Room ${data.roomNumber} is marked as occupied`);
           }
           
-          // Add to all reservations array
+       
           fetchedReservations.push(reservation);
           
-          // Check if this is an upcoming reservation:
-          // 1. Check-in date is in the future OR
-          // 2. Check-in date is today but not yet checked in
+    
           if ((isFutureReservation || (isCheckInToday && lowerCaseStatus !== "checked in" && 
               lowerCaseStatus !== "checked-in")) && 
               lowerCaseStatus !== "checked out" && 
@@ -272,17 +261,16 @@ const Dashboard = () => {
           }
         });
         
-        // Get the number of occupied rooms
+       
         const occupiedRoomsCount = occupiedRooms.size;
         console.log(`Occupied rooms: ${occupiedRoomsCount} out of ${TOTAL_ROOMS}`);
         console.log("Occupied room numbers:", [...occupiedRooms]);
         
-        // Sort all reservations by check-in date
+   
         const sortedReservations = fetchedReservations.sort((a, b) => {
           return a.checkInDate - b.checkInDate;
         });
         
-        // Sort upcoming reservations by check-in date (closest first)
         const sortedUpcomingReservations = fetchedUpcomingReservations.sort((a, b) => {
           return a.checkInDate - b.checkInDate;
         });
@@ -295,7 +283,7 @@ const Dashboard = () => {
           upcomingReservationsCount: fetchedUpcomingReservations.length
         });
         
-        // Update state with the calculated values
+        
         setReservations(sortedReservations);
         setUpcomingReservations(sortedUpcomingReservations);
         setStats({
@@ -315,7 +303,7 @@ const Dashboard = () => {
     fetchReservations();
   }, []);
   
-  // Helper function to format dates consistently
+
   const formatDate = (date) => {
     if (!date) return "N/A";
     
@@ -331,7 +319,7 @@ const Dashboard = () => {
     }
   };
 
-  // Get reservation status class
+  // Get reservation status 
   const getStatusClass = (status) => {
     if (!status) return 'reserved';
     
@@ -357,7 +345,7 @@ const Dashboard = () => {
       <Sidebar />
       
       <div className="main-content">
-        {/* Header with Profile Section */}
+      
         <div className="dashboard-header-container">
           <div className="dashboard-header">
            
@@ -383,7 +371,7 @@ const Dashboard = () => {
           </div>
         </div>
         
-        {/* Summary Cards */}
+        {/* Summary  */}
         <div className="summary-cards">
           <div className="card" onClick={() => navigate("/check-in")}>
             <p className="card-title">Today's Check-ins</p>
@@ -409,7 +397,7 @@ const Dashboard = () => {
           </div>
         </div>
         
-        {/* Upcoming Reservations */}
+    
         <div className="table-container">
           <h2 className="table-title">Upcoming Reservations</h2>
           {loading ? (

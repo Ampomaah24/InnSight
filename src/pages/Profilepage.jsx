@@ -15,19 +15,19 @@ import {
 } from "react-icons/fa";
 import PhoneInput, { isValidPhoneNumber } from "react-phone-number-input";
 import "react-phone-number-input/style.css";
-import NavMenu from "../components/NavMenu";  // Add NavMenu import
+import NavMenu from "../components/NavMenu";  
 import "../assets/styles/ProfilePage.css";
 
 const ProfilePage = () => {
-  // State variables
-  const [menuOpen, setMenuOpen] = useState(false);  // Add menu state
+
+  const [menuOpen, setMenuOpen] = useState(false); 
   const [userData, setUserData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
   const [editing, setEditing] = useState(false);
   const [formData, setFormData] = useState({
-    fullName: "",  // Added for editing
-    email: "",     // Added for editing
+    fullName: "",  
+    email: "",     
     phone: "",
     address: "",
     dateOfBirth: "",
@@ -39,8 +39,6 @@ const ProfilePage = () => {
   const [updateSuccess, setUpdateSuccess] = useState(false);
   const fileInputRef = useRef(null);
   const navigate = useNavigate();
-
-  // Normalize user data from different sources
   const normalizeUserData = useCallback((user, data) => {
     // Extract first name and last name from fullName if available
     let firstName = "";
@@ -51,7 +49,6 @@ const ProfilePage = () => {
       firstName = nameParts[0] || "";
       lastName = nameParts.slice(1).join(' ') || "";
     } else if (data.fname && data.lname) {
-      // Handle old format if it exists
       firstName = data.fname;
       lastName = data.lname;
     } else if (user.displayName) {
@@ -69,9 +66,9 @@ const ProfilePage = () => {
       address: data.address || "",
       dateOfBirth: data.dateOfBirth || "",
       bio: data.bio || "",
-      email: data.email || user.email || "", // Use data.email if available
+      email: data.email || user.email || "", 
       photoURL: data.photoURL || user.photoURL || null,
-      avatar: data.avatar || null, // For base64 image
+      avatar: data.avatar || null, 
       createdAt: data.createdAt || new Date().toISOString(),
       updatedAt: data.updatedAt || new Date().toISOString()
     };
@@ -96,7 +93,7 @@ const ProfilePage = () => {
     }
   }, []);
 
-  // Set up auth state listener and fetch user data
+
   useEffect(() => {
     setLoading(true);
     setError(null);
@@ -118,7 +115,7 @@ const ProfilePage = () => {
               bio: normalizedData.bio || ""
             });
             
-            // Update sessionStorage with current user data
+         
             sessionStorage.setItem('currentUser', JSON.stringify(normalizedData));
           } else {
             setError("User profile not found. Please contact support.");
@@ -130,18 +127,17 @@ const ProfilePage = () => {
           setLoading(false);
         }
       } else {
-        // User is logged out
+        
         setUserData(null);
         sessionStorage.removeItem('currentUser');
-        setLoading(false); // Set loading to false to show the auth prompt
+        setLoading(false); 
       }
     });
     
-    // Clean up subscription
+    
     return () => unsubscribe();
   }, [navigate, fetchUserData, normalizeUserData]);
 
-  // Add auth prompt styles dynamically
   useEffect(() => {
     const styleElement = document.createElement('style');
     styleElement.innerHTML = `
@@ -214,18 +210,18 @@ const ProfilePage = () => {
 
 .login-button:hover {
   background-color: #c04400;
-  transform: translateY(-2px);
+  transform: translateY(-0.125rem);
 }
 
 .register-button {
   background: white;
   color: #e05206;
-  border: 2px solid #e05206;
+  border: 0.125rem solid #e05206;
 }
 
 .register-button:hover {
   background-color: rgba(224, 82, 6, 0.05);
-  transform: translateY(-2px);
+  transform: translateY(-0.125rem);
 }
 
 /* Smooth entry animation */
@@ -240,7 +236,7 @@ const ProfilePage = () => {
   }
 }
 
-@media (max-width: 500px) {
+@media (max-width: 31.25rem) {
   .auth-prompt {
     padding: 2rem 1.5rem;
   }
@@ -258,8 +254,7 @@ const ProfilePage = () => {
 
     `;
     document.head.appendChild(styleElement);
-    
-    // Clean up function
+ 
     return () => {
       if (document.head.contains(styleElement)) {
         document.head.removeChild(styleElement);
@@ -267,7 +262,7 @@ const ProfilePage = () => {
     };
   }, []);
 
-  // Handle form input changes
+ 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({
@@ -275,7 +270,6 @@ const ProfilePage = () => {
       [name]: value
     }));
 
-    // Clear email error when user changes the email
     if (name === 'email') {
       setEmailError(false);
     }
@@ -287,24 +281,18 @@ const ProfilePage = () => {
       ...prev,
       phone: value || ""
     }));
-    
-    // Only set error if there's a value and it's invalid
+ 
     if (value) {
       const isValid = isValidPhoneNumber(value);
       setPhoneError(!isValid);
-      
-      // Don't set global error, just handle local validation
       if (!isValid) {
-        // Clear any previous global error message that might be showing
         setError(null);
       }
     } else {
-      // Clear error if empty
       setPhoneError(false);
     }
   };
 
-  // Handle profile photo click
   const handlePhotoClick = () => {
     fileInputRef.current.click();
   };
@@ -345,7 +333,7 @@ const ProfilePage = () => {
         return;
       }
   
-      // Convert image to base64
+      // Convert image 
       const base64Image = await convertToBase64(file);
   
       // Update Firestore with the base64 string
@@ -355,14 +343,12 @@ const ProfilePage = () => {
         updatedAt: new Date().toISOString()
       });
   
-      // Update local state
       setUserData(prev => ({
         ...prev,
         avatar: base64Image,
         updatedAt: new Date().toISOString()
       }));
       
-      // Update sessionStorage
       const updatedUser = {
         ...userData,
         avatar: base64Image,
@@ -380,11 +366,11 @@ const ProfilePage = () => {
     }
   };
   
-  // Form submission handler
+  // Form submission 
   const handleSubmit = async (e) => {
     e.preventDefault();
     
-    // Validate phone number if provided - don't set global error
+    // Validate phone number if provided 
     if (formData.phone && !isValidPhoneNumber(formData.phone)) {
       setPhoneError(true);
       return;
@@ -418,7 +404,6 @@ const ProfilePage = () => {
       setLoading(true);
       setError(null);
       
-      // Create a data object for updating
       const updateData = {
         ...formData,
         updatedAt: new Date().toISOString()
@@ -426,23 +411,21 @@ const ProfilePage = () => {
       
       const userDocRef = doc(db, "users", currentUser.uid);
       
-      // Update Firestore
+    
+
       await updateDoc(userDocRef, updateData);
-      
-      // Update local state
+  
       const updatedUserData = {
         ...userData,
         ...updateData
       };
       setUserData(updatedUserData);
-      
-      // Update sessionStorage
+    
       sessionStorage.setItem('currentUser', JSON.stringify(updatedUserData));
-      
-      // Exit edit mode
+     
       setEditing(false);
       
-      // Show success message
+
       setUpdateSuccess(true);
       setTimeout(() => setUpdateSuccess(false), 3000);
     } catch (error) {
@@ -453,22 +436,21 @@ const ProfilePage = () => {
     }
   };
 
-  // Navigate back handler
+  
   const handleGoBack = () => {
     navigate(-1);
   };
 
-  // Dismiss error handler
+
   const dismissError = () => {
     setError(null);
   };
 
-  // Get initials for avatar
   const getInitials = () => {
     return `${userData?.fname?.charAt(0) || ''}${userData?.lname?.charAt(0) || ''}`;
   };
 
-  // Get display name - Updated to prioritize fullName from database
+  // Get display name 
   const getDisplayName = () => {
     if (userData?.fullName) {
       return userData.fullName;
@@ -476,18 +458,17 @@ const ProfilePage = () => {
     return `${userData?.fname || ''} ${userData?.lname || ''}`.trim() || 'User Profile';
   };
 
-  // Get avatar source - prioritize base64 avatar over photoURL
   const getAvatarSource = () => {
     if (userData?.avatar) {
-      return userData.avatar; // Use base64 image if available
+      return userData.avatar; 
     }
     if (userData?.photoURL) {
-      return userData.photoURL; // Fallback to photoURL if available
+      return userData.photoURL; 
     }
     return null;
   };
 
-  // Loading state
+
   if (loading && !userData) {
     return (
       <div className="profile-page">
@@ -499,8 +480,7 @@ const ProfilePage = () => {
       </div>
     );
   }
-  
-  // Not logged in state - Show auth prompt
+
   if (!loading && !userData) {
     return (
       <div className="profile-page">
@@ -539,14 +519,14 @@ const ProfilePage = () => {
         <NavMenu menuOpen={menuOpen} setMenuOpen={setMenuOpen} />
       </div>
       
-      {/* Success Message */}
+     
       {updateSuccess && (
         <div className="success-message">
           Profile updated successfully!
         </div>
       )}
 
-      {/* Error Message */}
+     
       {error && (
         <div className="status-message error-message">
           <FaExclamationTriangle /> <span>{error}</span>
@@ -555,7 +535,7 @@ const ProfilePage = () => {
       )}
 
       {editing ? (
-        /* Edit Mode - Updated to make name and email editable with fixed phone validation */
+
         <div className="profile-content">
           <form className="edit-form" onSubmit={handleSubmit} noValidate>
             <div className="form-section">
@@ -672,7 +652,7 @@ const ProfilePage = () => {
           </form>
         </div>
       ) : (
-        /* View Mode - New layout inspired by the image */
+    
         <div className="profile-card">
           <div className="profile-header">
             <div className="profile-header-bg"></div>
@@ -704,7 +684,7 @@ const ProfilePage = () => {
                   ) : (
                     <div className="avatar-edit">
                       <FaCamera />
-                      <div style={{ fontSize: '0.8rem', marginTop: '5px' }}>Change Photo</div>
+                      <div style={{ fontSize: '0.8rem', marginTop: '0.3125rem' }}>Change Photo</div>
                     </div>
                   )}
                 </div>

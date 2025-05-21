@@ -5,7 +5,6 @@ import { BookingProvider } from "./components/BookingContext.jsx";
 import SessionTimeoutService from "./services/SessionTimeoutService"; 
 import SessionTimeoutWarning from "./components/SessionTimeoutWarning";
 
-// Import all your pages
 import Homepage from "./pages/Homepage";
 import ServicesPage from "./pages/ServicesPage";
 import SignUp from "./pages/SignUp";
@@ -37,23 +36,17 @@ import GuestBills from "./pages/GuestBills";
 import RoomManagement from "./pages/RoomManagement";
 import UserRegistration from './pages/UserRegistration';
 import BookingHistory from './pages/BookingHistory';
-import AdminFoodOrders from './pages/AdminFoodOrders'; // Add this import
+import AdminFoodOrders from './pages/AdminFoodOrders'; 
 
 const App = () => {
   useEffect(() => {
-    // Initialize the SessionTimeoutService with custom values (20 minutes timeout, 1 minute warning)
+    // Initialize the SessionTimeoutService  (20 minutes timeout, 1 minute warning)
     const sessionTimeoutService = new SessionTimeoutService(20, 1);
-    
-    // Store a reference to the service instance for cleanup
     const serviceInstance = sessionTimeoutService;
     
-    // Clean up on component unmount
     return () => {
-      // Call the clearTimeouts method directly from the instance
       if (serviceInstance) {
         serviceInstance.clearTimeouts();
-        
-        // If you have a destroy method from our updated service, call it
         if (typeof serviceInstance.destroy === 'function') {
           serviceInstance.destroy();
         }
@@ -65,7 +58,7 @@ const App = () => {
     <UserProvider>
       <BookingProvider>
         <Router>
-          {/* The SessionTimeoutWarning component should be rendered here */}
+  
           <SessionTimeoutWarning />
           
           <Routes>
@@ -100,7 +93,7 @@ const App = () => {
             <Route path="/room-management" element={<RoomManagement />} />
             <Route path="/user-registration" element={<UserRegistration />} />
             <Route path="/booking-history" element={<BookingHistory />} />
-            <Route path="/admin/food-orders" element={<AdminFoodOrders />} /> {/* Add this route */}
+            <Route path="/admin/food-orders" element={<AdminFoodOrders />} /> 
           </Routes>
         </Router>
       </BookingProvider>

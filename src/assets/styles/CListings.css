@@ -1,4 +1,4 @@
-/* General Page Styling */
+
 body, html {
     margin: 0;
     padding: 0;
@@ -23,7 +23,7 @@ body, html {
   margin-top: 1rem;
 }
   
-  /* Main Container */
+ 
   .main-container {
     position: relative;
     min-height: 100vh;
@@ -32,7 +32,7 @@ body, html {
     padding-bottom: 2rem;
   }
   
-  /* Conference Page Container */
+  
   .clistings-page {
     width: 100%;
     height: auto;
@@ -45,7 +45,7 @@ body, html {
     overflow-y: visible;
   }
   
-  /* Page Title */
+
   .page-title {
     text-align: center;
     font-size: 1.75rem;
@@ -69,7 +69,7 @@ body, html {
     transform: translateX(-50%);
   }
   
-  /* Conference List */
+  
   .clistings-list {
     display: flex;
     flex-direction: column;
@@ -78,7 +78,7 @@ body, html {
     margin-bottom: 2rem;
   }
   
-  /* Conference Card */
+
   .clistings-card {
     display: flex;
     align-items: flex-start;
@@ -97,7 +97,7 @@ body, html {
     box-shadow: 0 0.5rem 1rem rgba(179, 0, 0, 0.15);
   }
   
-  /* Conference Info */
+ 
   .clistings-info {
     flex: 1;
     padding: 0 1.25rem 0 0;
@@ -118,7 +118,7 @@ body, html {
     line-height: 1.5;
   }
   
-  /* Room Features */
+
   .room-features {
     display: flex;
     flex-wrap: wrap;
@@ -141,7 +141,7 @@ body, html {
     flex-shrink: 0;
   }
   
-  /* Price Information */
+
   .price-info {
     font-size: 1.25rem;
     font-weight: 600;
@@ -155,7 +155,7 @@ body, html {
     color: #777;
   }
   
-  /* Book Now Button */
+  
   .book-now {
     background: #e67e22;
     color: #fff;
@@ -178,7 +178,7 @@ body, html {
     transform: translateY(-0.125rem);
   }
   
-  /* Conference Image */
+ 
   .clistings-image {
     min-width: 18.75rem;
     max-width: 25rem;
@@ -201,7 +201,7 @@ body, html {
     transform: scale(1.05);
   }
   
-  /* Room Type Badge */
+ 
   .room-type-badge {
     position: absolute;
     top: 1rem;
@@ -214,7 +214,7 @@ body, html {
     font-weight: 600;
   }
   
-  /* Navigation menu */
+
   .nav-menu {
     position: fixed;
     top: 0;
@@ -236,7 +236,7 @@ body, html {
     transform: translateX(0);
   }
   
-  /* Menu Button */
+ 
   .menu-button {
     display: flex !important;
     visibility: visible !important;
@@ -259,7 +259,7 @@ body, html {
     background-color: #f5f5f5;
   }
   
-  /* Media Queries for Responsiveness */
+
   @media (max-width: 64rem) {
     .clistings-card {
       flex-direction: column;

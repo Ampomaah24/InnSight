@@ -88,7 +88,7 @@ body {
   position: relative;
 }
 
-/* Header section with profile */
+
 .dashboard-header-container {
   display: flex;
   justify-content: space-between;
@@ -131,7 +131,7 @@ body {
   margin-bottom: 0;
 }
 
-/* Profile section in header */
+
 .top-right-profile {
   position: static;
   margin-left: 2rem;
@@ -141,13 +141,13 @@ body {
   gap: 0.5rem;
 }
 
-/* Make sure profile dropdown appears above other elements */
+
 .profile-dropdown-container {
   position: relative;
   z-index: 150;
 }
 
-/* Optional: Adjust profile section size for dashboard */
+
 .top-right-profile .profile-name {
   font-size: 1rem;
 }
@@ -157,7 +157,7 @@ body {
   height: 2.5rem;
 }
 
-/* Summary Cards */
+
 .summary-cards {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -245,7 +245,7 @@ body {
   min-width: 1%;
 }
 
-/* Table Container */
+
 .table-container {
   background: white;
   padding: 1.75rem;
@@ -313,7 +313,7 @@ body {
   border-bottom: none;
 }
 
-/* Status Badges */
+
 .status {
   display: inline-block;
   padding: 0.35rem 0.7rem;
@@ -348,7 +348,7 @@ body {
   color: #1a73e8;
 }
 
-/* View More Button */
+
 .view-more {
   text-align: center;
   margin-top: 1.5rem;
@@ -370,7 +370,7 @@ body {
   color: white;
 }
 
-/* Loading State */
+
 .loading-indicator {
   text-align: center;
   padding: 2rem;
@@ -384,25 +384,25 @@ body {
   font-style: italic;
 }
 
-/* Remove any lines after card values */
+
 .card-value::after {
   display: none !important;
   content: none !important;
 }
 
-/* If the lines are being created by an element after the value */
+
 .card-value + span,
 .card-value + div {
   display: none !important;
 }
 
-/* If the lines are being styled similarly to the dashboard title */
+
 .summary-cards .card h2::after {
   display: none !important;
   content: none !important;
 }
 
-/* Mobile Responsiveness */
+
 @media (max-width: 62rem) {
   .sidebar {
     width: 14rem;
@@ -467,7 +467,7 @@ body {
   }
 }
 
-/* Fix for sidebar toggle button */
+
 .sidebar-toggle {
   position: fixed;
   top: 1rem;

@@ -23,7 +23,7 @@
   --spacing-lg: 2rem;
   --spacing-xl: 3rem;
 }
-/* Add these styles to your ServicesPage.css file */
+
 
 .availability-error {
   color: var(--error-color);
@@ -51,7 +51,7 @@ button.learn-more:disabled {
   opacity: 0.8;
 }
 
-/* Animation for the checking state */
+
 @keyframes pulse {
   0% { opacity: 0.6; }
   50% { opacity: 1; }
@@ -443,7 +443,7 @@ body, html {
   }
 }
 
-/* Animations */
+
 @keyframes fadeIn {
   from {
     opacity: 0;

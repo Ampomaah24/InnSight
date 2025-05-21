@@ -1,16 +1,13 @@
-// ReminderService.js - A service for managing pickup reminders
-
 import { collection, addDoc, query, where, getDocs, updateDoc, doc } from "firebase/firestore";
 import { db } from "../config/firebase";
-import { dateUtils } from "./dateUtils"; // Import the date utilities from your existing code
+import { dateUtils } from "./dateUtils"; 
 
 // Function to check for upcoming pickups and create reminders
 export const checkForUpcomingPickups = async () => {
   try {
-    // Get current time
+
     const now = new Date();
-    
-    // Get all pickups from both collections
+
     const bookingsRef = collection(db, "bookings");
     const bookingsQuery = query(
       bookingsRef, 
@@ -36,11 +33,10 @@ export const checkForUpcomingPickups = async () => {
           booking.pickupDetails.pickupTime
         );
         
-        // Calculate time difference in minutes
+
         const diffMs = pickupTime - now;
         const diffMinutes = diffMs / (1000 * 60);
         
-        // Check if pickup is between 55-65 minutes away (to avoid duplicate reminders)
         if (diffMinutes >= 55 && diffMinutes <= 65) {
           remindersToCreate.push({
             sourceId: doc.id,
@@ -59,7 +55,6 @@ export const checkForUpcomingPickups = async () => {
       }
     });
     
-    // Process transactions
     transactionsSnapshot.forEach(doc => {
       const transaction = doc.data();
       if (transaction.pickupDetails) {
@@ -71,8 +66,7 @@ export const checkForUpcomingPickups = async () => {
         // Calculate time difference in minutes
         const diffMs = pickupTime - now;
         const diffMinutes = diffMs / (1000 * 60);
-        
-        // Check if pickup is between 55-65 minutes away
+
         if (diffMinutes >= 55 && diffMinutes <= 65) {
           remindersToCreate.push({
             sourceId: doc.id,
@@ -91,10 +85,9 @@ export const checkForUpcomingPickups = async () => {
       }
     });
     
-    // Add reminders to the reminders collection
+    // Add reminders to the reminders collection in db
     const remindersRef = collection(db, "reminders");
     
-    // Check for existing reminders to avoid duplicates
     for (const reminder of remindersToCreate) {
       const existingQuery = query(
         remindersRef,
@@ -108,8 +101,6 @@ export const checkForUpcomingPickups = async () => {
       if (existingDocs.empty) {
         await addDoc(remindersRef, reminder);
         console.log(`Created 1-hour reminder for ${reminder.firstName} ${reminder.lastName}'s pickup`);
-        
-        // Send email notification if email service is set up
         await sendReminderEmail(reminder);
       }
     }
@@ -121,42 +112,11 @@ export const checkForUpcomingPickups = async () => {
   }
 };
 
-// Function to send reminder email (you would implement this with your preferred email service)
+// Function to send reminder email 
 const sendReminderEmail = async (reminderData) => {
   try {
-    // This is a placeholder - integrate with your email service
-    // For example, using Firebase Functions with Nodemailer or a service like SendGrid
     console.log(`Would send email reminder for pickup: ${reminderData.firstName} ${reminderData.lastName}`);
-    
-    // Example integration with a hypothetical email service:
-    /*
-    const emailData = {
-      to: "admin@yourcompany.com",
-      subject: `Upcoming Airport Pickup - ${reminderData.firstName} ${reminderData.lastName}`,
-      text: `Reminder: You have an airport pickup scheduled in about 1 hour.
-        
-        Guest: ${reminderData.firstName} ${reminderData.lastName}
-        Date: ${dateUtils.formatDate(reminderData.pickupDate)}
-        Time: ${reminderData.pickupTime}
-        Flight: ${reminderData.flightNumber || "N/A"}
-        Location: ${reminderData.airportLocation || "N/A"}
-        
-        Please ensure arrangements are in place.`,
-      html: `<h2>Upcoming Airport Pickup Reminder</h2>
-        <p>You have an airport pickup scheduled in about 1 hour.</p>
-        <table>
-          <tr><td><strong>Guest:</strong></td><td>${reminderData.firstName} ${reminderData.lastName}</td></tr>
-          <tr><td><strong>Date:</strong></td><td>${dateUtils.formatDate(reminderData.pickupDate)}</td></tr>
-          <tr><td><strong>Time:</strong></td><td>${reminderData.pickupTime}</td></tr>
-          <tr><td><strong>Flight:</strong></td><td>${reminderData.flightNumber || "N/A"}</td></tr>
-          <tr><td><strong>Location:</strong></td><td>${reminderData.airportLocation || "N/A"}</td></tr>
-        </table>
-        <p>Please ensure arrangements are in place.</p>`
-    };
-    
-    await emailService.send(emailData);
-    */
-    
+  
     return true;
   } catch (error) {
     console.error("Error sending reminder email:", error);
@@ -164,7 +124,7 @@ const sendReminderEmail = async (reminderData) => {
   }
 };
 
-// Function to get pending reminders for display in the UI
+
 export const getPendingReminders = async () => {
   try {
     const remindersRef = collection(db, "reminders");

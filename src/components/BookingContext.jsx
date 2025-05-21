@@ -1,9 +1,9 @@
 import React, { createContext, useState, useContext, useEffect } from 'react';
 
-// Create the booking context
+
 const BookingContext = createContext();
 
-// Provider component that wraps your app and makes booking data available to any child component that calls useBooking()
+// Provider component that wraps the app 
 export function BookingProvider({ children }) {
   // Attempt to load any existing booking data from sessionStorage
   const loadInitialState = () => {
@@ -16,7 +16,7 @@ export function BookingProvider({ children }) {
     }
   };
 
-  // Use the loaded data or null as initial state
+  
   const [bookingData, setBookingData] = useState(loadInitialState);
 
   // Save booking data to sessionStorage whenever it changes
@@ -40,7 +40,7 @@ export function BookingProvider({ children }) {
     }
   };
 
-  // Pass bookingData and setter functions in context value
+
   const contextValue = {
     bookingData,
     setBookingData,
@@ -54,7 +54,7 @@ export function BookingProvider({ children }) {
   );
 }
 
-// Custom hook that can be used by components to access the booking context
+// Custom hook to access the booking context
 export function useBooking() {
   const context = useContext(BookingContext);
   

@@ -29,25 +29,22 @@ const LoginPage = () => {
   const location = useLocation();
 
   useEffect(() => {
-    // Check for timeout parameter
+    // Check for timeout 
     const params = new URLSearchParams(window.location.search);
     if (params.get('timeout') === 'true') {
       setTimeoutOccurred(true);
-      // Remove timeout parameter from URL without reloading the page
+  
       window.history.replaceState({}, document.title, window.location.pathname);
-      
-      // Clear any saved redirects to prevent redirect loops
+     
       localStorage.removeItem('redirectAfterLogin');
-      sessionStorage.removeItem('currentUser'); // Also clear any stored user data
+      sessionStorage.removeItem('currentUser'); 
       
-      // Make sure we're not trying to use a stale auth state
-      // This ensures Firebase auth is properly reset
       const unsubscribe = auth.onAuthStateChanged((user) => {
         if (user) {
           // If somehow the user is still logged in, sign them out
           signOut(auth).catch(err => console.error("Error signing out after timeout:", err));
         }
-        unsubscribe(); // Unsubscribe after checking once
+        unsubscribe(); 
       });
     }
   }, []);
@@ -59,7 +56,7 @@ const LoginPage = () => {
     setIsLoading(true);
 
     try {
-      // Check for internet connection first
+      // Check for internet connection 
       if (!navigator.onLine) {
         throw new Error("network_error");
       }
@@ -73,7 +70,7 @@ const LoginPage = () => {
       if (userDoc.exists()) {
         const userData = userDoc.data();
         
-        // Create a standardized user object with all required fields
+        // Creating user object with all required fields
         const normalizedUser = {
           id: user.uid,
           email: user.email,
@@ -93,25 +90,23 @@ const LoginPage = () => {
           updatedAt: userData.updatedAt || new Date().toISOString()
         };
         
-        // Store complete user data
+   
         console.log("Storing normalized user data:", normalizedUser);
         sessionStorage.setItem('currentUser', JSON.stringify(normalizedUser));
         
-        // Check if the user has admin privileges (both admin and super admin should go to admin dashboard)
-        const isAdminUser = normalizedUser.role.includes('admin'); // This will match both "admin" and "super admin"
+        // Check if the user has admin privileges 
+        const isAdminUser = normalizedUser.role.includes('admin'); 
         
         if (timeoutOccurred) {
-          // If session timed out, always force a complete replacement of history
+    
           navigate(isAdminUser ? "/admin-dashboard" : "/services", { replace: true });
         } else {
-          // For normal login, use saved redirect if available
+       
           const redirectPath = localStorage.getItem('redirectAfterLogin') || 
                              (isAdminUser ? "/admin-dashboard" : "/services");
           
-          // Clear the saved redirect after using it
-          localStorage.removeItem('redirectAfterLogin');
-          
-          // Navigate to the destination
+  
+
           navigate(redirectPath, { replace: false });
         }
       }
@@ -143,7 +138,7 @@ const LoginPage = () => {
     setIsLoading(true);
 
     try {
-      // Check for internet connection first
+      
       if (!navigator.onLine) {
         throw new Error("network_error");
       }
@@ -198,9 +193,9 @@ const LoginPage = () => {
               {error && (
                 <div style={{
                   backgroundColor: "#faded7", 
-                  borderRadius: "4px",
-                  padding: "10px 15px",
-                  marginBottom: "15px",
+                  borderRadius: "0.25rem",
+                  padding: "0.625rem 0.9375rem",
+                  marginBottom: "0.9375rem",
                   color: "#333",
                   textAlign: "center" 
                 }}>
@@ -263,9 +258,9 @@ const LoginPage = () => {
               {error && (
                 <div style={{
                   backgroundColor: "#faded7", 
-                  borderRadius: "4px",
-                  padding: "10px 15px",
-                  marginBottom: "15px",
+                  borderRadius: "0.25rem",
+                  padding: "0.625rem 0.9375rem",
+                  marginBottom: "0.9375rem",
                   color: "#333",
                   textAlign: "center" 
                 }}>

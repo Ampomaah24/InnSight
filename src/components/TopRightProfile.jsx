@@ -9,11 +9,11 @@ const TopRightProfile = () => {
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
-  // Fetch user profile data - with sessionStorage check
+  // Fetch user profile data 
   useEffect(() => {
     const fetchUserProfile = async () => {
       try {
-        // First check sessionStorage for cached user data
+       
         const sessionUser = sessionStorage.getItem('currentUser');
         if (sessionUser) {
           const parsedUser = JSON.parse(sessionUser);
@@ -22,7 +22,7 @@ const TopRightProfile = () => {
           return;
         }
 
-        // If not in sessionStorage, get from Firestore
+        
         const currentUser = auth.currentUser;
 
         if (currentUser) {
@@ -32,7 +32,6 @@ const TopRightProfile = () => {
           if (userDoc.exists()) {
             const userData = userDoc.data();
 
-            // Create user object
             const userObj = {
               id: currentUser.uid,
               fname: userData.firstName || userData.fname || "User",
@@ -44,10 +43,10 @@ const TopRightProfile = () => {
             // Save to state
             setUser(userObj);
 
-            // Cache in sessionStorage
+         
             sessionStorage.setItem('currentUser', JSON.stringify(userObj));
           } else {
-            // Fallback to auth data
+           
             const userObj = {
               id: currentUser.uid,
               fname: currentUser.displayName?.split(' ')[0] || "User",
@@ -59,7 +58,7 @@ const TopRightProfile = () => {
             sessionStorage.setItem('currentUser', JSON.stringify(userObj));
           }
         } else {
-          // Default user for demo purposes if not logged in
+          
           setUser({
             fname: "Guest",
             lname: "User",
@@ -68,7 +67,7 @@ const TopRightProfile = () => {
         }
       } catch (error) {
         console.error("Error fetching user profile:", error);
-        // Fallback to default profile
+        // default profile
         setUser({
           fname: "Guest",
           lname: "User",
@@ -81,7 +80,7 @@ const TopRightProfile = () => {
 
     fetchUserProfile();
 
-    // Add listener for storage events to catch updates from other tabs/pages
+    // Add listener for storage events 
     const handleStorageChange = (e) => {
       if (e.key === 'currentUser') {
         try {
@@ -102,13 +101,13 @@ const TopRightProfile = () => {
     };
   }, []);
 
-  // Check for profile photo updates every 5 seconds
+  
   useEffect(() => {
     const checkProfileUpdates = () => {
       const sessionUser = sessionStorage.getItem('currentUser');
       if (sessionUser) {
         const parsedUser = JSON.parse(sessionUser);
-        // Only update if there's a difference (prevents unnecessary re-renders)
+      
         if (parsedUser.photoURL !== user?.photoURL ||
           parsedUser.fname !== user?.fname ||
           parsedUser.lname !== user?.lname) {
@@ -131,7 +130,7 @@ const TopRightProfile = () => {
   const handleLogout = () => {
     auth.signOut()
       .then(() => {
-        // Clear session storage
+      
         sessionStorage.removeItem('currentUser');
         // Redirect to login page
         navigate("/login");

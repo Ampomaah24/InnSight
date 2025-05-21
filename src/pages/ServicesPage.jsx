@@ -27,22 +27,16 @@ const ServicesPage = () => {
     endDate: null,
   });
 
-  // Loading states for availability checks
+  // Loading statess
   const [checkingRoomAvailability, setCheckingRoomAvailability] = useState(false);
   const [checkingConferenceAvailability, setCheckingConferenceAvailability] = useState(false);
-  
-  // Error messages for availability
   const [roomAvailabilityError, setRoomAvailabilityError] = useState("");
   const [conferenceAvailabilityError, setConferenceAvailabilityError] = useState("");
-  
-  // State for user profile data
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
-  
-  // Get the setBookingData function from our context
   const { setBookingData } = useBooking();
 
-  // Fetch user profile data - with sessionStorage check
+  // Fetch user profile data 
   useEffect(() => {
     const fetchUserProfile = async () => {
       try {
@@ -62,7 +56,6 @@ const ServicesPage = () => {
           
           if (userDoc.exists()) {
             const userData = userDoc.data();
-            // Make sure fname is not "Guest"
             const userObj = {
               id: currentUser.uid,
               fname: userData.firstName || userData.fname || currentUser.displayName?.split(' ')[0] || "User",
@@ -77,7 +70,7 @@ const ServicesPage = () => {
             setUser(userObj);
             sessionStorage.setItem('currentUser', JSON.stringify(userObj));
           } else {
-            // No user document, create from auth
+
             const userObj = {
               id: currentUser.uid,
               fname: currentUser.displayName?.split(' ')[0] || "User",
@@ -92,7 +85,7 @@ const ServicesPage = () => {
             sessionStorage.setItem('currentUser', JSON.stringify(userObj));
           }
         } else {
-          // No auth user
+     
           console.log("No authenticated user, setting to Guest");
           setUser({
             fname: "Guest",
@@ -147,7 +140,6 @@ const ServicesPage = () => {
     if (event.currentTarget === event.target.closest('.service-item')) {
       setConferenceDropdownOpen(false);
       setRoomDropdownOpen(prev => !prev);
-      // Clear any previous errors when opening/closing dropdown
       setRoomAvailabilityError("");
     }
   };
@@ -157,7 +149,6 @@ const ServicesPage = () => {
     if (event.currentTarget === event.target.closest('.service-item')) {
       setRoomDropdownOpen(false);
       setConferenceDropdownOpen(prev => !prev);
-      // Clear any previous errors when opening/closing dropdown
       setConferenceAvailabilityError("");
     }
   };
@@ -188,7 +179,7 @@ const ServicesPage = () => {
     };
   }, [roomDropdownOpen, conferenceDropdownOpen]);
 
-  // New function to check room availability
+  //  function to check room availability
   const checkRoomAvailability = async (checkIn, checkOut) => {
     if (!checkIn || !checkOut) {
       setRoomAvailabilityError("Please select both check-in and check-out dates");
@@ -208,19 +199,15 @@ const ServicesPage = () => {
         setRoomAvailabilityError("Check-out date must be after check-in date");
         return false;
       }
-      
-      // Query rooms collection
       const roomsCollection = collection(db, "rooms");
       const q = query(roomsCollection, where("availability", "==", true));
       const querySnapshot = await getDocs(q);
       
-      // Check if any rooms are available for these dates
       let availableRoomsCount = 0;
       
       querySnapshot.forEach((doc) => {
         const room = doc.data();
         
-        // If no bookings array or empty bookings, room is available
         if (!room.bookings || room.bookings.length === 0) {
           availableRoomsCount++;
           return;
@@ -233,7 +220,7 @@ const ServicesPage = () => {
           const bookedCheckIn = new Date(booking.checkIn);
           const bookedCheckOut = new Date(booking.checkOut);
           
-          // Check if there's an overlap
+          // Check for overlapping
           return selectedCheckIn < bookedCheckOut && selectedCheckOut > bookedCheckIn;
         });
         
@@ -257,7 +244,7 @@ const ServicesPage = () => {
     }
   };
 
-  // New function to check conference room availability
+  //  function to check conference room availability
   const checkConferenceAvailability = async (startDate, endDate) => {
     if (!startDate || !endDate) {
       setConferenceAvailabilityError("Please select both start and end dates");
@@ -267,8 +254,7 @@ const ServicesPage = () => {
     try {
       setCheckingConferenceAvailability(true);
       setConferenceAvailabilityError("");
-      
-      // Format dates for comparison
+   
       const selectedStartDate = new Date(startDate);
       const selectedEndDate = new Date(endDate);
       
@@ -304,7 +290,7 @@ const ServicesPage = () => {
           const bookedEnd = booking.endDate ? new Date(booking.endDate) : 
                           (booking.checkOut ? new Date(booking.checkOut) : null);
           
-          // Skip invalid bookings
+  
           if (!bookedStart || !bookedEnd) return false;
           
           // Check if there's an overlap
@@ -332,7 +318,7 @@ const ServicesPage = () => {
   };
 
   const handleRoomBooking = async (event) => {
-    // Prevent event propagation to parent elements
+
     event.preventDefault();
     event.stopPropagation();
     
@@ -342,7 +328,7 @@ const ServicesPage = () => {
       return;
     }
     
-    // Check availability first
+
     const isAvailable = await checkRoomAvailability(checkIn, checkOut);
     if (!isAvailable) {
       return;
@@ -364,10 +350,9 @@ const ServicesPage = () => {
         checkOut: checkOut.toISOString(),
         userId: user?.id || auth.currentUser?.uid || "guest",
         isGuest: !isLoggedIn,
-        fromServices: true // Flag to indicate the origin of this data
+        fromServices: true 
       });
       
-      // Navigate without params
       navigate('/room-booking');
     } catch (error) {
       console.error("Error saving room booking:", error.message);
@@ -376,7 +361,7 @@ const ServicesPage = () => {
   };
 
   const handleConferenceBooking = async (event) => {
-    // Prevent event propagation to parent elements
+ 
     event.preventDefault();
     event.stopPropagation();
     
@@ -404,14 +389,14 @@ const ServicesPage = () => {
         isGuest: !isLoggedIn
       });
       
-      // Store in context instead of URL params
+      
       setBookingData({
         startDate: startDate.toISOString(),
         endDate: endDate.toISOString(),
         userId: user?.id || auth.currentUser?.uid || "guest",
         isGuest: !isLoggedIn,
-        roomCategory: "conference", // Flag to indicate this is a conference booking
-        fromServices: true // Flag to indicate the origin of this data
+        roomCategory: "conference", 
+        fromServices: true 
       });
       
       // Navigate without params
@@ -485,7 +470,6 @@ const ServicesPage = () => {
                 placeholderText="Select check-out date"
               />
               
-              {/* Display room availability error */}
               {roomAvailabilityError && (
                 <div className="availability-error">{roomAvailabilityError}</div>
               )}
@@ -540,7 +524,6 @@ const ServicesPage = () => {
                 placeholderText="Select end date"
               />
               
-              {/* Display conference availability error */}
               {conferenceAvailabilityError && (
                 <div className="availability-error">{conferenceAvailabilityError}</div>
               )}

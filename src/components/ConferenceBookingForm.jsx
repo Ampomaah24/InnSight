@@ -10,13 +10,13 @@ import { PaystackConsumer } from "react-paystack";
 import PhoneInput, { isValidPhoneNumber } from "react-phone-number-input";
 import "react-phone-number-input/style.css";
 import NavMenu from "../components/NavMenu";
-import { useBooking } from "../components/BookingContext"; // Import the booking context
+import { useBooking } from "../components/BookingContext"; 
 import "../assets/styles/BookingPage.css";
 import img1 from "../assets/images/IMG_0123.JPG";
 
 const PAYSTACK_PUBLIC_KEY = import.meta.env.VITE_PAYSTACK_PUBLIC_KEY;
 
-// Input sanitization helper
+
 const sanitizeInput = (input) => {
   if (typeof input !== 'string') return input;
   return input
@@ -29,7 +29,7 @@ const sanitizeInput = (input) => {
 const ConferenceBookingForm = () => {
   const navigate = useNavigate();
   const auth = getAuth();
-  const { bookingData, setBookingData } = useBooking(); // Use booking context
+  const { bookingData, setBookingData } = useBooking(); 
   const [menuOpen, setMenuOpen] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -42,7 +42,7 @@ const ConferenceBookingForm = () => {
     longStayMinNights: 7
   });
 
-  // Check if we have the necessary data in the context
+ 
   useEffect(() => {
     if (!bookingData || !bookingData.selectedRooms || bookingData.selectedRooms.length === 0) {
       setError("No conference rooms selected. Please select a room first.");
@@ -59,8 +59,6 @@ const ConferenceBookingForm = () => {
   const selectedRooms = bookingData?.selectedRooms || [];
   const checkInParam = bookingData?.startDate || "";
   const checkOutParam = bookingData?.endDate || "";
-  // Only use discountFromContext if it comes from a valid source
-  // (e.g., when redirected from a room booking with a conference discount applied)
   const discountFromContext = bookingData?.discount || 0;
   const discountType = bookingData?.discountType || "";
 
@@ -72,11 +70,11 @@ const ConferenceBookingForm = () => {
     phone: "",
     idType: "",
     idNumber: "",
-    numberOfAttendees: 1, // New field for simple attendee count
+    numberOfAttendees: 1,
     specialRequests: "",
     checkIn: checkInParam, 
     checkOut: checkOutParam,
-    alsoBookingStay: "No" // Whether they want to book accommodation too
+    alsoBookingStay: "No"
   });
 
   const [phoneError, setPhoneError] = useState(false);
@@ -104,7 +102,7 @@ const ConferenceBookingForm = () => {
     setCsrfToken(generateToken());
   }, []);
 
-  // Fetch discounts if needed - but we won't apply them directly to conference bookings
+  // Fetch discounts if needed 
   useEffect(() => {
     const fetchDiscounts = async () => {
       try {
@@ -132,29 +130,26 @@ const ConferenceBookingForm = () => {
     fetchDiscounts();
   }, []);
 
-  // Fix scroll to top on page load
+
   useEffect(() => {
     window.scrollTo(0, 0);
   }, []);
 
-  // Calculate dates and total amount
+ 
   const checkInDate = new Date(formData.checkIn);
   const checkOutDate = new Date(formData.checkOut);
   const numberOfDays = Math.max(1, (checkOutDate - checkInDate) / (1000 * 3600 * 24));
-
-  // Apply discount only if it came from an external context (e.g., navigating from room booking)
-  // Conference bookings by themselves shouldn't get discounts
   const applicableDiscount = discountFromContext > 0 ? discountFromContext : 0;
   const actualDiscountName = discountType || '';
 
-  // Calculate total amount
+  
   const totalAmount = selectedRooms.reduce((acc, room) => {
     const originalPrice = Number(room.price || 0);
     const discountedPrice = applicableDiscount ? originalPrice - (originalPrice * applicableDiscount / 100) : originalPrice;
     return acc + (discountedPrice * numberOfDays);
   }, 0);
 
-  // Form handlers
+  // Form handling
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: sanitizeInput(value) }));
@@ -186,7 +181,7 @@ const ConferenceBookingForm = () => {
     try {
       const bookingPromises = [];
       
-      // Process each conference room
+      
       for (const room of selectedRooms) {
         const checkInFormatted = new Date(formData.checkIn);
         checkInFormatted.setHours(12, 0, 0, 0);
@@ -194,7 +189,7 @@ const ConferenceBookingForm = () => {
         const checkOutFormatted = new Date(formData.checkOut);
         checkOutFormatted.setHours(12, 0, 0, 0);
 
-        // First, try to find the exact room type
+     
         let roomQuery = query(
           collection(db, "conference_rooms"),
           where("availability", "==", true),
@@ -202,13 +197,11 @@ const ConferenceBookingForm = () => {
         );
 
         let roomSnapshot = await getDocs(roomQuery);
-        
-        // If no rooms of exact type, show a specific error
+
         if (roomSnapshot.empty) {
           throw new Error(`No conference rooms of type "${room.type}" are available.`);
         }
 
-        // Find a room without date conflicts
         let roomBooked = false;
         
         for (const roomDoc of roomSnapshot.docs) {
@@ -217,14 +210,12 @@ const ConferenceBookingForm = () => {
           const roomRef = roomDoc.ref;
           
           try {
-            // Use transaction to check and update room availability
             await runTransaction(db, async (transaction) => {
               const roomData = (await transaction.get(roomRef)).data();
               const existingBookings = roomData.bookings || [];
               
               // Check for overlaps with any existing bookings
               const hasOverlap = existingBookings.some(booking => {
-                // Support both naming conventions (checkIn/checkOut)
                 const existingCheckIn = new Date(booking.checkIn);
                 const existingCheckOut = new Date(booking.checkOut);
                 
@@ -235,8 +226,7 @@ const ConferenceBookingForm = () => {
               if (hasOverlap) {
                 throw new Error(`Room ${roomData.name || roomRef.id} is already booked for these dates.`);
               }
-              
-              // Update room with new booking
+            
               transaction.update(roomRef, {
                 bookings: [...existingBookings, {
                   checkIn: checkInFormatted.toISOString(),
@@ -245,10 +235,8 @@ const ConferenceBookingForm = () => {
               });
             });
             
-            // If transaction successful, room is available - proceed with booking creation
             roomBooked = true;
             
-            // Calculate prices with discount
             const originalPrice = Number(room.price || 0) * numberOfDays * formData.numberOfAttendees;
             const discountedPrice = applicableDiscount ? 
               originalPrice - (originalPrice * applicableDiscount / 100) : 
@@ -298,22 +286,19 @@ const ConferenceBookingForm = () => {
               await addDoc(bookingRef, newBooking);
               
             
-            break; // Found and booked a room, move to next room in selection
+            break; 
             
           } catch (error) {
-            // This specific room was unavailable - try the next one
             console.log(`Room ${roomRef.id} unavailable:`, error.message);
             continue;
           }
         }
-        
-        // If we couldn't book any room, throw a specific error
+
         if (!roomBooked) {
           throw new Error(`All conference rooms of type "${room.type}" are already booked for these dates.`);
         }
       }
       
-      // Wait for all booking documents to be created
       await Promise.all(bookingPromises);
       return true;
     } catch (err) {
@@ -326,7 +311,7 @@ const ConferenceBookingForm = () => {
   const config = {
     reference: `${csrfToken}_${new Date().getTime().toString()}`,
     email: formData.email,
-    amount: Math.round(totalAmount * 100), // Always full payment for conference
+    amount: Math.round(totalAmount * 100), 
     publicKey: PAYSTACK_PUBLIC_KEY,
     currency: "GHS",
     metadata: {
@@ -341,12 +326,12 @@ const ConferenceBookingForm = () => {
     }
   };
 
-  // Handle successful payment
+
   const onSuccess = async (reference) => {
     try {
       setProcessingPayment(true);
             
-      // Add transaction record
+      // Add transaction record to db
       await addDoc(collection(db, "transactions"), {
         type: "income",
         amount: totalAmount,
@@ -371,20 +356,16 @@ const ConferenceBookingForm = () => {
         totalAttendees: formData.numberOfAttendees
       });
       
-      // Complete booking with Firestore transaction
+
       await completeBooking();
-            
-      // If the user wants to book a room stay after conference
+
       if (formData.alsoBookingStay === "Yes") {
-        // Prepare discount for room booking if user has conference booking
-        // This is where we apply the conference attendee discount for room bookings
-        // (but not for the conference booking itself)
         setBookingData({
           ...bookingData,
           checkIn: formData.checkIn,
           checkOut: formData.checkOut,
           fromConference: true,
-          discount: discounts.conferenceAttendeeDiscount, // Apply conference discount to rooms
+          discount: discounts.conferenceAttendeeDiscount,
           discountType: "Conference Attendee",
           csrfToken: csrfToken
         });
@@ -393,10 +374,7 @@ const ConferenceBookingForm = () => {
         return;
       }
       
-// Find this section in ConferenceBookingForm.jsx (around line 550)
-// and replace with this improved version:
 
-// For normal flow, navigate to confirmation page
 const bookingDetails = {
   firstName: formData.firstName,
   lastName: formData.lastName,
@@ -414,7 +392,6 @@ const bookingDetails = {
   bookingGroupId: csrfToken
 };
 
-// Update booking context with confirmation details
 setBookingData({
   booking: bookingDetails,
   totalAttendees: formData.numberOfAttendees,
@@ -423,7 +400,6 @@ setBookingData({
   csrfToken
 });
 
-// Save to session storage as well for redundancy
 sessionStorage.setItem('bookingData', JSON.stringify(bookingDetails));
 
 navigate("/booking-confirmation");
@@ -435,9 +411,9 @@ navigate("/booking-confirmation");
     }
   };
 
-  // Function to go to login page
+
   const goToLogin = () => {
-    // Save current state to context before redirecting
+ 
     setBookingData({
       ...bookingData,
       returnPath: "/conference-book"
@@ -491,7 +467,7 @@ navigate("/booking-confirmation");
 
   return (
     <>
-      {/* NavMenu in top left */}
+    
       <div className="nav-container" style={{ backgroundColor: "transparent", boxShadow: "none" }}>
         <NavMenu menuOpen={menuOpen} setMenuOpen={setMenuOpen} />
       </div>
@@ -518,10 +494,8 @@ navigate("/booking-confirmation");
               </div>
             ) : (
               <form className="booking-form" onSubmit={(e) => e.preventDefault()}>
-                {/* Hidden CSRF token field */}
                 <input type="hidden" name="csrfToken" value={csrfToken} />
-                
-                {/* Basic Info - Conference Booker */}
+        
                 <div className="booking-form__full-width">
                   <h3 className="section__heading">Booking Contact Information</h3>
                   <p>Please provide your details as the primary contact for this conference booking.</p>
@@ -603,7 +577,6 @@ navigate("/booking-confirmation");
                   </div>
                 </div>
                 
-                {/* Conference Information */}
                 <div className="booking-form__full-width">
                   <h3 className="section__heading">Conference Details</h3>
                   
@@ -652,7 +625,6 @@ navigate("/booking-confirmation");
                   </div>
                 </div>
 
-                {/* Booking Summary */}
                 <div className="booking-form__full-width">
                   <div className="booking-summary">
                     <h3 className="section__heading">Booking Summary</h3>
@@ -691,7 +663,6 @@ navigate("/booking-confirmation");
                   </div>
                 </div>
 
-                {/* Payment Button */}
                 <div className="booking-form__full-width">
                   <PaystackConsumer {...config} onSuccess={onSuccess} onClose={() => setProcessingPayment(false)}>
                     {({ initializePayment }) => (

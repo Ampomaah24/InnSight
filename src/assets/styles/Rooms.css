@@ -1,4 +1,4 @@
-/* ======= Page Layout ======= */
+
 .dashboard-container {
   display: flex;
   min-height: 100vh;
@@ -9,19 +9,19 @@
   flex: 1;
   padding: 2rem;
   background: #f5f5f5;
-  margin-left: 250px;
-  max-width: 1400px;
+  margin-left: 15.625rem;
+  max-width: 87.5rem;
   margin-right: auto;
 }
 
-/* ======= Page Header ======= */
+
 .page-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
   margin-bottom: 2rem;
   padding-bottom: 1rem;
-  border-bottom: 2px solid #eee;
+  border-bottom: 0.125rem solid #eee;
 }
 
 .page-title {
@@ -38,29 +38,29 @@
   position: absolute;
   bottom: -0.5rem;
   left: 0;
-  width: 60px;
-  height: 4px;
+  width: 3.75rem;
+  height: 0.25rem;
   background-color: #DB6C24;
-  border-radius: 2px;
+  border-radius: 0.125rem;
 }
 
-/* ======= Room Stats ======= */
+
 .room-stats {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(15.625rem, 1fr));
   gap: 1.5rem;
   margin-bottom: 2rem;
 }
 
 .stat-card {
   background-color: white;
-  border-radius: 12px;
+  border-radius: 0.75rem;
   padding: 1.5rem;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  box-shadow: 0 0.125rem 0.5rem rgba(0, 0, 0, 0.05);
   position: relative;
   overflow: hidden;
   transition: all 0.3s ease;
-  border: 1px solid #f0f0f0;
+  border: 0.0625rem solid #f0f0f0;
 }
 
 .stat-card::before {
@@ -69,13 +69,13 @@
   top: 0;
   left: 0;
   right: 0;
-  height: 4px;
+  height: 0.25rem;
   background-color: #e0e0e0;
 }
 
 .stat-card:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+  transform: translateY(-0.3125rem);
+  box-shadow: 0 0.3125rem 0.9375rem rgba(0, 0, 0, 0.1);
 }
 
 .stat-title {
@@ -84,7 +84,7 @@
   margin-bottom: 0.5rem;
   font-weight: 500;
   text-transform: uppercase;
-  letter-spacing: 0.5px;
+  letter-spacing: 0.03125rem;
 }
 
 .stat-value {
@@ -118,15 +118,15 @@
   color: #ea4335;
 }
 
-/* ======= Filters ======= */
+
 .filters select {
   padding: 0.75rem 1rem;
-  border: 1px solid #e0e0e0;
-  border-radius: 8px;
+  border: 0.0625rem solid #e0e0e0;
+  border-radius: 0.5rem;
   font-size: 0.95rem;
   cursor: pointer;
   background-color: white;
-  min-width: 200px;
+  min-width: 12.5rem;
   transition: all 0.2s ease;
   font-family: inherit;
 }
@@ -134,29 +134,29 @@
 .filters select:focus {
   outline: none;
   border-color: #DB6C24;
-  box-shadow: 0 0 0 3px rgba(219, 108, 36, 0.1);
+  box-shadow: 0 0 0 0.1875rem rgba(219, 108, 36, 0.1);
 }
 
 .filters select:hover {
   border-color: #DB6C24;
 }
 
-/* ======= Table Container ======= */
+
 .table-container {
   background: white;
   padding: 1.5rem;
-  border-radius: 12px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-  border: 1px solid #f0f0f0;
+  border-radius: 0.75rem;
+  box-shadow: 0 0.125rem 0.5rem rgba(0, 0, 0, 0.05);
+  border: 0.0625rem solid #f0f0f0;
   margin-bottom: 2rem;
 }
 
 .table-responsive {
   overflow-x: auto;
-  margin: 0 -1px;
+  margin: 0 -0.0625rem;
 }
 
-/* ======= Rooms Table ======= */
+
 .rooms-table {
   width: 100%;
   border-collapse: separate;
@@ -170,15 +170,15 @@
   color: #333;
   text-align: left;
   padding: 1rem;
-  border-bottom: 2px solid #eee;
+  border-bottom: 0.125rem solid #eee;
   font-size: 0.9rem;
   text-transform: uppercase;
-  letter-spacing: 0.5px;
+  letter-spacing: 0.03125rem;
 }
 
 .rooms-table td {
   padding: 1rem;
-  border-bottom: 1px solid #f0f0f0;
+  border-bottom: 0.0625rem solid #f0f0f0;
   color: #444;
   font-size: 0.95rem;
   vertical-align: middle;
@@ -215,7 +215,7 @@
   font-size: 1rem;
 }
 
-/* ======= Features ======= */
+
 .feature-list {
   display: flex;
   flex-wrap: wrap;
@@ -226,22 +226,22 @@
   display: inline-block;
   background: #f8f9fa;
   padding: 0.375rem 0.75rem;
-  border-radius: 20px;
+  border-radius: 1.25rem;
   font-size: 0.8rem;
   color: #555;
-  border: 1px solid #e9ecef;
+  border: 0.0625rem solid #e9ecef;
   font-weight: 500;
 }
 
-/* ======= Status Dropdown ======= */
+
 .status-selector {
   position: relative;
 }
 
 .status-dropdown {
   padding: 0.6rem 0.75rem;
-  border-radius: 20px;
-  border: 1px solid transparent;
+  border-radius: 1.25rem;
+  border: 0.0625rem solid transparent;
   font-size: 0.875rem;
   font-weight: 600;
   cursor: pointer;
@@ -252,16 +252,16 @@
   background-repeat: no-repeat;
   background-position: right 0.75rem center;
   padding-right: 2rem;
-  min-width: 130px;
+  min-width: 8.125rem;
   transition: all 0.2s ease;
 }
 
 .status-dropdown:focus {
   outline: none;
-  box-shadow: 0 0 0 3px rgba(219, 108, 36, 0.1);
+  box-shadow: 0 0 0 0.1875rem rgba(219, 108, 36, 0.1);
 }
 
-/* Status Colors */
+
 .status-dropdown.available {
   background-color: #e6f4ea;
   color: #137333;
@@ -289,28 +289,27 @@
   background-color: #fadbd8;
 }
 
-/* ======= Remove Button ======= */
 .remove-btn {
   background-color: #fff;
   color: #dc3545;
-  border: 1px solid #dc3545;
+  border: 0.0625rem solid #dc3545;
   padding: 0.5rem 1.5rem;
-  border-radius: 6px;
+  border-radius: 0.375rem;
   font-size: 0.875rem;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.2s ease;
   white-space: nowrap;
-  min-width: 90px;
+  min-width: 5.625rem;
 }
 
 .remove-btn:hover {
   background-color: #dc3545;
   color: white;
-  transform: translateY(-1px);
+  transform: translateY(-0.0625rem);
 }
 
-/* ======= Loading State ======= */
+
 .loading {
   display: flex;
   justify-content: center;
@@ -325,8 +324,8 @@
   content: '';
   width: 1.5rem;
   height: 1.5rem;
-  border: 3px solid #f3f3f3;
-  border-top: 3px solid #DB6C24;
+  border: 0.1875rem solid #f3f3f3;
+  border-top: 0.1875rem solid #DB6C24;
   border-radius: 50%;
   margin-left: 1rem;
   animation: spin 1s linear infinite;
@@ -337,13 +336,13 @@
   100% { transform: rotate(360deg); }
 }
 
-/* ======= Pagination ======= */
+
 .pagination {
   display: flex;
   justify-content: flex-end;
   margin-top: 1.5rem;
   padding-top: 1rem;
-  border-top: 1px solid #eee;
+  border-top: 0.0625rem solid #eee;
 }
 
 .showing-entries {
@@ -352,11 +351,11 @@
   font-weight: 500;
 }
 
-/* Status update message */
+
 .status-message {
   margin-bottom: 1.5rem;
   padding: 1rem 1.25rem;
-  border-radius: 8px;
+  border-radius: 0.5rem;
   font-weight: 500;
   animation: fadeIn 0.3s ease-in-out;
   display: flex;
@@ -368,19 +367,19 @@
 .status-message.success {
   background-color: #e6f4ea;
   color: #137333;
-  border: 1px solid #ceead6;
+  border: 0.0625rem solid #ceead6;
 }
 
 .status-message.error {
   background-color: #fce8e6;
   color: #d33b2c;
-  border: 1px solid #fadbd8;
+  border: 0.0625rem solid #fadbd8;
 }
 
 @keyframes fadeIn {
   from { 
     opacity: 0; 
-    transform: translateY(-10px); 
+    transform: translateY(-0.625rem); 
   }
   to { 
     opacity: 1; 
@@ -388,29 +387,29 @@
   }
 }
 
-/* Status filter styling */
+
 .status-filter {
   min-width: 10rem;
 }
 
-/* Guest name cell */
+
 .guest-name {
   font-weight: 500;
   color: #444;
-  max-width: 200px;
+  max-width: 12.5rem;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
-/* ======= Responsive Adjustments ======= */
-@media (max-width: 1200px) {
+
+@media (max-width: 75rem) {
   .main-content {
-    margin-left: 250px;
+    margin-left: 15.625rem;
   }
 }
 
-@media (max-width: 992px) {
+@media (max-width: 62rem) {
   .room-stats {
     grid-template-columns: repeat(2, 1fr);
   }
@@ -431,13 +430,13 @@
   }
 }
 
-@media (max-width: 768px) {
+@media (max-width: 48rem) {
   .room-stats {
     grid-template-columns: 1fr;
   }
   
   .rooms-table {
-    min-width: 720px;
+    min-width: 45rem;
   }
   
   .main-content {
@@ -449,7 +448,7 @@
   }
 }
 
-@media (max-width: 576px) {
+@media (max-width: 36rem) {
   .stat-card {
     padding: 1rem;
   }

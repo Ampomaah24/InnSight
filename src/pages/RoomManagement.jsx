@@ -4,8 +4,6 @@ import { db } from "../config/firebase";
 import Sidebar from "../components/Sidebar";
 import "../assets/styles/Dashboard.css";
 import "../assets/styles/RoomManagement.css";
-
-// Icon imports
 import { FaEdit, FaSave, FaTimes, FaTrash, FaPlus } from 'react-icons/fa';
 
 const RoomManagement = () => {
@@ -38,8 +36,6 @@ const RoomManagement = () => {
   const [editingRoomType, setEditingRoomType] = useState(null);
   const [editedRoomType, setEditedRoomType] = useState("");
   const [roomCategory, setRoomCategory] = useState("hotel");
-  
-  // New state for bulk amenity editing
   const [showBulkAmenityModal, setShowBulkAmenityModal] = useState(false);
   const [selectedRoomType, setSelectedRoomType] = useState("");
   const [bulkAmenityInput, setBulkAmenityInput] = useState("");
@@ -69,7 +65,6 @@ const RoomManagement = () => {
           return {
             id: doc.id,
             ...data,
-            // Map t_room to type for consistency in the component
             type: data.t_room || data.type
           };
         });
@@ -92,9 +87,8 @@ const RoomManagement = () => {
     };
     
     fetchRooms();
-  }, [roomCategory]); // Refetch when category changes
+  }, [roomCategory]); 
 
-  // Update newRoom default when category changes
   useEffect(() => {
     setNewRoom(prev => ({
       ...prev,
@@ -105,7 +99,7 @@ const RoomManagement = () => {
   }, [roomCategory, roomTypes]);
 
   useEffect(() => {
-    // Filter rooms based on search term and room type
+//filter rooms
     const filtered = rooms.filter(room => {
       const matchesSearch = 
         (room.name && room.name.toLowerCase().includes(searchTerm.toLowerCase())) ||
@@ -136,7 +130,6 @@ const RoomManagement = () => {
     const { name, value } = e.target;
     
     if (name === "price") {
-      // Ensure price is always a number
       setEditedRoom({...editedRoom, [name]: parseFloat(value) || 0});
     } else {
       setEditedRoom({...editedRoom, [name]: value});
@@ -166,18 +159,15 @@ const RoomManagement = () => {
   const handleSave = async (id) => {
     try {
       setSaving(true);
-      
-      // Create a copy of the edited room without the id field
+
       const roomToUpdate = {...editedRoom};
       delete roomToUpdate.id;
-      
-      // Ensure we save the room type correctly based on the field name used in the database
+
       if (roomToUpdate.type) {
         roomToUpdate.t_room = roomToUpdate.type;
         delete roomToUpdate.type;
       }
-      
-      // Add timestamp for last update
+
       roomToUpdate.lastUpdated = serverTimestamp();
       
       // Update the room in Firestore
@@ -185,20 +175,15 @@ const RoomManagement = () => {
       const roomRef = doc(db, collectionName, id);
       await updateDoc(roomRef, roomToUpdate);
       
-      // Update local state
       setRooms(rooms.map(room => room.id === id ? editedRoom : room));
-      
-      // Reset edit state
       setEditRoom(null);
       setEditedRoom({});
       
-      // Show success message
       setSaveMessage({ 
         type: "success", 
         text: `Room ${editedRoom.name} updated successfully!` 
       });
       
-      // Clear message after 3 seconds
       setTimeout(() => {
         setSaveMessage({ type: "", text: "" });
       }, 3000);
@@ -220,7 +205,6 @@ const RoomManagement = () => {
     const { name, value } = e.target;
     
     if (name === "price") {
-      // Ensure price is always a number
       setNewRoom({...newRoom, [name]: parseFloat(value) || 0});
     } else {
       setNewRoom({...newRoom, [name]: value});
@@ -232,7 +216,6 @@ const RoomManagement = () => {
     if (amenityInput.trim() !== "") {
       const updatedAmenities = newRoom.amenities ? [...newRoom.amenities] : [];
       
-      // Check if amenity already exists
       if (!updatedAmenities.includes(amenityInput.trim())) {
         updatedAmenities.push(amenityInput.trim());
         setNewRoom({...newRoom, amenities: updatedAmenities});
@@ -249,7 +232,6 @@ const RoomManagement = () => {
     setNewRoom({...newRoom, amenities: updatedAmenities});
   };
   
-  // Save new room to Firestore
   const handleAddNewRoom = async () => {
     try {
       setSaving(true);
@@ -263,8 +245,7 @@ const RoomManagement = () => {
         setSaving(false);
         return;
       }
-      
-      // Check if a room with the same name already exists
+
       const roomExists = rooms.some(room => 
         room.name.toLowerCase() === newRoom.name.toLowerCase()
       );
@@ -277,27 +258,23 @@ const RoomManagement = () => {
         setSaving(false);
         return;
       }
-      
-      // Create room object to save
+
       const roomToAdd = {
         ...newRoom,
         availability: true, // Default to available
         createdAt: serverTimestamp(),
         lastUpdated: serverTimestamp()
       };
-      
-      // Use t_room field name for consistency with database
+
       if (roomToAdd.type) {
         roomToAdd.t_room = roomToAdd.type;
         delete roomToAdd.type;
       }
       
-      // Save to Firestore
       const collectionName = roomCategory === "conference" ? "conference_rooms" : "rooms";
       const roomsCollection = collection(db, collectionName);
       const docRef = await addDoc(roomsCollection, roomToAdd);
-      
-      // Add to local state with type properly set
+
       const newRoomWithId = {
         ...newRoom,
         id: docRef.id
@@ -314,21 +291,18 @@ const RoomManagement = () => {
         bookings: []
       });
       setShowAddForm(false);
-      
-      // Show success message
+
       setSaveMessage({ 
         type: "success", 
         text: `Room ${newRoom.name} added successfully!` 
       });
       
-      // Clear message after 3 seconds
       setTimeout(() => {
         setSaveMessage({ type: "", text: "" });
       }, 3000);
     } catch (error) {
       console.error("Error adding room:", error);
-      
-      // Show error message
+
       setSaveMessage({ 
         type: "error", 
         text: `Error adding room: ${error.message}` 
@@ -347,7 +321,6 @@ const RoomManagement = () => {
     try {
       setSaving(true);
       
-      // Delete from Firestore
       const collectionName = roomCategory === "conference" ? "conference_rooms" : "rooms";
       const roomRef = doc(db, collectionName, roomId);
       await deleteDoc(roomRef);
@@ -360,15 +333,13 @@ const RoomManagement = () => {
         type: "success", 
         text: `Room ${roomName} deleted successfully!` 
       });
-      
-      // Clear message after 3 seconds
+
       setTimeout(() => {
         setSaveMessage({ type: "", text: "" });
       }, 3000);
     } catch (error) {
       console.error("Error deleting room:", error);
       
-      // Show error message
       setSaveMessage({ 
         type: "error", 
         text: `Error deleting room: ${error.message}` 
@@ -454,7 +425,6 @@ const RoomManagement = () => {
   const handleDeleteRoomType = (index) => {
     const typeToDelete = roomTypes[roomCategory][index];
     
-    // Check if any rooms use this type
     const roomsWithType = rooms.filter(room => room.type === typeToDelete);
     
     if (roomsWithType.length > 0) {
@@ -487,7 +457,7 @@ const RoomManagement = () => {
     }, 3000);
   };
 
-  // Bulk amenity functions
+  // Bulk amenity function
   const handleOpenBulkAmenityModal = () => {
     setShowBulkAmenityModal(true);
     setSelectedRoomType("");
@@ -535,7 +505,6 @@ const RoomManagement = () => {
         return;
       }
 
-      // Create a batch update
       const batch = writeBatch(db);
       const collectionName = roomCategory === "conference" ? "conference_rooms" : "rooms";
       
@@ -558,7 +527,6 @@ const RoomManagement = () => {
         });
       });
       
-      // Commit the batch
       await batch.commit();
       
       // Update local state
@@ -579,15 +547,13 @@ const RoomManagement = () => {
       });
       
       setRooms(updatedRooms);
-      
-      // Close modal and reset
+
       setShowBulkAmenityModal(false);
       setSelectedRoomType("");
       setBulkAmenities([]);
       setBulkAmenityInput("");
       setBulkAction("add");
       
-      // Show success message
       setSaveMessage({
         type: "success",
         text: `${roomsToUpdate.length} rooms of type "${selectedRoomType}" updated successfully!`
@@ -688,7 +654,7 @@ const RoomManagement = () => {
           </div>
         </div>
         
-        {/* Bulk Amenity Modal */}
+        {/* Bulk Amenty Modal */}
         {showBulkAmenityModal && (
           <div className="modal-overlay">
             <div className="bulk-amenity-modal">
@@ -886,7 +852,6 @@ const RoomManagement = () => {
           </div>
         )}
         
-        {/* Add New Room Form */}
         {showAddForm && (
           <div className="add-room-form">
             <h3>Add New {roomCategory === "hotel" ? "Room" : "Conference Room"}</h3>
@@ -1016,7 +981,7 @@ const RoomManagement = () => {
                   filteredRooms.map((room) => (
                     <tr key={room.id}>
                       {editRoom === room.id ? (
-                        // Edit mode
+                      
                         <>
                           <td>
                             <input
@@ -1111,7 +1076,7 @@ const RoomManagement = () => {
                           </td>
                         </>
                       ) : (
-                        // View mode
+                  
                         <>
                           <td>{room.name}</td>
                           <td>{room.type}</td>

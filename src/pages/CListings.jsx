@@ -12,7 +12,7 @@ const CListings = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // Room descriptions that will be mapped to room types
+  // Room descriptions  mapped to room types
   const roomDescriptions = {
     "large": "Our Grand Hall provides a spacious setting for large events. With high ceilings, large windows, and good lighting, this area can be arranged for conferences, or formal dinners. The neutral colors work well with any decoration theme, and the room includes sound equipment and presentation technology.",
     "executive": "Perfect for board meetings and executive discussions. This long conference room features a sleek table, premium chairs, and video conferencing facilities.",
@@ -21,13 +21,12 @@ const CListings = () => {
     "long": "Perfect for board meetings and executive discussions. This long conference room features a sleek table, premium chairs, and video conferencing facilities."
   };
 
-  // Fix scroll position on page load
+  
   useEffect(() => {
     window.scrollTo(0, 0);
     
-    // Add event listener to handle resize and ensure content visibility
+    // Add event listener to handle resizing 
     const handleResize = () => {
-      // Force a reflow to ensure content renders correctly
       document.body.style.overflow = 'hidden';
       setTimeout(() => {
         document.body.style.overflow = '';
@@ -35,8 +34,7 @@ const CListings = () => {
     };
 
     window.addEventListener('resize', handleResize);
-    
-    // Call once on component mount
+ 
     handleResize();
     
     return () => {
@@ -44,14 +42,14 @@ const CListings = () => {
     };
   }, []);
 
-  // Fetch conference rooms from Firestore
+  // Fetch conference rooms from db
   useEffect(() => {
     const fetchConferenceRooms = async () => {
       try {
         setLoading(true);
         const roomsCollection = collection(db, "conference_rooms");
         
-        // Query for available conference rooms
+  
         const q = query(roomsCollection, where("availability", "==", true));
         const querySnapshot = await getDocs(q);
         
@@ -59,7 +57,7 @@ const CListings = () => {
         querySnapshot.forEach((doc) => {
           const data = doc.data();
           
-          // Get the room type in lowercase for mapping to descriptions
+     
           const roomType = (data.type || '').toLowerCase();
           
           roomData.push({

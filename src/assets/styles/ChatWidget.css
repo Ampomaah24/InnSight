@@ -1,11 +1,11 @@
-/* Enhanced ChatWidget.css - Themed to match hotel branding */
+
 
 :root {
-  --primary-color: #e67e30; /* Updated to match the orange header */
+  --primary-color: #e67e30; 
   --primary-light: #f08c48;
   --primary-dark: #d46a1e;
   --secondary-color: #34495e;
-  --accent-color: #3a6ea5; /* Blue accent for contrast */
+  --accent-color: #3a6ea5; 
   --accent-dark: #2c5380;
   --text-dark: #2c3e50;
   --text-light: #7f8c8d;
@@ -15,13 +15,13 @@
   --border-radius-sm: 0.375rem;
   --border-radius: 0.5rem;
   --border-radius-lg: 0.75rem;
-  --shadow-sm: 0 2px 5px rgba(0, 0, 0, 0.05);
-  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.08);
-  --shadow-lg: 0 8px 20px rgba(0, 0, 0, 0.12);
+  --shadow-sm: 0 0.125rem 0.3125rem rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 0.25rem 0.75rem rgba(0, 0, 0, 0.08);
+  --shadow-lg: 0 0.5rem 1.25rem rgba(0, 0, 0, 0.12);
   --transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
 }
 
-/* Loading animation */
+
 .loading-message {
   padding: 0.625rem;
   background: transparent;
@@ -61,12 +61,12 @@
     transform: translateY(0);
   }
   50% {
-    transform: translateY(-5px);
+    transform: translateY(-0.3125rem);
   }
 }
 
-/* Responsive adjustments */
-@media (max-width: 640px) {
+
+@media (max-width: 40rem) {
   .chat-dialog {
     width: 90vw;
     max-width: 22rem;
@@ -104,9 +104,9 @@
   }
   
   .arrow-icon {
-    border-top: 7px solid transparent;
-    border-bottom: 7px solid transparent;
-    border-left: 10px solid white;
+    border-top: 0.4375rem solid transparent;
+    border-bottom: 0.4375rem solid transparent;
+    border-left: 0.625rem solid white;
   }
 
   .chat-header h3 {
@@ -118,7 +118,7 @@
   }
 }
 
-@media (max-width: 480px) {
+@media (max-width: 30rem) {
   .chatbot-container {
     bottom: 1.5rem;
     right: 1.5rem;
@@ -161,9 +161,9 @@
   }
   
   .arrow-icon {
-    border-top: 6px solid transparent;
-    border-bottom: 6px solid transparent;
-    border-left: 9px solid white;
+    border-top: 0.375rem solid transparent;
+    border-bottom:  0.375rem solid transparent;
+    border-left:  0.5625rem solid white;
   }
 
   .chat-input-container button {
@@ -181,7 +181,7 @@
   }
 }
 
-/* Chatbot container - positioned at bottom right */
+
 .chatbot-container {
   position: fixed;
   bottom: 2.5rem;
@@ -192,13 +192,13 @@
   align-items: flex-end;
 }
 
-/* Chat button wrapper - for positioning speech bubble */
+
 .chat-button-wrapper {
   position: relative;
   display: inline-block;
 }
 
-/* Speech bubble styling */
+
 .speech-bubble {
   position: absolute;
   top: -2.5rem;
@@ -214,7 +214,7 @@
   z-index: 1001;
 }
 
-/* Speech bubble tail */
+
 .speech-bubble:after {
   content: '';
   position: absolute;
@@ -224,20 +224,20 @@
   height: 1rem;
   background-color: white;
   transform: rotate(45deg);
-  box-shadow: 2px 2px 2px rgba(0, 0, 0, 0.05);
+  box-shadow: 0.125rem 0.125rem 0.125rem rgba(0, 0, 0, 0.05);
 }
 
-/* Bubble animation */
+
 @keyframes bubbleBounce {
   0%, 100% {
     transform: translateY(0);
   }
   50% {
-    transform: translateY(-5px);
+    transform: translateY(-0.3125rem);
   }
 }
 
-/* Chat toggle button - Updated for human emoji */
+
 .chat-toggle-button {
   width: 3.75rem;
   height: 3.75rem;
@@ -251,18 +251,18 @@
   align-items: center;
   cursor: pointer;
   transition: var(--transition);
-  font-size: 1.75rem; /* Increased font size for emoji */
+  font-size: 1.75rem; 
   position: relative;
   overflow: hidden;
 }
 
-/* Styles for the human emoji */
+
 .human-emoji {
   font-size: 1.75rem;
   line-height: 1;
 }
 
-/* Style for the close icon when chat is open */
+
 .close-icon {
   font-size: 1.75rem;
   font-weight: bold;
@@ -287,8 +287,8 @@
 
 .chat-toggle-button:hover {
   background: linear-gradient(135deg, var(--primary-dark) 0%, var(--primary-color) 100%);
-  transform: translateY(-3px) scale(1.05);
-  box-shadow: 0 8px 15px rgba(230, 126, 48, 0.3);
+  transform: translateY(-0.1875rem) scale(1.05);
+  box-shadow: 0 0.5rem 0.9375rem rgba(230, 126, 48, 0.3);
 }
 
 .chat-toggle-button:active {
@@ -296,13 +296,13 @@
   box-shadow: var(--shadow-sm);
 }
 
-/* Chat dialog */
+
 .chat-dialog {
   position: absolute;
   bottom: 5rem;
   right: 0;
   width: 22rem;
-  height: 35rem; /* Increased height for better usability */
+  height: 35rem; 
   background-color: var(--bg-light);
   border-radius: var(--border-radius-lg);
   box-shadow: var(--shadow-lg);
@@ -310,14 +310,14 @@
   flex-direction: column;
   overflow: hidden;
   transition: var(--transition);
-  border: 1px solid rgba(0, 0, 0, 0.05);
+  border: 0.0625rem solid rgba(0, 0, 0, 0.05);
   animation: chatDialogFadeIn 0.3s ease-out;
 }
 
 @keyframes chatDialogFadeIn {
   from {
     opacity: 0;
-    transform: translateY(20px) scale(0.95);
+    transform: translateY(1.25rem) scale(0.95);
   }
   to {
     opacity: 1;
@@ -325,7 +325,7 @@
   }
 }
 
-/* Chat header */
+
 .chat-header {
   padding: 1.25rem 1.5rem;
   background: var(--primary-color);
@@ -341,7 +341,7 @@
   margin: 0;
   font-size: 1.25rem;
   font-weight: 600;
-  letter-spacing: 0.5px;
+  letter-spacing: 0.03125rem;
 }
 
 .close-chat {
@@ -363,7 +363,7 @@
   background-color: rgba(255, 255, 255, 0.15);
 }
 
-/* Chat messages container */
+
 .chat-messages {
   flex: 1;
   padding: 1.5rem;
@@ -371,26 +371,26 @@
   display: flex;
   flex-direction: column;
   gap: 1rem;
-  background-color: #f5f7fa; /* Lighter background */
+  background-color: #f5f7fa; 
   scrollbar-width: thin;
   scrollbar-color: var(--primary-light) #eef0f5;
 }
 
 .chat-messages::-webkit-scrollbar {
-  width: 6px;
+  width: 0.375rem;
 }
 
 .chat-messages::-webkit-scrollbar-track {
   background: #eef0f5;
-  border-radius: 10px;
+  border-radius: 0.625rem;
 }
 
 .chat-messages::-webkit-scrollbar-thumb {
   background: var(--primary-light);
-  border-radius: 10px;
+  border-radius: 0.625rem;
 }
 
-/* Message styles */
+
 .chat-message {
   max-width: 85%;
   padding: 1rem 1.25rem;
@@ -405,7 +405,7 @@
 @keyframes messageFadeIn {
   from {
     opacity: 0;
-    transform: translateY(10px);
+    transform: translateY(0.625rem);
   }
   to {
     opacity: 1;
@@ -441,11 +441,11 @@
   margin-top: 0.25rem;
 }
 
-/* Chat input container */
+
 .chat-input-container {
   display: flex;
   padding: 1rem 1.25rem;
-  border-top: 1px solid rgba(0, 0, 0, 0.05);
+  border-top: 0.0625rem solid rgba(0, 0, 0, 0.05);
   background-color: white;
   align-items: center;
 }
@@ -453,7 +453,7 @@
 .chat-input-container input {
   flex: 1;
   padding: 0.875rem 1.25rem;
-  border: 1px solid #e6855f; /* Border color matching the orange theme */
+  border: 0.0625rem solid #e6855f; 
   border-radius: 2rem;
   outline: none;
   font-size: 1rem;
@@ -464,7 +464,7 @@
 
 .chat-input-container input:focus {
   border-color: var(--primary-light);
-  box-shadow: 0 0 0 2px rgba(224, 124, 56, 0.1);
+  box-shadow: 0 0 0 0.125rem rgba(224, 124, 56, 0.1);
   background-color: white;
 }
 
@@ -476,32 +476,32 @@
   margin-left: 0.75rem;
   width: 2.5rem;
   height: 2.5rem;
-  min-width: 2.5rem; /* Add explicit min-width to prevent expansion */
-  max-width: 2.5rem; /* Add max-width to constrain the width */
+  min-width: 2.5rem; 
+  max-width: 2.5rem; 
   border-radius: 50%;
   border: none;
-  background: #e67e30; /* Exact color from screenshot */
+  background: #e67e30; 
   color: white;
   cursor: pointer;
   transition: all 0.2s ease;
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 2px 5px rgba(230, 126, 48, 0.2);
-  padding: 0; /* Remove any padding that might contribute to size */
-  flex-shrink: 0; /* Prevent button from shrinking */
+  box-shadow: 0 0.125rem 0.3125rem rgba(230, 126, 48, 0.2);
+  padding: 0; 
+  flex-shrink: 0; 
 }
 
 
 .send-button:hover {
   background: #d46a1e;
-  transform: translateY(-2px);
-  box-shadow: 0 4px 8px rgba(230, 126, 48, 0.25);
+  transform: translateY(-0.125rem);
+  box-shadow: 0 0.25rem 0.5rem rgba(230, 126, 48, 0.25);
 }
 
 .send-button:active {
   transform: translateY(0);
-  box-shadow: 0 2px 3px rgba(230, 126, 48, 0.2);
+  box-shadow: 0 0.125rem 0.1875rem rgba(230, 126, 48, 0.2);
 }
 
 .send-button:disabled {
@@ -512,17 +512,17 @@
   opacity: 0.7;
 }
 
-/* Arrow icon styling */
+
 .arrow-icon {
   width: 0;
   height: 0;
-  border-top: 8px solid transparent;
-  border-bottom: 8px solid transparent;
-  border-left: 12px solid white;
-  margin-left: 3px; /* Slight offset to center visually */
+  border-top: 0.5rem solid transparent;
+  border-bottom: 0.5rem solid transparent;
+  border-left: 0.75rem solid white;
+  margin-left: 0.1875rem; 
 }
 
-/* Action button styles */
+
 .action-button {
   background: var(--accent-color);
   color: white;
@@ -533,18 +533,18 @@
   cursor: pointer;
   font-size: 0.9375rem;
   transition: var(--transition);
-  box-shadow: 0 2px 5px rgba(58, 110, 165, 0.2);
+  box-shadow: 0 0.125rem 0.3125rem rgba(58, 110, 165, 0.2);
   font-weight: 500;
-  letter-spacing: 0.3px;
+  letter-spacing: 0.01875rem;
 }
 
 .action-button:hover {
   background: var(--accent-dark);
-  transform: translateY(-2px);
-  box-shadow: 0 4px 8px rgba(58, 110, 165, 0.25);
+  transform: translateY(-0.125rem);
+  box-shadow: 0 0.25rem 0.5rem rgba(58, 110, 165, 0.25);
 }
 
 .action-button:active {
   transform: translateY(0);
-  box-shadow: 0 2px 3px rgba(58, 110, 165, 0.2);
+  box-shadow: 0 0.125rem 0.1875rem rgba(58, 110, 165, 0.2);
 }

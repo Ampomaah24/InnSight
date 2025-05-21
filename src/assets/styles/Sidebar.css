@@ -112,7 +112,7 @@
   letter-spacing: 0.0125rem;
 }
 
-/* Mobile Responsiveness */
+
 @media (max-width: 48rem) {
   .sidebar-toggle {
     display: block;

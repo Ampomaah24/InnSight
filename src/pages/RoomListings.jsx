@@ -16,7 +16,7 @@ const RoomListings = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // Room descriptions that will be mapped to room types
+  // Room descriptions to room types
   const roomDescriptions = {
     "single bed": "Enjoy a comfortable stay in our Single Room, designed for solo travelers or business guests. It comes with a soft, high-quality single bed, fresh bedding, and everything you need to relax or get work done. The room is cozy, well-organized, and perfect for a quiet and restful stay.",
     "double bed": "Our Double Room is a great choice if you want more space. It features a large, comfortable double bed with soft bedding, making it ideal for couples or anyone who likes extra room while sleeping. The room is stylish, peaceful, and perfect for a relaxing visit.",
@@ -34,13 +34,11 @@ const RoomListings = () => {
     }
   };
 
-  // Fix scroll position on page load and ensure content is visible
   useEffect(() => {
     window.scrollTo(0, 0);
     
-    // Add event listener to handle resize and ensure content visibility
+
     const handleResize = () => {
-      // Force a reflow to ensure content renders correctly
       document.body.style.overflow = 'hidden';
       setTimeout(() => {
         document.body.style.overflow = '';
@@ -48,8 +46,6 @@ const RoomListings = () => {
     };
 
     window.addEventListener('resize', handleResize);
-    
-    // Call once on component mount
     handleResize();
     
     return () => {
@@ -63,12 +59,10 @@ const RoomListings = () => {
       try {
         setLoading(true);
         const roomsCollection = collection(db, "rooms");
-        
-        // Query for available rooms
+
         const q = query(roomsCollection, where("availability", "==", true));
         const querySnapshot = await getDocs(q);
-        
-        // Create a map to group rooms by type
+
         const roomsByType = {};
         
         querySnapshot.forEach((doc) => {
@@ -90,16 +84,14 @@ const RoomListings = () => {
           } else {
             // Update room count
             roomsByType[roomType].count += 1;
-            
-            // Update price range
+
             if (data.price < roomsByType[roomType].lowestPrice) {
               roomsByType[roomType].lowestPrice = data.price;
             }
             if (data.price > roomsByType[roomType].highestPrice) {
               roomsByType[roomType].highestPrice = data.price;
             }
-            
-            // Combine amenities if they don't already exist
+
             if (data.amenities) {
               data.amenities.forEach(amenity => {
                 if (!roomsByType[roomType].features.includes(amenity)) {
@@ -110,7 +102,6 @@ const RoomListings = () => {
           }
         });
         
-        // Convert the roomsByType object to an array
         const groupedRoomTypes = Object.values(roomsByType);
         
         setRoomTypes(groupedRoomTypes);
@@ -175,7 +166,7 @@ const RoomListings = () => {
 
   return (
     <div className="main-container">
-      {/* NavMenu in top left */}
+
       <div className="nav-container" style={{ backgroundColor: "transparent", boxShadow: "none" }}>
         <NavMenu menuOpen={menuOpen} setMenuOpen={setMenuOpen} />
       </div>
@@ -219,7 +210,7 @@ const RoomListings = () => {
                   onClick={() => handleBookNow(roomType.type.toLowerCase())}
                 >
                   Book Now
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ marginLeft: '6px' }}>
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ marginLeft: '0.375rem' }}>
                     <path d="M5 12h14M12 5l7 7-7 7" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
                   </svg>
                 </button>

@@ -8,21 +8,20 @@ const NavMenu = ({ menuOpen, setMenuOpen }) => {
   const menuRef = useRef(null);
   const timeoutRef = useRef(null);
 
-  // Handle mouse leave to close menu with a slight delay
+
   const handleMouseLeave = () => {
     timeoutRef.current = setTimeout(() => {
       setMenuOpen(false);
-    }, 300); // 300ms delay before closing
+    }, 300); 
   };
 
-  // Cancel the close timeout if mouse returns to menu
+  
   const handleMouseEnter = () => {
     if (timeoutRef.current) {
       clearTimeout(timeoutRef.current);
     }
   };
 
-  // Clean up timeout when component unmounts
   useEffect(() => {
     return () => {
       if (timeoutRef.current) {
@@ -31,7 +30,7 @@ const NavMenu = ({ menuOpen, setMenuOpen }) => {
     };
   }, []);
 
-  // Handle click outside to close menu (backup method)
+
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (menuRef.current && !menuRef.current.contains(event.target)) {
@@ -44,7 +43,6 @@ const NavMenu = ({ menuOpen, setMenuOpen }) => {
       document.addEventListener("mousedown", handleClickOutside);
     }
 
-    // Cleanup the event listener
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
     };

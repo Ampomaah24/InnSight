@@ -105,7 +105,7 @@ body {
   backdrop-filter: blur(0.5rem);
   box-shadow: 0 0.5rem 2rem rgba(0, 0, 0, 0.05);
   animation: formAppear 1s ease-out;
-  border: 1px solid rgba(255, 255, 255, 0.5);
+  border: 0.0625rem solid rgba(255, 255, 255, 0.5);
 }
 
 
@@ -297,7 +297,7 @@ body {
   position: absolute;
   bottom: 0;
   left: 0;
-  height: 2px;
+  height: 0.125rem;
   width: 0;
   background-color: var(--primary-color);
   transition: var(--transition-standard);

@@ -1,11 +1,9 @@
-// Add this to your app's main component or navigation component
-
 import React, { useEffect, useState, createContext, useContext } from 'react';
 import { auth, db } from "../config/firebase";
 import { doc, getDoc } from "firebase/firestore";
 import { onAuthStateChanged } from "firebase/auth";
 
-// Create a context for user data
+
 export const UserContext = createContext(null);
 
 export const UserProvider = ({ children }) => {
@@ -14,7 +12,7 @@ export const UserProvider = ({ children }) => {
 
   // Function to normalize user data
   const normalizeUserData = (user, data) => {
-    // Extract first name and last name from fullName if available
+ 
     let firstName = "";
     let lastName = "";
     
@@ -40,7 +38,7 @@ export const UserProvider = ({ children }) => {
       photoURL: data.photoURL || user.photoURL || null,
       avatar: data.avatar || null,
       role: data.role || 'user',
-      // Additional properties from your user object
+  
       phone: data.phone || "",
       address: data.address || "",
       dateOfBirth: data.dateOfBirth || "",
@@ -50,7 +48,7 @@ export const UserProvider = ({ children }) => {
     };
   };
 
-  // Fetch user data from Firestore
+  // Fetch user data from db
   const fetchUserData = async (user) => {
     if (!user) return null;
     
@@ -70,18 +68,17 @@ export const UserProvider = ({ children }) => {
   };
 
   useEffect(() => {
-    // Listen for auth state changes
+  
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
       if (user) {
         try {
-          // Get user data from Firestore
+          // Get user data from db
           const firestoreData = await fetchUserData(user);
           
           if (firestoreData) {
             // Normalize user data
             const normalizedUser = normalizeUserData(user, firestoreData);
             
-            // Update context state
             setCurrentUser(normalizedUser);
             
             // Update sessionStorage
@@ -96,7 +93,7 @@ export const UserProvider = ({ children }) => {
           }
         } catch (err) {
           console.error("Error in auth state change:", err);
-          // Set basic user info if Firestore fetch fails
+    
           setCurrentUser({
             id: user.uid,
             email: user.email,
@@ -106,14 +103,14 @@ export const UserProvider = ({ children }) => {
           setLoading(false);
         }
       } else {
-        // User is logged out
+
         setCurrentUser(null);
         sessionStorage.removeItem('currentUser');
         setLoading(false);
       }
     });
     
-    // Check sessionStorage on initial load
+   
     const storedUser = sessionStorage.getItem('currentUser');
     if (storedUser) {
       try {
@@ -124,7 +121,7 @@ export const UserProvider = ({ children }) => {
       }
     }
     
-    // Clean up subscription
+
     return () => unsubscribe();
   }, []);
 
@@ -135,7 +132,7 @@ export const UserProvider = ({ children }) => {
   );
 };
 
-// Custom hook to use the user context
+
 export const useUser = () => {
   const context = useContext(UserContext);
   if (context === undefined) {

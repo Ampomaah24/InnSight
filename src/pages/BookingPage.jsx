@@ -1156,9 +1156,9 @@ const BookingPage = () => {
                           </div>
                         </div>
                         
-                        {/* Guest information forms - Simplified to just names */}
+                     
                         {roomInfo.guests.map((guest, guestIndex) => {
-                          // Check if this is the main booker
+            
                           const isMainBooker = isMainBookerRoom && guestIndex === 0;
                           
                           return (
@@ -1171,7 +1171,7 @@ const BookingPage = () => {
                               {isMainBooker ? (
                                 <p>Using main booker information from above</p>
                               ) : (
-                                // For other guests, just collect names
+                          
                                 <div className="guest-form__grid">
                                   <div className="form-field">
                                     <label className="form-field__label form-field__required">First Name</label>
@@ -1196,7 +1196,7 @@ const BookingPage = () => {
                                 </div>
                               )}
                               
-                              {/* Note about accounts being created at check-in */}
+                              
                               {!isMainBooker && (
                                 <div className="notification notification--info">
                                   Guest registration will be completed upon arrival
@@ -1210,7 +1210,7 @@ const BookingPage = () => {
                   })}
                 </div>
 
-                {/* Airport Pickup Section */}
+               
                 <div className="booking-form__full-width">
                   <h3 className="section__heading">Additional Services</h3>
                   <div className="form-field">
@@ -1240,7 +1240,7 @@ const BookingPage = () => {
                         </div>
                         <div className="form-field">
                           <label className="form-field__label form-field__required">Pickup Time</label>
-                          {/* Here's the modified time picker component */}
+                         
                           <input 
                             type="time" 
                             name="pickupTime" 

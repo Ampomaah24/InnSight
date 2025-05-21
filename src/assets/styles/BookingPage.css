@@ -30,17 +30,17 @@
   align-items: center;
   justify-content: center;
   z-index: 1000;
-  backdrop-filter: blur(3px);
+  backdrop-filter: blur(0.1875rem);
 }
 
 .error-modal {
   background: white;
-  border-radius: 8px;
+  border-radius: 0.5rem;
   padding: 2rem;
   width: 90%;
-  max-width: 450px;
+  max-width: 28.125rem;
   text-align: center;
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 0.625rem 1.5625rem rgba(0, 0, 0, 0.1);
   animation: modalFadeIn 0.3s ease;
 }
 
@@ -65,7 +65,7 @@
 @keyframes modalFadeIn {
   from {
     opacity: 0;
-    transform: translateY(-20px);
+    transform: translateY(-1.25rem);
   }
   to {
     opacity: 1;
@@ -95,12 +95,7 @@
   align-items: stretch;
   justify-content: stretch;
 }
-/* Add these styles to your existing BookingPage.css */
 
-/* Center the payment button container */
-
-
-/* Button styling to ensure it's centered and text stays on one line */
 .button {
   border-radius: var(--radius-sm);
   padding: 0.7rem 1.2rem;
@@ -109,7 +104,7 @@
   transition: var(--transition);
   border: none;
   font-size: 0.95rem;
-  white-space: nowrap; /* Prevent text from wrapping */
+  white-space: nowrap; 
 }
 
 .button--primary {
@@ -134,22 +129,22 @@
   transform: none;
 }
 
-/* Remove full-width from the button itself, keep it centered */
+
 .button--centered {
   width: auto;
-  min-width: 250px; /* Ensure minimum width for the button */
+  min-width: 15.625rem; 
   margin: 0 auto;
   display: inline-block;
 }
 
 .button--large {
-  padding: 0.9rem 2rem; /* Increased horizontal padding */
+  padding: 0.9rem 2rem; 
   font-size: 1.1rem;
   text-transform: uppercase;
   letter-spacing: 0.03125rem;
 }
 
-/* Specific styling for the payment button container */
+
 .payment-button-container {
   width: 100%;
   display: flex;
@@ -158,10 +153,10 @@
   margin-top: 2rem;
 }
 
-/* Mobile responsiveness */
+
 @media (max-width: 56.25rem) {
   .button--centered {
-    min-width: 200px;
+    min-width: 12.5rem;
   }
   
   .button--large {
@@ -709,7 +704,7 @@
 }
 .centered-payment-button {
   width: 100%;
-  max-width: 400px;
+  max-width: 25rem;
   margin: 2rem auto;
   display: block;
 }

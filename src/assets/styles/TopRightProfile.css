@@ -1,12 +1,12 @@
-/* TopRightProfile.css - Add this to your styles directory */
+
 
 .top-profile-container {
     display: flex;
     align-items: center;
-    gap: 15px;
+    gap: 0.9375rem;
     position: absolute;
-    top: 20px;
-    right: 30px;
+    top: 1.25rem;
+    right: 1.875rem;
     z-index: 10;
   }
   
@@ -14,34 +14,34 @@
     display: flex;
     align-items: center;
     background-color: white;
-    padding: 8px 15px;
-    border-radius: 30px;
-    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
+    padding: 0.5rem 0.9375rem;
+    border-radius: 1.875rem;
+    box-shadow: 0 0.1875rem 0.625rem rgba(0, 0, 0, 0.1);
     cursor: pointer;
     transition: all 0.2s ease;
   }
   
   .profile-bar:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.15);
+    transform: translateY(-0.125rem);
+    box-shadow: 0 0.3125rem 0.9375rem rgba(0, 0, 0, 0.15);
   }
   
   .profile-info {
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: 0.625rem;
   }
   
   .profile-pic {
-    width: 35px;
-    height: 35px;
+    width: 2.1875rem;
+    height: 2.1875rem;
     border-radius: 50%;
     object-fit: cover;
-    border: 2px solid #DB6C24;
+    border: 0.125rem solid #DB6C24;
   }
   
   .profile-name {
-    font-size: 14px;
+    font-size: 0.875rem;
     font-weight: 500;
     color: #333;
   }
@@ -50,29 +50,29 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 40px;
-    height: 40px;
+    width: 2.5rem;
+    height: 2.5rem;
     background-color: white;
     color: #DB6C24;
     border-radius: 50%;
     cursor: pointer;
-    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
-    font-size: 18px;
+    box-shadow: 0 0.1875rem 0.625rem rgba(0, 0, 0, 0.1);
+    font-size: 1.125rem;
     transition: all 0.2s ease;
   }
   
   .logout-button:hover {
     background-color: #DB6C24;
     color: white;
-    transform: translateY(-2px);
-    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.15);
+    transform: translateY(-0.125rem);
+    box-shadow: 0 0.3125rem 0.9375rem rgba(0, 0, 0, 0.15);
   }
   
-  /* Responsive styles */
-  @media (max-width: 768px) {
+
+  @media (max-width: 48rem) {
     .top-profile-container {
-      top: 15px;
-      right: 15px;
+      top: 0.9375rem;
+      right: 0.9375rem;
     }
     
     .profile-name {
@@ -80,17 +80,17 @@
     }
     
     .profile-bar {
-      padding: 5px;
+      padding: 0.3125rem;
     }
     
     .profile-pic {
-      width: 30px;
-      height: 30px;
+      width: 1.875rem;
+      height: 1.875rem;
     }
     
     .logout-button {
-      width: 35px;
-      height: 35px;
-      font-size: 16px;
+      width: 2.1875rem;
+      height: 2.1875rem;
+      font-size: 1rem;
     }
   }

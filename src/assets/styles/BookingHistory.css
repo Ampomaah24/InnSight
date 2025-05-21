@@ -1,4 +1,4 @@
-/* Base Variables */
+
 :root {
   --primary: #f97316;
   --primary-dark: #ea580c;
@@ -15,7 +15,7 @@
   --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-/* Nav Container */
+
 .nav-container {
   width: 100%;
   display: flex;
@@ -26,7 +26,7 @@
   margin-top: 1rem;
 }
 
-/* Main Container */
+
 .booking-history-container {
   max-width: 100%;
   margin: 0 auto;
@@ -37,7 +37,7 @@
   min-height: 100vh;
 }
 
-/* Header - Simplified */
+
 .booking-history-header {
   text-align: center;
   margin-bottom: 3rem;
@@ -65,17 +65,17 @@
   font-weight: 400;
 }
 
-/* Rules Notice - Simplified */
+
 .booking-rules-notice {
   background: linear-gradient(135deg, #fff7ed, #ffedd5);
-  border-left: 4px solid var(--primary);
+  border-left: 0.25rem solid var(--primary);
   padding: 1rem 1.5rem;
-  border-radius: 12px;
+  border-radius: 0.75rem;
   margin-bottom: 2.5rem;
   display: flex;
   align-items: center;
   gap: 0.75rem;
-  box-shadow: 0 2px 8px rgba(249, 115, 22, 0.08);
+  box-shadow: 0 0.125rem 0.5rem rgba(249, 115, 22, 0.08);
 }
 
 .booking-rules-notice svg {
@@ -91,7 +91,7 @@
   line-height: 1.5;
 }
 
-/* Section Headers - Minimal */
+
 .bookings-section h2 {
   font-size: 1.5rem;
   color: var(--dark);
@@ -107,40 +107,40 @@
   font-size: 1.25rem;
 }
 
-/* Bookings Grid */
+
 .bookings-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(20rem, 1fr));
   gap: 1.5rem;
   margin-bottom: 3rem;
 }
 
-/* Booking Card - Clean & Modern */
+
 .booking-card {
   background: white;
-  border-radius: 16px;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+  border-radius: 1rem;
+  box-shadow: 0 0.25rem 1rem rgba(0, 0, 0, 0.08);
   padding: 1.5rem;
   transition: var(--transition);
-  border: 1px solid var(--border);
+  border: 0.0625rem solid var(--border);
   position: relative;
   overflow: hidden;
 }
 
 .booking-card:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 8px 24px rgba(249, 115, 22, 0.15);
+  transform: translateY(-0.1875rem);
+  box-shadow: 0 0.5rem 1.5rem rgba(249, 115, 22, 0.15);
   border-color: var(--primary);
 }
 
-/* Card Header - Simplified */
+
 .booking-card .booking-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
   margin-bottom: 1rem;
   padding-bottom: 1rem;
-  border-bottom: 1px dashed var(--border);
+  border-bottom: 0.0625rem dashed var(--border);
 }
 
 .booking-card .booking-header h3 {
@@ -158,10 +158,10 @@
   font-size: 1.25rem;
 }
 
-/* Status Badges - Cute & Colorful */
+
 .booking-status {
   padding: 0.375rem 1rem;
-  border-radius: 20px;
+  border-radius: 1.25rem;
   font-size: 0.875rem;
   font-weight: 600;
   text-transform: uppercase;
@@ -171,30 +171,30 @@
 .booking-status.confirmed {
   background: linear-gradient(135deg, #fbbf24, #f59e0b);
   color: white;
-  box-shadow: 0 2px 6px rgba(245, 158, 11, 0.25);
+  box-shadow: 0 0.125rem 0.375rem rgba(245, 158, 11, 0.25);
 }
 
 .booking-status.active,
 .booking-status.checked-in {
   background: linear-gradient(135deg, #22c55e, #16a34a);
   color: white;
-  box-shadow: 0 2px 6px rgba(34, 197, 94, 0.25);
+  box-shadow: 0 0.125rem 0.375rem rgba(34, 197, 94, 0.25);
 }
 
 .booking-status.past,
 .booking-status.checked-out {
   background: linear-gradient(135deg, #94a3b8, #64748b);
   color: white;
-  box-shadow: 0 2px 6px rgba(100, 116, 139, 0.25);
+  box-shadow: 0 0.125rem 0.375rem rgba(100, 116, 139, 0.25);
 }
 
 .booking-status.cancelled {
   background: linear-gradient(135deg, #ef4444, #dc2626);
   color: white;
-  box-shadow: 0 2px 6px rgba(239, 68, 68, 0.25);
+  box-shadow: 0 0.125rem 0.375rem rgba(239, 68, 68, 0.25);
 }
 
-/* Booking Details - Minimal */
+
 .booking-details {
   margin-bottom: 1rem;
 }
@@ -211,7 +211,7 @@
 .booking-details p strong {
   color: var(--secondary);
   font-weight: 500;
-  min-width: 80px;
+  min-width: 5rem;
 }
 
 .booking-details p svg {
@@ -219,7 +219,7 @@
   font-size: 1rem;
 }
 
-/* ID Badge - Cute Style */
+
 .booking-id {
   margin: 1rem 0;
   font-size: 0.875rem;
@@ -229,7 +229,7 @@
 .id-code {
   background: var(--light-gray);
   padding: 0.25rem 0.75rem;
-  border-radius: 8px;
+  border-radius: 0.5rem;
   font-family: 'Monaco', monospace;
   font-size: 0.875rem;
   color: var(--primary);
@@ -237,11 +237,11 @@
   margin-top: 0.25rem;
 }
 
-/* Action Buttons - Simple & Colorful */
+
 .booking-actions {
   margin-top: 1.5rem;
   padding-top: 1.5rem;
-  border-top: 1px dashed var(--border);
+  border-top: 0.0625rem dashed var(--border);
 }
 
 .action-buttons {
@@ -252,9 +252,9 @@
 
 .action-buttons button {
   flex: 1;
-  min-width: 120px;
+  min-width: 7.5rem;
   padding: 0.75rem 1.25rem;
-  border-radius: 12px;
+  border-radius: 0.75rem;
   font-size: 0.95rem;
   font-weight: 600;
   border: none;
@@ -269,43 +269,43 @@
 .modify-btn {
   background: linear-gradient(135deg, #60a5fa, #3b82f6);
   color: white;
-  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.25);
+  box-shadow: 0 0.25rem 0.75rem rgba(59, 130, 246, 0.25);
 }
 
 .modify-btn:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 16px rgba(59, 130, 246, 0.35);
+  transform: translateY(-0.125rem);
+  box-shadow: 0 0.375rem 1rem rgba(59, 130, 246, 0.35);
 }
 
 .cancel-btn {
   background: white;
   color: var(--error);
-  border: 2px solid var(--error);
+  border: 0.125rem solid var(--error);
 }
 
 .cancel-btn:hover {
   background: #fef2f2;
-  transform: translateY(-2px);
+  transform: translateY(-0.125rem);
 }
 
 .contact-reception-btn {
   background: white;
   color: var(--primary);
-  border: 2px solid var(--primary);
+  border: 0.125rem solid var(--primary);
 }
 
 .contact-reception-btn:hover {
   background: var(--light-gray);
-  transform: translateY(-2px);
+  transform: translateY(-0.125rem);
 }
 
-/* Fee Notice - Minimal */
+
 .booking-fee-notice {
   background: #f0f9ff;
-  border-left: 3px solid #0ea5e9;
+  border-left: 0.1875rem solid #0ea5e9;
   padding: 0.75rem 1rem;
   margin-bottom: 1rem;
-  border-radius: 8px;
+  border-radius: 0.5rem;
   font-size: 0.875rem;
   color: #0369a1;
   display: flex;
@@ -318,7 +318,7 @@
   font-size: 1rem;
 }
 
-/* Modal - Clean Design */
+
 .modify-booking-modal {
   position: fixed;
   top: 0;
@@ -330,16 +330,16 @@
   justify-content: center;
   align-items: center;
   z-index: 1000;
-  backdrop-filter: blur(4px);
+  backdrop-filter: blur(0.25rem);
 }
 
 .modify-booking-content {
   background: white;
   padding: 2rem;
-  border-radius: 20px;
+  border-radius: 1.25rem;
   width: 90%;
-  max-width: 480px;
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+  max-width: 30rem;
+  box-shadow: 0  1.25rem 2.5rem rgba(0, 0, 0, 0.2);
   transform: scale(0.9);
   animation: modalAppear 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55) forwards;
 }
@@ -356,7 +356,7 @@
   font-size: 1.5rem;
 }
 
-/* Form Elements - Simple */
+
 .form-group {
   margin-bottom: 1.25rem;
 }
@@ -372,8 +372,8 @@
 .form-group input {
   width: 100%;
   padding: 0.75rem 1rem;
-  border: 2px solid var(--border);
-  border-radius: 10px;
+  border: 0.125rem solid var(--border);
+  border-radius: 0.625rem;
   font-size: 1rem;
   transition: var(--transition);
 }
@@ -381,10 +381,10 @@
 .form-group input:focus {
   border-color: var(--primary);
   outline: none;
-  box-shadow: 0 0 0 3px rgba(249, 115, 22, 0.1);
+  box-shadow: 0 0 0 0.1875rem rgba(249, 115, 22, 0.1);
 }
 
-/* Form Actions */
+
 .form-actions {
   display: flex;
   gap: 1rem;
@@ -394,7 +394,7 @@
 .form-actions button {
   flex: 1;
   padding: 0.875rem;
-  border-radius: 12px;
+  border-radius: 0.75rem;
   font-size: 1rem;
   font-weight: 600;
   border: none;
@@ -405,12 +405,12 @@
 .save-modify-btn {
   background: linear-gradient(135deg, var(--primary), var(--primary-dark));
   color: white;
-  box-shadow: 0 4px 12px rgba(249, 115, 22, 0.3);
+  box-shadow: 0 0.25rem 0.75rem rgba(249, 115, 22, 0.3);
 }
 
 .save-modify-btn:hover:not(:disabled) {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 16px rgba(249, 115, 22, 0.4);
+  transform: translateY(-0.125rem);
+  box-shadow: 0 0.375rem 1rem rgba(249, 115, 22, 0.4);
 }
 
 .cancel-modify-btn {
@@ -420,10 +420,10 @@
 
 .cancel-modify-btn:hover {
   background: #e5e7eb;
-  transform: translateY(-2px);
+  transform: translateY(-0.125rem);
 }
 
-/* Loading State */
+
 .loading-indicator {
   display: flex;
   flex-direction: column;
@@ -434,10 +434,10 @@
 }
 
 .loading-spinner {
-  width: 48px;
-  height: 48px;
-  border: 4px solid var(--border);
-  border-top: 4px solid var(--primary);
+  width: 3rem;
+  height: 3rem;
+  border: 0.25rem solid var(--border);
+  border-top: 0.25rem solid var(--primary);
   border-radius: 50%;
   animation: spin 1s linear infinite;
   margin-bottom: 1rem;
@@ -447,13 +447,13 @@
   to { transform: rotate(360deg); }
 }
 
-/* Error State */
+
 .error-message {
   background: #fef2f2;
-  border: 1px solid #fecaca;
+  border: 0.0625rem solid #fecaca;
   color: var(--error);
   padding: 1rem;
-  border-radius: 12px;
+  border-radius: 0.75rem;
   margin: 1rem 0;
   display: flex;
   align-items: center;
@@ -465,13 +465,13 @@
   font-size: 1.25rem;
 }
 
-/* No Bookings */
+
 .no-bookings-message {
   text-align: center;
   padding: 4rem 2rem;
   background: white;
-  border-radius: 16px;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+  border-radius: 1rem;
+  box-shadow: 0 0.25rem 1rem rgba(0, 0, 0, 0.08);
 }
 
 .no-bookings-message p {
@@ -491,18 +491,18 @@
   background: linear-gradient(135deg, var(--primary), var(--primary-dark));
   color: white;
   text-decoration: none;
-  border-radius: 12px;
+  border-radius: 0.75rem;
   font-weight: 600;
   transition: var(--transition);
-  box-shadow: 0 4px 12px rgba(249, 115, 22, 0.3);
+  box-shadow: 0 0.25rem 0.75rem rgba(249, 115, 22, 0.3);
 }
 
 .booking-link:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 16px rgba(249, 115, 22, 0.4);
+  transform: translateY(-0.125rem);
+  box-shadow: 0 0.375rem 1rem rgba(249, 115, 22, 0.4);
 }
 
-/* Animations */
+
 .booking-card {
   animation: fadeInUp 0.6s ease forwards;
   opacity: 0;
@@ -520,12 +520,12 @@
   }
   from {
     opacity: 0;
-    transform: translateY(20px);
+    transform: translateY( 1.25rem);
   }
 }
 
-/* Responsive */
-@media (max-width: 768px) {
+
+@media (max-width: 48rem) {
   .booking-history-container {
     padding: 5rem 1rem 2rem;
   }
@@ -552,7 +552,6 @@
   }
 }
 
-/* Utility Classes */
 .text-muted {
   color: var(--secondary);
 }
@@ -561,13 +560,13 @@
   font-size: 0.875rem;
 }
 
-/* Remove unnecessary decorative elements */
+
 .booking-card:before,
 .booking-card:after {
   display: none;
 }
 
-/* Simplified hover effects */
+
 button:active {
   transform: scale(0.98);
 }

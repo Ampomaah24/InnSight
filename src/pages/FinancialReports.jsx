@@ -14,7 +14,7 @@ const FinancialReports = () => {
   const [transactions, setTransactions] = useState([]);
   const [activeTab, setActiveTab] = useState('income');
   const [loading, setLoading] = useState(true);
-  const [timeFrame, setTimeFrame] = useState('current-month'); // Default to current month
+  const [timeFrame, setTimeFrame] = useState('current-month'); 
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [isPdfGenerating, setIsPdfGenerating] = useState(false);
   const [availableMonths, setAvailableMonths] = useState([]);
@@ -22,7 +22,7 @@ const FinancialReports = () => {
   const navigate = useNavigate();
   const { currentUser, isSuperAdmin, loading: userLoading } = useUser();
 
-  // Define simplified hotel categories
+  
   const hotelCategories = [
     { value: 'all', label: 'All Categories' },
     { value: 'booking', label: 'Room Booking' },
@@ -30,36 +30,34 @@ const FinancialReports = () => {
     { value: 'expenses', label: 'Expenses' }
   ];
 
-  // Handle category change with tab synchronization
+
   const handleCategoryChange = (e) => {
     const newCategory = e.target.value;
     setSelectedCategory(newCategory);
     
     // Sync the tab with the category
     if (newCategory === 'expenses') {
-      // When "Expenses" category is selected, show the expense tab
+      
       setActiveTab('expense');
     } else if (newCategory === 'booking' || newCategory === 'food') {
-      // When "Room Booking" or "Food Ordering" is selected, show the income tab
+
       setActiveTab('income');
     }
-    // For "All Categories", don't change the tab to allow viewing all data
+ 
   };
 
-  // Handle tab change with category synchronization
+  // Handle tab changes
   const handleTabChange = (tab) => {
     setActiveTab(tab);
     
-    // Sync category with tab
+    
     if (tab === 'expense') {
-      // When switching to expense tab, select "Expenses" category
-      // but only if the current category is not already "Expenses"
+   
       if (selectedCategory !== 'expenses') {
         setSelectedCategory('expenses');
       }
     } else if (tab === 'income') {
-      // When switching to income tab, reset to "All Categories" 
-      // but only if the current category is "Expenses"
+   
       if (selectedCategory === 'expenses') {
         setSelectedCategory('all');
       }
@@ -70,7 +68,6 @@ const FinancialReports = () => {
   const getDateRange = () => {
     const now = new Date();
     
-    // For predefined ranges
     if (timeFrame === 'current-month') {
       const startDate = new Date(now.getFullYear(), now.getMonth(), 1);
       const endDate = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59, 999);
@@ -87,7 +84,6 @@ const FinancialReports = () => {
       return { startDate: null, endDate: null, label: 'All Time' };
     }
     
-    // For specific month selection (format: 'month-YYYY-MM')
     if (timeFrame.startsWith('month-')) {
       const [, year, month] = timeFrame.split('-');
       const startDate = new Date(parseInt(year), parseInt(month) - 1, 1);
@@ -98,8 +94,7 @@ const FinancialReports = () => {
         label: `${startDate.toLocaleString('default', { month: 'long' })} ${startDate.getFullYear()}` 
       };
     }
-    
-    // For specific year selection (format: 'year-YYYY')
+ 
     if (timeFrame.startsWith('year-')) {
       const [, year] = timeFrame.split('-');
       const startDate = new Date(parseInt(year), 0, 1);
@@ -107,20 +102,19 @@ const FinancialReports = () => {
       return { startDate, endDate, label: `Year ${startDate.getFullYear()}` };
     }
     
-    // Default fallback
+ 
     return { startDate: null, endDate: null, label: 'Custom Period' };
   };
   
-  // Get date range for current filter
+ 
   const { startDate, endDate, label: periodLabel } = useMemo(() => getDateRange(), [timeFrame]);
 
-  // Helper to get the selected category label
+ 
   const getCategoryLabel = () => {
     const category = hotelCategories.find(cat => cat.value === selectedCategory);
     return category ? category.label : 'All Categories';
   };
 
-  // Derived state using useMemo to improve performance
   const {
     filteredTransactions,
     incomeData,
@@ -129,19 +123,19 @@ const FinancialReports = () => {
     totalExpenses,
     balance
   } = useMemo(() => {
-    // Filter transactions based on date range and categories
+   
     let filtered = [...transactions];
     
-    // Apply date filter if we have a date range
+   
     if (startDate && endDate) {
       filtered = filtered.filter(t => 
         t.date >= startDate && t.date <= endDate
       );
     }
 
-    // Apply category filters
+    // Apply filters
     if (selectedCategory !== 'all') {
-      // Main category filtering
+    
       switch (selectedCategory) {
         case 'booking':
           filtered = filtered.filter(t => 
@@ -167,12 +161,11 @@ const FinancialReports = () => {
           filtered = filtered.filter(t => t.type === 'expense');
           break;
         default:
-          // No filtering
+     
           break;
       }
     }
-    
-    // Split into income and expense
+
     const income = filtered.filter(t => t.type === "income");
     const expenses = filtered.filter(t => t.type === "expense");
     
@@ -190,7 +183,7 @@ const FinancialReports = () => {
     };
   }, [transactions, startDate, endDate, selectedCategory]);
 
-  // Extract available months and years from transaction data
+
   useEffect(() => {
     if (!transactions.length) return;
     
@@ -202,20 +195,20 @@ const FinancialReports = () => {
       if (!date) return;
       
       const year = date.getFullYear();
-      const month = date.getMonth() + 1; // JavaScript months are 0-indexed
+      const month = date.getMonth() + 1; 
       
-      // Store in format 'YYYY-MM'
+      
       months.add(`${year}-${month.toString().padStart(2, '0')}`);
       years.add(year.toString());
     });
     
-    // Sort months in descending order (newest first)
+   
     setAvailableMonths(Array.from(months).sort().reverse());
     setAvailableYears(Array.from(years).sort().reverse());
   }, [transactions]);
 
   useEffect(() => {
-    // Only fetch data if user is superadmin
+
     if (userLoading) return;
     
     if (!currentUser) {
@@ -234,7 +227,7 @@ const FinancialReports = () => {
     try {
       setLoading(true);
       
-      // Create a query with ordering
+
       const transactionsQuery = query(
         collection(db, "transactions"),
         orderBy("date", "desc")
@@ -279,7 +272,7 @@ const FinancialReports = () => {
       doc.text(`Category: ${getCategoryLabel()}`, doc.internal.pageSize.getWidth() / 2, 33, { align: "center" });
       doc.text(`Generated on: ${new Date().toLocaleDateString()}`, doc.internal.pageSize.getWidth() / 2, 38, { align: "center" });
 
-      // Summary section
+      // Summary 
       autoTable(doc, {
         startY: 45,
         head: [["SUMMARY", "AMOUNT (GHS)"]],
@@ -375,7 +368,6 @@ const FinancialReports = () => {
         doc.text("No expense transactions found for this period and category", 14, y + 5);
       }
 
-      // Footer
       const pageCount = doc.internal.getNumberOfPages();
       for (let i = 1; i <= pageCount; i++) {
         doc.setPage(i);
@@ -389,7 +381,7 @@ const FinancialReports = () => {
         );
       }
 
-      // Create file name with period and category information
+    
       const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
       const periodForFilename = periodLabel.replace(/\s+/g, '_');
       const categoryForFilename = getCategoryLabel().replace(/\s+/g, '_');
@@ -409,7 +401,7 @@ const FinancialReports = () => {
     }).format(amount);
   };
 
-  // Show unauthorized message if not superadmin
+
   if (!userLoading && !isSuperAdmin) {
     return (
       <div className="dashboard-container">
@@ -439,8 +431,7 @@ const FinancialReports = () => {
                 <div className="filter-pill category-pill">{getCategoryLabel()}</div>
               </div>
             </div>
-            
-            {/* Time period and filter controls */}
+       
             <div className="filters-container">
               <div className="filter-group time-filter">
                 <label htmlFor="time-frame">Time Period:</label>

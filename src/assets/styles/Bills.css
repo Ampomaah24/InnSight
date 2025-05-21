@@ -1,4 +1,4 @@
-/* Dashboard Layout */
+
 .dashboard-container {
   display: flex;
   min-height: 100vh;
@@ -7,21 +7,21 @@
 
 .main-content {
   flex: 1;
-  margin-left: 260px; /* Match sidebar width */
+  margin-left: 16.25rem; 
   padding: 1.5rem;
   transition: margin-left 0.3s ease;
   background-color: #f5f5f5;
 }
 
-/* Responsive design for sidebar */
-@media (max-width: 768px) {
+
+@media (max-width: 48rem) {
   .main-content {
     margin-left: 0;
     padding: 1rem;
   }
 }
 
-/* Bills Container */
+
 .bills-container {
   width: 100%;
   max-width: 87.5rem;

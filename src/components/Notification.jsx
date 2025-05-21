@@ -8,7 +8,7 @@ const NotificationsComponent = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [loading, setLoading] = useState(false);
 
-  // Fetch reminders on mount and periodically
+
   useEffect(() => {
     const fetchReminders = async () => {
       try {
@@ -22,10 +22,8 @@ const NotificationsComponent = () => {
       }
     };
 
-    // Initial fetch
     fetchReminders();
 
-    // Set up periodic checks (every minute)
     const intervalId = setInterval(fetchReminders, 60 * 1000);
 
     return () => clearInterval(intervalId);
@@ -38,7 +36,7 @@ const NotificationsComponent = () => {
       const remindersQuery = query(
         remindersRef,
         where("status", "==", "pending"),
-        where("created", ">=", new Date(Date.now() - 24 * 60 * 60 * 1000)) // Last 24 hours
+        where("created", ">=", new Date(Date.now() - 24 * 60 * 60 * 1000)) 
       );
       
       const remindersSnapshot = await getDocs(remindersQuery);
@@ -58,7 +56,7 @@ const NotificationsComponent = () => {
     }
   };
 
-  // Handle clicking a single reminder
+  
   const handleReminderClick = async (reminderId) => {
     try {
       await markReminderAsRead(reminderId);
@@ -70,7 +68,7 @@ const NotificationsComponent = () => {
     }
   };
 
-  // Function to mark a reminder as read
+
   const markReminderAsRead = async (reminderId) => {
     try {
       const reminderRef = doc(db, "reminders", reminderId);
@@ -86,7 +84,7 @@ const NotificationsComponent = () => {
     }
   };
 
-  // Handle marking all reminders as read
+ 
   const handleMarkAllAsRead = async () => {
     try {
       await markAllRemindersAsRead();
@@ -119,7 +117,7 @@ const NotificationsComponent = () => {
       });
       
       await Promise.all(updatePromises);
-      return pendingSnapshot.size; // Number of reminders updated
+      return pendingSnapshot.size; 
     } catch (error) {
       console.error("Error marking all reminders as read:", error);
       throw error;

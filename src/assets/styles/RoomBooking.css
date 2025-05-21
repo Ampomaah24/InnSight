@@ -1,4 +1,4 @@
-/* Reset */
+
 * {
   margin: 0;
   padding: 0;
@@ -9,24 +9,24 @@ html, body {
   width: 100%;
   height: 100%;
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  font-size: 16px;
+  font-size: 1rem;
   overflow-x: hidden;
   color: #333;
   background-color: #f8f9fa;
   line-height: 1.5;
 }
 
-/* Main Container */
+
 .room-booking-container {
   width: 100%;
   min-height: 100vh;
-  padding: 0 0 100px 0;
+  padding: 0 0 6.25rem 0;
   background-color: #f8f9fa;
   margin-top: 0; 
   position: relative;
 }
 
-/* Navigation */
+
 .nav-container {
   width: 100%;
   display: flex;
@@ -37,13 +37,13 @@ html, body {
   margin-top: 1rem;
 }
 
-/* Back button */
+
 .floating-back-button {
   position: absolute;
-  left: 20px;
-  top: 80px;
-  width: 40px;
-  height: 40px;
+  left: 1.25rem;
+  top: 5rem;
+  width: 2.5rem;
+  height: 2.5rem;
   border-radius: 50%;
   background-color: #e67e22;
   color: white;
@@ -53,22 +53,22 @@ html, body {
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 0.125rem 0.3125rem rgba(0, 0, 0, 0.2);
   transition: all 0.2s ease;
   z-index: 10;
 }
 
 .floating-back-button:hover {
   background-color: #d35400;
-  transform: translateY(-2px);
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  transform: translateY(-0.125rem);
+  box-shadow: 0 0.25rem 0.5rem rgba(0, 0, 0, 0.2);
 }
 
 .floating-back-button:active {
-  transform: translateY(1px);
+  transform: translateY(0.0625rem);
 }
 
-/* Page title */
+
 .available-rooms-heading {
   font-size: 2.5rem;
   font-weight: 700;
@@ -76,32 +76,32 @@ html, body {
   text-align: center;
   margin: 3rem 0 2.5rem;
   position: relative;
-  letter-spacing: -0.5px;
+  letter-spacing: -0.03125rem;
 }
 
 .available-rooms-heading:after {
   content: "";
   display: block;
-  width: 100px;
-  height: 4px;
+  width: 6.25rem;
+  height: 0.25rem;
   background: linear-gradient(to right, #e67e22, #f39c12);
   position: absolute;
-  bottom: -12px;
+  bottom: -0.75rem;
   left: 50%;
   transform: translateX(-50%);
-  border-radius: 2px;
+  border-radius: 0.125rem;
 }
 
-/* Login Prompt */
+
 .login-prompt {
   background: linear-gradient(135deg, #fff5eb, #ffeaa7);
   padding: 1.5rem 2rem;
   margin: 0 auto 3rem;
-  max-width: 600px;
-  border-radius: 12px;
+  max-width: 37.5rem;
+  border-radius: 0.75rem;
   text-align: center;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
-  border: 1px solid rgba(230, 126, 34, 0.2);
+  box-shadow: 0 0.25rem 0.9375rem rgba(0, 0, 0, 0.05);
+  border: 0.0625rem solid rgba(230, 126, 34, 0.2);
 }
 
 .login-prompt p {
@@ -115,44 +115,44 @@ html, body {
   background-color: #e67e22;
   color: white;
   border: none;
-  border-radius: 8px;
+  border-radius: 0.5rem;
   padding: 0.8rem 2rem;
   font-size: 1rem;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.3s ease;
   text-transform: uppercase;
-  letter-spacing: 0.5px;
-  box-shadow: 0 3px 10px rgba(230, 126, 34, 0.3);
+  letter-spacing: 0.03125rem;
+  box-shadow: 0 0.1875rem 0.625rem rgba(230, 126, 34, 0.3);
 }
 
 .login-button:hover {
   background-color: #d35400;
-  transform: translateY(-2px);
-  box-shadow: 0 5px 15px rgba(230, 126, 34, 0.4);
+  transform: translateY(-0.125rem);
+  box-shadow: 0 0.3125rem 0.9375rem rgba(230, 126, 34, 0.4);
 }
 
 .login-button:active {
   transform: translateY(0);
 }
 
-/* Booking dates info */
+
 .booking-dates-info {
   background-color: white;
   padding: 1.5rem 1.8rem;
-  border-radius: 12px;
+  border-radius: 0.75rem;
   margin-bottom: 2.5rem;
-  box-shadow: 0 3px 15px rgba(0, 0, 0, 0.06);
+  box-shadow: 0 0.1875rem 0.9375rem rgba(0, 0, 0, 0.06);
   display: flex;
   flex-wrap: wrap;
   justify-content: space-between;
   align-items: center;
-  border: 1px solid rgba(230, 126, 34, 0.1);
+  border: 0.0625rem solid rgba(230, 126, 34, 0.1);
   transition: all 0.3s ease;
 }
 
 .booking-dates-info:hover {
-  box-shadow: 0 5px 20px rgba(0, 0, 0, 0.08);
+  box-shadow: 0 0.3125rem 1.25rem rgba(0, 0, 0, 0.08);
 }
 
 .booking-dates-info p {
@@ -167,29 +167,29 @@ html, body {
   margin-right: 0.5rem;
 }
 
-/* Rooms container */
+
 .rooms-list {
   width: 100%;
-  max-width: 1250px;
+  max-width: 78.125rem;
   margin: 0 auto;
   padding: 0 2rem;
   margin-bottom: 4rem;
 }
 
-/* Room type section */
+
 .room-type-section {
   margin-bottom: 3rem;
   background-color: white;
-  border-radius: 16px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+  border-radius: 1rem;
+  box-shadow: 0 0.25rem 1.25rem rgba(0, 0, 0, 0.06);
   overflow: hidden;
   transition: transform 0.35s ease, box-shadow 0.35s ease;
-  border: 1px solid rgba(0, 0, 0, 0.04);
+  border: 0.0625rem solid rgba(0, 0, 0, 0.04);
 }
 
 .room-type-section:hover {
-  transform: translateY(-8px);
-  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
+  transform: translateY(-0.5rem);
+  box-shadow: 0 0.5rem 1.875rem rgba(0, 0, 0, 0.12);
 }
 
 .room-type-title {
@@ -198,44 +198,44 @@ html, body {
   font-weight: 700;
   color: #2c3e50;
   background-color: #fff;
-  border-bottom: 1px solid #f0f0f0;
-  letter-spacing: 0.5px;
+  border-bottom: 0.0625rem solid #f0f0f0;
+  letter-spacing: 0.03125rem;
 }
 
-/* Room Row */
+
 .room-row {
   display: grid;
   grid-template-columns: 1fr;
   padding: 2rem;
 }
 
-@media (min-width: 900px) {
+@media (min-width: 56.25rem) {
   .room-row {
     grid-template-columns: 1fr 1fr;
     gap: 3rem;
   }
 }
 
-/* Room Name */
+
 .room-name {
   margin-bottom: 1.2rem;
   font-size: 1.15rem;
   color: #555;
   font-weight: 500;
-  letter-spacing: 0.2px;
+  letter-spacing: 0.0125rem;
 }
 
-/* Image Carousel */
+
 .image-carousel {
   position: relative;
   width: 100%;
   margin-bottom: 2rem;
-  border-radius: 12px;
+  border-radius: 0.75rem;
   overflow: hidden;
-  box-shadow: 0 3px 15px rgba(0, 0, 0, 0.08);
+  box-shadow: 0 0.1875rem 0.9375rem rgba(0, 0, 0, 0.08);
   user-select: none;
   background-color: #f5f5f5;
-  height: 350px; /* Fixed height for consistency */
+  height: 21.875rem; 
 }
 
 .room-image {
@@ -246,16 +246,16 @@ html, body {
   transition: transform 0.5s ease;
 }
 
-/* For mobile responsiveness */
-@media (max-width: 768px) {
+
+@media (max-width: 48rem) {
   .image-carousel {
-    height: 250px;
+    height: 15.625rem;
   }
 }
 
-@media (min-width: 1200px) {
+@media (min-width: 75rem) {
   .image-carousel {
-    height: 400px;
+    height: 25rem;
   }
 }
 
@@ -267,8 +267,8 @@ html, body {
   position: absolute;
   top: 50%;
   transform: translateY(-50%);
-  width: 45px;
-  height: 45px;
+  width: 2.8125rem;
+  height: 2.8125rem;
   background-color: rgba(255, 255, 255, 0.85);
   border: none;
   border-radius: 50%;
@@ -277,7 +277,7 @@ html, body {
   justify-content: center;
   cursor: pointer;
   z-index: 2;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 0.125rem 0.5rem rgba(0, 0, 0, 0.15);
   font-size: 1.5rem;
   transition: all 0.2s ease;
   line-height: 0;
@@ -286,7 +286,7 @@ html, body {
 .carousel-btn:hover {
   background-color: rgba(255, 255, 255, 0.404);
   transform: translateY(-50%) scale(1.05);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 0.25rem 0.75rem rgba(0, 0, 0, 0.2);
 }
 
 .carousel-btn:active {
@@ -294,21 +294,21 @@ html, body {
 }
 
 .carousel-btn.prev {
-  left: 15px;
+  left: 0.9375rem;
 }
 
 .carousel-btn.next {
-  right: 15px;
+  right: 0.9375rem;
 }
 
 .carousel-btn::after {
   content: '';
   display: block;
-  width: 10px;
-  height: 10px;
+  width: 0.625rem;
+  height: 0.625rem;
   border-style: solid;
-  border-width: 0 3px 3px 0;
-  padding: 3px;
+  border-width: 0 0.1875rem 0.1875rem 0;
+  padding: 0.1875rem;
   transition: all 0.2s ease;
 }
 
@@ -322,19 +322,19 @@ html, body {
 
 .image-pagination {
   position: absolute;
-  bottom: 15px;
+  bottom: 0.9375rem;
   left: 50%;
   transform: translateX(-50%);
   background-color: rgba(0, 0, 0, 0.7);
   color: white;
   padding: 0.3rem 0.9rem;
-  border-radius: 20px;
+  border-radius: 1.25rem;
   font-size: 0.9rem;
   font-weight: 500;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 0.125rem 0.5rem rgba(0, 0, 0, 0.2);
 }
 
-/* Room Info */
+
 .room-info {
   display: flex;
   flex-direction: column;
@@ -342,13 +342,13 @@ html, body {
   padding: 0.5rem 0;
 }
 
-/* Price Section */
+
 .price-section {
   margin-bottom: 2rem;
   background-color: #f9f9f9;
   padding: 1.2rem;
-  border-radius: 10px;
-  border-left: 4px solid #e67e22;
+  border-radius: 0.625rem;
+  border-left: 0.25rem solid #e67e22;
 }
 
 .price-section h3 {
@@ -386,11 +386,11 @@ html, body {
   display: inline-block;
   padding: 0.3rem 0.7rem;
   background-color: rgba(230, 126, 34, 0.1);
-  border-radius: 6px;
+  border-radius: 0.375rem;
   margin-top: 0.8rem;
 }
 
-/* Includes Section */
+
 .includes-section {
   margin-bottom: 2.5rem;
   flex-grow: 1;
@@ -423,7 +423,7 @@ html, body {
   font-size: 1.1rem;
 }
 
-/* Room Quantity Selector */
+
 .room-quantity-selector {
   display: flex;
   align-items: center;
@@ -436,17 +436,17 @@ html, body {
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  border: 1px solid #e0e0e0;
-  border-radius: 8px;
+  border: 0.0625rem solid #e0e0e0;
+  border-radius: 0.5rem;
   padding: 0.3rem;
   background-color: #fafafa;
 }
 
 .quantity-btn {
-  width: 36px;
-  height: 36px;
+  width: 2.25rem;
+  height: 2.25rem;
   border: none;
-  border-radius: 6px;
+  border-radius: 0.375rem;
   background-color: #e67e22;
   color: white;
   font-size: 1.2rem;
@@ -474,7 +474,7 @@ html, body {
 }
 
 .quantity-display {
-  min-width: 40px;
+  min-width: 2.5rem;
   text-align: center;
   font-weight: 600;
   font-size: 1.1rem;
@@ -486,44 +486,44 @@ html, body {
   font-size: 0.9rem;
   padding: 0.3rem 0.8rem;
   background-color: #f5f5f5;
-  border-radius: 6px;
+  border-radius: 0.375rem;
 }
 
-/* Proceed to Booking Button */
+
 .proceed-booking {
   position: fixed;
-  bottom: 25px;
+  bottom: 1.5625rem;
   left: 50%;
   transform: translateX(-50%);
-  width: calc(100% - 40px);
-  max-width: 600px;
+  width: calc(100% - 2.5rem);
+  max-width: 37.5rem;
   background: linear-gradient(to right, #e67e22, #d35400);
   color: white;
   border: none;
-  border-radius: 8px;
+  border-radius: 0.5rem;
   padding: 1.2rem 1.5rem;
   font-size: 1.1rem;
   font-weight: 600;
   cursor: pointer;
-  box-shadow: 0 4px 15px rgba(230, 126, 34, 0.3);
+  box-shadow: 0 0.25rem 0.9375rem rgba(230, 126, 34, 0.3);
   z-index: 1000;
   text-align: center;
   transition: all 0.3s ease;
   text-transform: uppercase;
-  letter-spacing: 1px;
+  letter-spacing: 0.0625rem;
 }
 
 .proceed-booking:hover {
   background: linear-gradient(to right, #d35400, #e67e22);
-  box-shadow: 0 6px 20px rgba(230, 126, 34, 0.4);
-  transform: translateX(-50%) translateY(-3px);
+  box-shadow: 0 0.375rem 1.25rem rgba(230, 126, 34, 0.4);
+  transform: translateX(-50%) translateY(-0.1875rem);
 }
 
 .proceed-booking:active {
-  transform: translateX(-50%) translateY(1px);
+  transform: translateX(-50%) translateY(0.0625rem);
 }
 
-/* Loading Container */
+
 .loading-container {
   display: flex;
   flex-direction: column;
@@ -538,7 +538,7 @@ html, body {
 .spinner {
   width: 3.5rem;
   height: 3.5rem;
-  border: 4px solid rgba(0, 0, 0, 0.1);
+  border: 0.25rem solid rgba(0, 0, 0, 0.1);
   border-left-color: #e67e22;
   border-radius: 50%;
   animation: spin 1s linear infinite;
@@ -555,7 +555,7 @@ html, body {
   color: #555;
 }
 
-/* No Rooms Container */
+
 .no-rooms-container {
   display: flex;
   flex-direction: column;
@@ -570,9 +570,9 @@ html, body {
   text-align: center;
   background-color: white;
   padding: 3rem;
-  border-radius: 12px;
-  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.1);
-  max-width: 550px;
+  border-radius: 0.75rem;
+  box-shadow: 0 0.5rem 1.875rem rgba(0, 0, 0, 0.1);
+  max-width: 34.375rem;
   width: 90%;
 }
 
@@ -592,7 +592,7 @@ html, body {
   background-color: #e67e22;
   color: white;
   border: none;
-  border-radius: 8px;
+  border-radius: 0.5rem;
   padding: 1rem 2rem;
   font-size: 1.05rem;
   font-weight: 600;
@@ -600,28 +600,28 @@ html, body {
   margin-top: 1rem;
   transition: all 0.3s ease;
   text-transform: uppercase;
-  letter-spacing: 0.7px;
-  box-shadow: 0 4px 12px rgba(230, 126, 34, 0.3);
+  letter-spacing: 0.04375rem;
+  box-shadow: 0 0.25rem 0.75rem rgba(230, 126, 34, 0.3);
 }
 
 .back-button:hover {
   background-color: #d35400;
-  transform: translateY(-3px);
-  box-shadow: 0 6px 15px rgba(230, 126, 34, 0.4);
+  transform: translateY(-0.1875rem);
+  box-shadow: 0 0.375rem 0.9375rem rgba(230, 126, 34, 0.4);
 }
 
 .back-button:active {
-  transform: translateY(1px);
+  transform: translateY(0.0625rem);
 }
 
-/* NavMenu styling */
+
 .nav-menu {
   position: relative;
   z-index: 100;
   align-self: flex-start;
 }
 
-/* Additional enhancements */
+
 .room-features {
   display: flex;
   gap: 1rem;
@@ -633,22 +633,22 @@ html, body {
   background-color: #ffeaa7;
   color: #2c3e50;
   padding: 0.4rem 0.8rem;
-  border-radius: 20px;
+  border-radius: 1.25rem;
   font-size: 0.85rem;
   font-weight: 500;
 }
 
-/* Better focus states */
+
 button:focus-visible,
 a:focus-visible,
 input:focus-visible,
 select:focus-visible {
-  outline: 3px solid rgba(230, 126, 34, 0.5);
-  outline-offset: 2px;
+  outline: 0.1875rem solid rgba(230, 126, 34, 0.5);
+  outline-offset: 0.125rem;
 }
 
-/* Mobile Optimizations */
-@media (max-width: 768px) {
+
+@media (max-width: 48rem) {
   .room-row {
     grid-template-columns: 1fr;
   }
@@ -677,8 +677,8 @@ select:focus-visible {
   }
   
   .carousel-btn {
-    width: 36px;
-    height: 36px;
+    width: 2.25rem;
+    height: 2.25rem;
   }
   
   .room-quantity-selector {
@@ -691,16 +691,16 @@ select:focus-visible {
   }
   
   .proceed-booking {
-    bottom: 15px;
-    width: calc(100% - 30px);
+    bottom: 0.9375rem;
+    width: calc(100% - 1.875rem);
   }
 }
 
-/* Animation for elements */
+
 @keyframes fadeInUp {
   from {
     opacity: 0;
-    transform: translateY(20px);
+    transform: translateY(1.25rem);
   }
   to {
     opacity: 1;
@@ -728,13 +728,13 @@ select:focus-visible {
   animation: fadeInUp 0.5s ease forwards;
 }
 
-/* Theme consistency improvements */
+
 .tooltip {
   position: absolute;
   background-color: #2c3e50;
   color: white;
   padding: 0.5rem 0.8rem;
-  border-radius: 6px;
+  border-radius: 0.375rem;
   font-size: 0.85rem;
   white-space: nowrap;
   opacity: 0;
@@ -748,13 +748,13 @@ select:focus-visible {
   visibility: visible;
 }
 
-/* Enhanced form elements */
+
 input,
 select,
 textarea {
   padding: 0.8rem 1rem;
-  border: 2px solid #e0e0e0;
-  border-radius: 8px;
+  border: 0.125rem solid #e0e0e0;
+  border-radius: 0.5rem;
   font-size: 1rem;
   width: 100%;
   transition: all 0.3s ease;
@@ -765,14 +765,14 @@ input:focus,
 select:focus,
 textarea:focus {
   border-color: #e67e22;
-  box-shadow: 0 0 0 3px rgba(230, 126, 34, 0.15);
+  box-shadow: 0 0 0 0.1875rem rgba(230, 126, 34, 0.15);
   outline: none;
 }
 
-/* Responsive typography */
-@media (max-width: 480px) {
+
+@media (max-width: 30rem) {
   html {
-    font-size: 14px;
+    font-size: 0.875rem;
   }
   
   .room-type-title {
@@ -798,33 +798,27 @@ textarea:focus {
   }
 }
 
-/* Dark mode support (optional) */
-@media (prefers-color-scheme: dark) {
-  /* You can implement dark mode styles here if needed */
-  /* Using your orange theme for dark mode as well */
-}
 
-/* Accessibility improvements */
 .visually-hidden {
   position: absolute;
-  width: 1px;
-  height: 1px;
+  width: 0.0625rem;
+  height: 0.0625rem;
   padding: 0;
-  margin: -1px;
+  margin: -0.0625rem;
   overflow: hidden;
   clip: rect(0, 0, 0, 0);
   white-space: nowrap;
   border: 0;
 }
 
-/* Skip to content link for accessibility */
+
 .skip-to-content {
   position: absolute;
-  top: -40px;
+  top: -2.5rem;
   left: 0;
   background: #e67e22;
   color: white;
-  padding: 8px;
+  padding: 0.5rem;
   z-index: 100;
   transition: top 0.3s;
 }
@@ -833,7 +827,7 @@ textarea:focus {
   top: 0;
 }
 
-/* Reduced motion support */
+
 @media (prefers-reduced-motion: reduce) {
   * {
     animation-duration: 0.01ms !important;

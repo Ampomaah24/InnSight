@@ -19,17 +19,17 @@
   
   .warning-box {
     background-color: white;
-    padding: 25px;
-    border-radius: 8px;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
-    max-width: 450px;
+    padding: 1.5625rem;
+    border-radius: 0.5rem;
+    box-shadow: 0 0.25rem 1.25rem rgba(0, 0, 0, 0.2);
+    max-width: 28.125rem;
     width: 90%;
     text-align: center;
     animation: slideIn 0.3s ease-out;
   }
   
   @keyframes slideIn {
-    from { transform: translateY(-20px); opacity: 0; }
+    from { transform: translateY(-1.25rem); opacity: 0; }
     to { transform: translateY(0); opacity: 1; }
   }
   
@@ -37,11 +37,11 @@
     color: #e74c3c;
     margin-top: 0;
     font-size: 1.5rem;
-    margin-bottom: 15px;
+    margin-bottom: 0.9375rem;
   }
   
   .warning-box p {
-    margin-bottom: 15px;
+    margin-bottom: 0.9375rem;
     font-size: 1rem;
     color: #2c3e50;
     line-height: 1.5;
@@ -56,16 +56,16 @@
   .button-group {
     display: flex;
     justify-content: center;
-    gap: 10px;
-    margin-top: 20px;
+    gap: 0.625rem;
+    margin-top: 1.25rem;
   }
   
   .primary-button {
     background-color: #3498db;
     color: white;
     border: none;
-    padding: 10px 20px;
-    border-radius: 4px;
+    padding: 0.625rem 1.25rem;
+    border-radius: 0.25rem;
     cursor: pointer;
     font-weight: 600;
     transition: background-color 0.2s;
@@ -78,9 +78,9 @@
   .secondary-button {
     background-color: #ecf0f1;
     color: #2c3e50;
-    border: 1px solid #bdc3c7;
-    padding: 10px 20px;
-    border-radius: 4px;
+    border: 0.0625rem solid #bdc3c7;
+    padding: 0.625rem 1.25rem;
+    border-radius: 0.25rem;
     cursor: pointer;
     font-weight: 600;
     transition: background-color 0.2s;
@@ -89,17 +89,16 @@
   .secondary-button:hover {
     background-color: #bdc3c7;
   }
-  
-  /* Mobile responsive adjustments */
-  @media (max-width: 480px) {
+
+  @media (max-width: 30rem) {
     .warning-box {
-      padding: 20px;
+      padding: 1.25rem;
       width: 85%;
     }
     
     .button-group {
       flex-direction: column;
-      gap: 8px;
+      gap: 0.5rem;
     }
     
     .primary-button, .secondary-button {

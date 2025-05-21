@@ -1,4 +1,4 @@
-// Sidebar.jsx
+
 import React, { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { 
@@ -18,17 +18,17 @@ import {
 } from "react-icons/fa";
 import { auth } from "../config/firebase";
 import { useNavigate } from "react-router-dom";
-import { useUser } from "../context/UserContext"; // Using your existing context
+import { useUser } from "../context/UserContext"; 
 import "../assets/styles/Sidebar.css"; 
 
 const Sidebar = () => {
   const location = useLocation();
   const navigate = useNavigate();
-  const { currentUser, isAdmin, isSuperAdmin } = useUser(); // Using your enhanced context
+  const { currentUser, isAdmin, isSuperAdmin } = useUser(); 
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
   const [isSidebarOpen, setIsSidebarOpen] = useState(!isMobile);
 
-  // Check if the current path matches the specified path
+  
   const isActive = (path) => {
     return location.pathname === path;
   };
@@ -49,16 +49,15 @@ const Sidebar = () => {
     return () => window.removeEventListener("resize", handleResize);
   }, [isSidebarOpen]);
 
-  // Toggle sidebar on mobile
+
   const toggleSidebar = () => {
     setIsSidebarOpen(!isSidebarOpen);
   };
 
-  // Handle logout
   const handleLogout = () => {
     auth.signOut()
       .then(() => {
-        // Redirect to login page
+        
         navigate("/login");
       })
       .catch((error) => {
@@ -119,7 +118,7 @@ const Sidebar = () => {
             </Link>
           </li>
           
-          {/* User Registration - Only for admin and superadmin */}
+   
           {isAdmin && (
             <li className={`sidebar-item ${isActive('/user-registration') ? 'active' : ''}`}>
               <Link to="/user-registration">
@@ -143,7 +142,7 @@ const Sidebar = () => {
             </Link>
           </li>
           
-          {/* Food Orders Management - Only for admin and superadmin */}
+         
           {isAdmin && (
             <li className={`sidebar-item ${isActive('/admin/food-orders') ? 'active' : ''}`}>
               <Link to="/admin/food-orders">
@@ -160,7 +159,7 @@ const Sidebar = () => {
             </Link>
           </li>
           
-          {/* Financial Reports - Only for superadmin */}
+        
           {isSuperAdmin && (
             <li className={`sidebar-item ${isActive('/freports') ? 'active' : ''}`}>
               <Link to="/freports">

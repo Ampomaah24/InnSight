@@ -16,7 +16,7 @@ const GuestBills = () => {
   const [menuOpen, setMenuOpen] = useState(false);
   const navigate = useNavigate();
   
-  // Format date helper function
+
   const formatDate = (dateString) => {
     try {
       if (dateString instanceof Date) {
@@ -37,7 +37,7 @@ const GuestBills = () => {
     }
   };
 
-  // Navigate to services page for making a reservation
+
   const handleMakeReservation = () => {
     navigate('/services');
   };
@@ -51,18 +51,18 @@ const GuestBills = () => {
       
       if (currentUser) {
         setUser(currentUser);
-        setError(null); // Clear any previous errors
+        setError(null); 
         fetchUserBookings(currentUser.uid);
       } else {
-        // Check localStorage for guest ID first
+        
         const guestId = localStorage.getItem("guestId");
         if (guestId) {
           console.log("Using guest ID from localStorage:", guestId);
           setUser({ uid: guestId, isGuest: true });
-          setError(null); // Clear any previous errors
+          setError(null); 
           fetchUserBookings(guestId);
         } else {
-          // Then check session storage as fallback
+    
           const sessionUser = sessionStorage.getItem('currentUser');
           if (sessionUser) {
             try {
@@ -70,7 +70,7 @@ const GuestBills = () => {
               console.log("Using session storage user:", parsedUser.email);
               if (parsedUser && parsedUser.id) {
                 setUser(parsedUser);
-                setError(null); // Clear any previous errors
+                setError(null); 
                 fetchUserBookings(parsedUser.id);
               } else {
                 setError("Please log in to view your bills");
@@ -82,7 +82,7 @@ const GuestBills = () => {
               setLoading(false);
             }
           } else {
-            // No user found anywhere
+       
             setError("Please log in to view your bills");
             setLoading(false);
           }
@@ -90,25 +90,25 @@ const GuestBills = () => {
       }
     });
     
-    // Clean up
+   
     return () => {
       unsubscribe();
     };
   }, []);
 
-  // Add a useEffect to poll for updates at a reasonable interval for active bookings
+ 
   useEffect(() => {
-    // Only set up polling if we have a user and are viewing the current stay
+    
     if (user && selectedBooking?.status === "Checked in") {
       const intervalId = setInterval(() => {
         refreshData();
-      }, 30000); // Check every 30 seconds
+      }, 30000); 
       
       return () => clearInterval(intervalId);
     }
   }, [user, selectedBooking]);
 
-  // Function to refresh data when needed
+
   const refreshData = () => {
     if (user) {
       fetchUserBookings(user.uid);
@@ -126,10 +126,10 @@ const GuestBills = () => {
     try {
       console.log("Fetching bookings for user:", userId);
       setLoading(true);
-      setError(null); // Clear any previous errors
+      setError(null); 
       const db = getFirestore();
       
-      // Query for user's bookings - add error handling for undefined userId
+
       const q = query(
         collection(db, "bookings"),
         where("userId", "==", userId)
@@ -166,7 +166,7 @@ const GuestBills = () => {
       // Fetch restaurant orders for each booking
       for (let booking of bookingData) {
         try {
-          // First query for orders put on room tab - EXPLICITLY CHECK FOR UNPAID ORDERS
+
           const tabOrdersQuery = query(
             collection(db, "orders"),
             where("roomNumber", "==", booking.room),
@@ -176,7 +176,6 @@ const GuestBills = () => {
           
           const tabOrdersSnapshot = await getDocs(tabOrdersQuery);
           
-          // Then query for room service orders - EXPLICITLY CHECK FOR UNPAID ORDERS
           const roomServiceQuery = query(
             collection(db, "orders"),
             where("roomNumber", "==", booking.room),
@@ -188,19 +187,16 @@ const GuestBills = () => {
           
           const foodOrders = [];
           
-          // Process tab orders
           tabOrdersSnapshot.forEach((doc) => {
             const orderData = doc.data();
             
-            // Format cart items for description
             let itemsDescription = "";
             if (orderData.cartItems && orderData.cartItems.length > 0) {
               itemsDescription = orderData.cartItems
                 .map(item => `${item.quantity}x ${item.name}`)
                 .join(", ");
             }
-            
-            // Check if this is actually an extension charge disguised as a tab order
+
             const isExtension = itemsDescription.toLowerCase().includes("extension") || 
                               (orderData.description && orderData.description.toLowerCase().includes("extension")) ||
                               (orderData.notes && orderData.notes.toLowerCase().includes("extension"));
@@ -215,16 +211,13 @@ const GuestBills = () => {
             });
           });
           
-          // Process room service orders
           roomServiceSnapshot.forEach((doc) => {
             const orderData = doc.data();
             
-            // Skip if this order was already added
             if (foodOrders.some(order => order.id === doc.id)) {
               return;
             }
-            
-            // Format cart items for description
+
             let itemsDescription = "";
             if (orderData.cartItems && orderData.cartItems.length > 0) {
               itemsDescription = orderData.cartItems
@@ -232,7 +225,7 @@ const GuestBills = () => {
                 .join(", ");
             }
             
-            // Check if this is actually an extension charge
+
             const isExtension = itemsDescription.toLowerCase().includes("extension") || 
                               (orderData.description && orderData.description.toLowerCase().includes("extension")) ||
                               (orderData.notes && orderData.notes.toLowerCase().includes("extension"));
@@ -247,14 +240,14 @@ const GuestBills = () => {
             });
           });
           
-          // Filter to only include unpaid extension charges from booking
+  
           const unpaidExtensionCharges = (booking.extensionCharges || []).filter(charge => charge.paid !== true);
           
-          // Add extension charges if they exist and aren't already in food orders
+      
           if (unpaidExtensionCharges.length > 0) {
             console.log("Processing extension charges:", unpaidExtensionCharges);
             unpaidExtensionCharges.forEach(charge => {
-              // Check if this extension charge is already in food orders
+         
               if (!foodOrders.some(order => order.id === charge.id)) {
                 foodOrders.push({
                   id: charge.id || `ext-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
@@ -268,7 +261,7 @@ const GuestBills = () => {
             });
           }
           
-          // Sort orders by date (newest first)
+      
           foodOrders.sort((a, b) => b.date - a.date);
           
           booking.foodOrders = foodOrders;
@@ -278,8 +271,7 @@ const GuestBills = () => {
       }
       
       setBookings(bookingData);
-      
-      // Set the selected booking to the current checked-in booking if available
+
       const currentBooking = bookingData.find(b => b.status === "Checked in");
       if (currentBooking) {
         setSelectedBooking(currentBooking);
@@ -287,7 +279,7 @@ const GuestBills = () => {
         setSelectedBooking(bookingData[0]);
       }
       
-      setError(null); // Clear any errors if we successfully fetched data
+      setError(null); 
       setLoading(false);
     } catch (err) {
       console.error("Error fetching bookings:", err);
@@ -304,7 +296,7 @@ const GuestBills = () => {
     ).reduce((total, order) => total + order.amount, 0);
   };
   
-  // Get total extension charges
+ 
   const calculateExtensionTotal = (orders) => {
     const extensionOrders = orders.filter(order => 
       order.type === "extension" || 
@@ -315,17 +307,17 @@ const GuestBills = () => {
     return total;
   };
 
-  // Handle booking selection
+
   const handleBookingSelect = (booking) => {
     setSelectedBooking(booking);
   };
 
-  // Get current/active booking
+
   const getCurrentBooking = () => {
     return bookings.find(booking => booking.status === "Checked in") || null;
   };
 
-  // Handle retry if authentication failed
+
   const handleRetry = () => {
     setLoading(true);
     setError(null);
@@ -337,14 +329,14 @@ const GuestBills = () => {
       setUser(currentUser);
       fetchUserBookings(currentUser.uid);
     } else {
-      // Check localStorage for guest ID
+ 
       const guestId = localStorage.getItem("guestId");
       if (guestId) {
         console.log("Retrying with guest ID:", guestId);
         setUser({ uid: guestId, isGuest: true });
         fetchUserBookings(guestId);
       } else {
-        // Try to get user from session storage
+        
         const sessionUser = sessionStorage.getItem('currentUser');
         if (sessionUser) {
           try {
@@ -365,7 +357,7 @@ const GuestBills = () => {
     }
   };
 
-  // Helper function to format currency in Ghana Cedis
+
   const formatCurrency = (amount) => {
     return `GHS ${Number(amount).toFixed(2)}`;
   };
@@ -405,7 +397,7 @@ const GuestBills = () => {
   const currentBooking = getCurrentBooking();
   const activeBooking = selectedBooking || currentBooking || bookings[0];
 
-  // Get food orders vs extension charges
+
   const getFoodOnlyOrders = (orders) => {
     return orders.filter(order => 
       order.type === "food" && 
@@ -437,7 +429,7 @@ const GuestBills = () => {
         <div className="guest-bills-content">
           {bookings.length > 0 ? (
             <div>
-              {/* Booking tabs if user has multiple bookings */}
+     
               {bookings.length > 1 && (
                 <div className="booking-tabs">
                   {bookings.map(booking => (
@@ -561,7 +553,7 @@ const GuestBills = () => {
                     </div>
                   )}
                   
-                  {/* Food & Beverage charges */}
+                  {/* Food & drinks charges */}
                   {activeTab === 'foodOrders' && (
                     <div className="tab-content">
                       <div className="charges-header">
@@ -605,7 +597,7 @@ const GuestBills = () => {
                         </div>
                       )}
                       
-                      {/* Show download receipt button if there are charges */}
+                     
                       {getFoodOnlyOrders(activeBooking.foodOrders).length > 0 && (
                         <div className="user-actions">
                           <button className="btn btn-outline">Download Receipt</button>
@@ -614,7 +606,7 @@ const GuestBills = () => {
                     </div>
                   )}
                   
-                  {/* Stay Extension charges */}
+                  {/*  Extension charges */}
                   {activeTab === 'extensions' && (
                     <div className="tab-content">
                       <div className="charges-header">
@@ -658,7 +650,7 @@ const GuestBills = () => {
                         </div>
                       )}
                       
-                      {/* Show download receipt button if there are charges */}
+                    
                       {getExtensionOrders(activeBooking.foodOrders).length > 0 && (
                         <div className="user-actions">
                           <button className="btn btn-outline">Download Receipt</button>

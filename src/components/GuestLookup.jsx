@@ -14,12 +14,11 @@ const GuestLookupComponent = ({
   const [selectedRoom, setSelectedRoom] = useState("");
   const [selectedDate, setSelectedDate] = useState("");
   const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
-  const [lookupType, setLookupType] = useState("email"); // "email", "name", "allPending"
+  const [lookupType, setLookupType] = useState("email"); 
   const [lookupName, setLookupName] = useState("");
   
-  // Handle guest lookup
+
   const handleGuestLookup = async () => {
-    // For "All Pending" option, don't require email
     if (lookupType !== "allPending" && !lookupEmail && !lookupName) {
       setLookupError("Please enter search criteria");
       return;

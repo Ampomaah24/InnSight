@@ -24,21 +24,20 @@ margin-left: 9rem;
   z-index: 100;
   transform: translateX(0);
   transition: transform 0.3s ease;
-  flex-shrink: 0; /* Prevent sidebar from shrinking */
+  flex-shrink: 0;
 }
 
 .main-content {
   flex: 1;
-  margin-left: 14.5rem; /* Match sidebar width */
+  margin-left: 14.5rem; 
   padding: 1.75rem 2rem;
-  width: calc(100% - 14.5rem); /* Set exact width accounting for sidebar */
-  max-width: 100%; /* Prevent overflow beyond container width */
-  box-sizing: border-box; /* Include padding in width calculation */
+  width: calc(100% - 14.5rem); 
+  max-width: 100%; 
+  box-sizing: border-box; 
   background-color: #fff;
-  overflow-x: hidden; /* Prevent content from overflowing */
+  overflow-x: hidden;
 }
 
-/* Admin Settings Page Header */
 .page-header {
   margin-bottom: 2rem;
   position: relative;
@@ -72,7 +71,7 @@ margin-left: 9rem;
   max-width: 36rem;
 }
 
-/* View-Only Banner */
+
 .view-only-banner {
   background-color: #f8f9fa;
   border-left: 0.25rem solid #6c757d;
@@ -91,7 +90,7 @@ margin-left: 9rem;
   color: #4a5568;
 }
 
-/* Database Error Banner */
+
 .database-error-banner {
   background-color: #fff3cd;
   color: #856404;
@@ -104,7 +103,7 @@ margin-left: 9rem;
   align-items: center;
 }
 
-/* Notifications */
+
 .notification {
   margin-bottom: 1.5rem;
   padding: 0.875rem 1.25rem;
@@ -146,21 +145,21 @@ margin-left: 9rem;
   to { opacity: 1; transform: translateY(0); }
 }
 
-/* Tabs Navigation */
+
 .settings-tabs {
   display: flex;
   overflow-x: auto;
   border-bottom: 0.0625rem solid #e0e0e0;
   margin-bottom: 1.5rem;
   padding-bottom: 0;
-  scrollbar-width: none; /* Firefox */
+  scrollbar-width: none; 
   width: 100%;
   max-width: 100%;
   box-sizing: border-box;
 }
 
 .settings-tabs::-webkit-scrollbar {
-  display: none; /* Chrome, Safari, Edge */
+  display: none; 
 }
 
 .settings-tab {
@@ -194,14 +193,14 @@ margin-left: 9rem;
   border-radius: 0.125rem 0.125rem 0 0;
 }
 
-/* Settings Content Container */
+
 .settings-content {
   background-color: white;
   border-radius: 0.75rem;
   box-shadow: 0 0.125rem 0.5rem rgba(0, 0, 0, 0.05);
   overflow: hidden;
-  max-width: 100%; /* Ensure it doesn't overflow its container */
-  box-sizing: border-box; /* Include padding in width calculation */
+  max-width: 100%; 
+  box-sizing: border-box; 
 }
 
 .settings-loading {
@@ -211,13 +210,13 @@ margin-left: 9rem;
   font-style: italic;
 }
 
-/* Panel Styling */
+
 .settings-panel {
   padding: 1.75rem;
   width: 100%;
   max-width: 100%;
   box-sizing: border-box;
-  overflow-x: hidden; /* Prevent content from overflowing */
+  overflow-x: hidden; 
 }
 
 .panel-title {
@@ -236,7 +235,7 @@ margin-left: 9rem;
   font-size: 1rem;
 }
 
-/* Form Styling */
+
 .settings-form {
   margin-bottom: 1.75rem;
   width: 100%;
@@ -257,7 +256,7 @@ margin-left: 9rem;
 .form-group {
   flex: 1;
   min-width: 15.625rem;
-  max-width: 100%; /* Prevent overflow */
+  max-width: 100%; 
   box-sizing: border-box;
 }
 
@@ -307,7 +306,7 @@ margin-left: 9rem;
   min-height: 5rem;
 }
 
-/* Checkbox Styling */
+
 .checkbox-group {
   display: flex;
   align-items: center;
@@ -330,7 +329,7 @@ margin-left: 9rem;
   top: -0.0625rem;
 }
 
-/* Button Styling */
+
 .settings-actions {
   display: flex;
   justify-content: flex-end;
@@ -374,7 +373,7 @@ margin-left: 9rem;
   background-color: #e8eaed;
 }
 
-/* Card Styling for Promotions and Seasonal */
+
 .promotions-list,
 .seasonal-list {
   display: flex;
@@ -454,7 +453,7 @@ margin-left: 9rem;
   color: white;
 }
 
-/* Empty State Styling */
+
 .empty-state {
   text-align: center;
   padding: 3rem 2rem;
@@ -466,7 +465,7 @@ margin-left: 9rem;
   margin: 1rem 0;
 }
 
-/* View-Only Styling */
+
 input:disabled, 
 select:disabled, 
 textarea:disabled {
@@ -522,7 +521,7 @@ textarea.readonly {
   color: #6c757d;
 }
 
-/* Responsive Styling */
+
 @media (max-width: 62rem) {
   .main-content {
     padding: 1.5rem;
@@ -545,7 +544,7 @@ textarea.readonly {
   .main-content {
     margin-left: 0;
     padding: 1.25rem;
-    width: 100%; /* Full width when sidebar is hidden */
+    width: 100%; 
   }
   
   .settings-tabs {
@@ -572,7 +571,7 @@ textarea.readonly {
   }
 }
 
-/* Sidebar Toggle Button */
+
 .sidebar-toggle {
   position: fixed;
   top: 1rem;

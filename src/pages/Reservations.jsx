@@ -17,7 +17,7 @@ const Reservations = () => {
   const [filterDate, setFilterDate] = useState("");
   const [filterMonth, setFilterMonth] = useState("");
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState("room"); // "room" or "conference"
+  const [activeTab, setActiveTab] = useState("room"); 
   const [selectedReservation, setSelectedReservation] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [extendDays, setExtendDays] = useState(1);
@@ -29,7 +29,7 @@ const Reservations = () => {
   const [confirmationAction, setConfirmationAction] = useState(null);
   const [confirmationMessage, setConfirmationMessage] = useState("");
   const [includePastReservations, setIncludePastReservations] = useState(false);
-  // Enhanced extend stay states
+
   const [isRoomAvailable, setIsRoomAvailable] = useState(true);
   const [availableRooms, setAvailableRooms] = useState([]);
   const [selectedNewRoom, setSelectedNewRoom] = useState("");
@@ -45,17 +45,15 @@ const Reservations = () => {
     hours: 0
   });
   
-  // Extension settings
   const MIN_EXTENSION_DAYS = 1;
   
-  // Get current auth user
   const auth = getAuth();
 
-  // Function to map venue IDs to human-readable names
+  // Function to map ID to names
   const getVenueName = (venueId) => {
     if (!venueId) return "N/A";
     
-    // Map of venue IDs to readable names
+
     const venueMap = {
       "91g3slvSNINm9MmxGpmv": "Long Room",
       "HI3gExv7FXT5Mkon6VIE": "Big Room",
@@ -65,14 +63,12 @@ const Reservations = () => {
     return venueMap[venueId] || "Conference Room";
   };
 
-  // Helper function to get guest name consistently from booking data
   const getGuestNameFromBookingData = (data) => {
-    // First try primary guest fields
+
     if (data.primaryGuestFirstName || data.primaryGuestLastName) {
       return `${data.primaryGuestFirstName || ''} ${data.primaryGuestLastName || ''}`.trim();
     }
     
-    // Then check guests array
     if (data.guests && Array.isArray(data.guests) && data.guests.length > 0) {
       const firstGuest = data.guests[0];
       if (firstGuest && (firstGuest.firstName || firstGuest.lastName)) {
@@ -80,19 +76,16 @@ const Reservations = () => {
       }
     }
     
-    // Then try booker fields
+
     if (data.bookerFirstName || data.bookerLastName) {
       return `${data.bookerFirstName || ''} ${data.bookerLastName || ''}`.trim();
     }
     
-    // Finally fall back to legacy fields
     return `${data.firstName || ''} ${data.lastName || ''}`.trim() || "Guest";
   };
 
-  // Helper function to check if a date falls within a high season period
   const isHighSeason = (date) => {
     const month = date.getMonth();
-    // Define high season months: June-August (summer) and December (holiday season)
     return (month >= 5 && month <= 7) || month === 11;
   };
   const normalizeToMidnight = (date) => {
@@ -100,10 +93,8 @@ const Reservations = () => {
     normalized.setHours(0, 0, 0, 0);
     return normalized;
   };
-  
-  // Helper function to calculate extension rate based on tiered pricing
+ 
   const calculateExtensionRate = (originalRate, days) => {
-    // No discounts for extensions
     return originalRate;
   };
 
@@ -121,8 +112,6 @@ const Reservations = () => {
   }, []);
   
   
-  
-  // Calculate extension cost for room bookings
   const calculateExtensionCost = useCallback((baseRate, currentCheckOut, extensionDays) => {
     let regularDays = 0;
     let highSeasonDays = 0;
@@ -140,7 +129,7 @@ const Reservations = () => {
     const adjustedRate = calculateExtensionRate(baseRate, extensionDays);
     
     const regularCost = adjustedRate * regularDays;
-    const highSeasonCost = adjustedRate * 1.25 * highSeasonDays; // 25% premium for high season
+    const highSeasonCost = adjustedRate * 1.25 * highSeasonDays; 
     
     const totalCost = regularCost + highSeasonCost;
     
@@ -152,7 +141,7 @@ const Reservations = () => {
       regularCost,
       highSeasonCost,
       totalCost,
-      discount: 0 // No discounts for extensions
+      discount: 0 
     };
   }, []);
 
@@ -165,17 +154,13 @@ const Reservations = () => {
       newDate.setDate(baseDate.getDate() + parseInt(extendDays));
       return newDate;
     } else {
-      // Fixed: Now adding days for conference bookings too
       const newDate = new Date(selectedReservation.checkOutDate);
       newDate.setDate(newDate.getDate() + parseInt(extendDays));
       return newDate;
     }
   }, [selectedReservation, extendDays, activeTab]);
   
-  
-  
-  
-  // Recalculate extension cost when days or base rate changes (without API calls)
+
   useEffect(() => {
     if (!selectedReservation || !isModalOpen || !baseRate) return;
     
@@ -188,7 +173,6 @@ const Reservations = () => {
       
       setExtensionRateDetails(costDetails);
     } else {
-      // For conference bookings, we use hours instead of days
       const extensionDays = extendDays;
 
       
@@ -228,12 +212,10 @@ const Reservations = () => {
       console.log(`Found ${bookingSnapshot.docs.length} existing bookings for room ${roomId}`);
       
       const conflictingBookings = bookingSnapshot.docs.filter(doc => {
-        // Add proper null checking for selectedReservation
         if (selectedReservation && doc.id === selectedReservation.id) return false;
         
         const bookingData = doc.data();
-        
-        // Consistent date parsing with detailed logging
+
         const parseDate = (dateField, fieldName) => {
           try {
             if (dateField instanceof Timestamp) {
@@ -259,20 +241,14 @@ const Reservations = () => {
           return false;
         }
         
-        // Comprehensive conflict logging with stricter overlap check
-        // This checks if ANY part of the new extension period overlaps with an existing booking
         const overlap = 
-          // New extension period starts during an existing booking
           (newCheckOut > bookingCheckIn && newCheckOut <= bookingCheckOut) ||
-          // Current checkout falls within an existing booking
           (currentCheckOut > bookingCheckIn && currentCheckOut < bookingCheckOut) ||
-          // An existing booking intersects with the extension period
           (bookingCheckIn >= currentCheckOut && bookingCheckIn < newCheckOut) ||
-          // Extension completely covers an existing booking
           (currentCheckOut <= bookingCheckIn && newCheckOut >= bookingCheckOut);
         
         if (overlap) {
-          console.warn('🚨 CONFLICT DETECTED 🚨', {
+          console.warn('CONFLICT DETECTED ', {
             roomId,
             bookingId: doc.id,
             bookingStatus: bookingData.status,
@@ -290,7 +266,7 @@ const Reservations = () => {
       
       const isAvailable = conflictingBookings.length === 0;
       
-      console.log(`Room ${roomId} availability:`, isAvailable ? '✅ AVAILABLE' : '❌ NOT AVAILABLE');
+      console.log(`Room ${roomId} availability:`, isAvailable ? ' AVAILABLE' : 'NOT AVAILABLE');
       
       return isAvailable;
     } catch (error) {
@@ -299,8 +275,6 @@ const Reservations = () => {
     }
   }, [selectedReservation]);
   
-  // Similarly, the findAvailableRooms function should be updated to include null checks
-  // and be wrapped in useCallback with proper dependencies:
   
   const findAvailableRooms = useCallback(async (roomType, currentCheckOut, newCheckOut) => {
     console.log('Finding Available Rooms:', {
@@ -323,8 +297,7 @@ const Reservations = () => {
       const availableRoomPromises = roomsSnapshot.docs.map(async (roomDoc) => {
         const roomId = roomDoc.id;
         const roomData = roomDoc.data();
-        
-        // Skip the current room being extended (if applicable)
+
         if (selectedReservation && roomId === selectedReservation.roomNumber) {
           console.log(`Skipping current room ${roomId}`);
           return null;
@@ -341,11 +314,11 @@ const Reservations = () => {
         
         console.log(`Checking ${bookingsSnapshot.docs.length} bookings for room ${roomId}`);
         
-        // Check for any booking conflicts
+        // Checkin for any booking conflicts
         const hasConflict = bookingsSnapshot.docs.some(bookingDoc => {
           const bookingData = bookingDoc.data();
           
-          // Parse dates consistently
+      
           const parseDate = (dateField) => {
             if (dateField instanceof Timestamp) return dateField.toDate();
             if (dateField?.seconds) return new Date(dateField.seconds * 1000);
@@ -355,7 +328,6 @@ const Reservations = () => {
           const bookingCheckIn = parseDate(bookingData.checkIn);
           const bookingCheckOut = parseDate(bookingData.checkOut);
           
-          // Detailed date overlap check with stricter conditions
           const overlap = 
             (newCheckOut > bookingCheckIn && newCheckOut <= bookingCheckOut) ||
             (currentCheckOut > bookingCheckIn && currentCheckOut < bookingCheckOut) ||
@@ -375,7 +347,6 @@ const Reservations = () => {
           return overlap;
         });
         
-        // If no conflicts, return the room
         if (!hasConflict) {
           console.log(`Room ${roomId} is available for extension`);
           return {
@@ -404,10 +375,7 @@ const Reservations = () => {
   const updateSameRoomBookings = async (roomId, originalBookingId, extensionBookingId, 
                                   currentCheckOut, newCheckOut, guestName) => {
     try {
-      // Get reference to the room document
       const roomRef = doc(db, "rooms", roomId);
-      
-      // Get current room data
       const roomSnapshot = await getDoc(roomRef);
       
       if (!roomSnapshot.exists()) {
@@ -416,23 +384,19 @@ const Reservations = () => {
       }
       
       const roomData = roomSnapshot.data();
-      
-      // Get current bookings array or initialize if not exists
       const bookings = roomData.bookings || [];
       
-      // Format dates consistently
+
       const formatFirestoreDate = (date) => {
         if (date instanceof Date) {
           return Timestamp.fromDate(date);
         }
-        return date; // If already a Timestamp, leave as is
+        return date; 
       };
       
-      // Find and update the original booking's checkout date
       let updatedBookings = bookings.map(booking => {
         if (booking.bookingId === originalBookingId) {
-          // Don't change the checkout date of the original booking
-          // Just mark it as extended
+
           return {
             ...booking,
             hasBeenExtended: true,
@@ -443,7 +407,6 @@ const Reservations = () => {
         return booking;
       });
       
-      // Add a new booking entry for the extension period
       updatedBookings.push({
         bookingId: extensionBookingId,
         checkIn: formatFirestoreDate(currentCheckOut),
@@ -455,14 +418,13 @@ const Reservations = () => {
         lastUpdated: Timestamp.now()
       });
       
-      // Sort bookings by check-in date
       updatedBookings.sort((a, b) => {
         const dateA = a.checkIn instanceof Timestamp ? a.checkIn.toDate() : new Date(a.checkIn);
         const dateB = b.checkIn instanceof Timestamp ? b.checkIn.toDate() : new Date(b.checkIn);
         return dateA - dateB;
       });
       
-      // Update the room document
+
       await updateDoc(roomRef, {
         bookings: updatedBookings,
         lastUpdated: Timestamp.now()
@@ -480,7 +442,7 @@ const Reservations = () => {
   const updateRoomBookings = async (oldRoomId, newRoomId, originalBookingId, extensionBookingId,
                                 currentCheckOut, newCheckOut, guestName) => {
     try {
-      // 1. Update the old room - mark the booking as completed on original checkout
+
       const oldRoomRef = doc(db, "rooms", oldRoomId);
       const oldRoomSnapshot = await getDoc(oldRoomRef);
       
@@ -488,7 +450,7 @@ const Reservations = () => {
         const oldRoomData = oldRoomSnapshot.data();
         const oldBookings = oldRoomData.bookings || [];
         
-        // Update the original booking without changing its checkout
+        // Update the original booking without changing its checkout to preserve
         let updatedOldBookings = oldBookings.map(booking => {
           if (booking.bookingId === originalBookingId) {
             return {
@@ -502,7 +464,7 @@ const Reservations = () => {
           return booking;
         });
         
-        // Update the old room document
+
         await updateDoc(oldRoomRef, {
           bookings: updatedOldBookings,
           lastUpdated: Timestamp.now()
@@ -513,7 +475,6 @@ const Reservations = () => {
         console.warn(`Original room ${oldRoomId} document does not exist`);
       }
       
-      // 2. Update the new room - add the extension booking
       const newRoomRef = doc(db, "rooms", newRoomId);
       const newRoomSnapshot = await getDoc(newRoomRef);
       
@@ -521,12 +482,11 @@ const Reservations = () => {
         const newRoomData = newRoomSnapshot.data();
         const newBookings = newRoomData.bookings || [];
         
-        // Format dates consistently
         const formatFirestoreDate = (date) => {
           if (date instanceof Date) {
             return Timestamp.fromDate(date);
           }
-          return date; // If already a Timestamp, leave as is
+          return date; 
         };
         
         // Add extension booking to new room
@@ -542,14 +502,12 @@ const Reservations = () => {
           lastUpdated: Timestamp.now()
         });
         
-        // Sort bookings by check-in date
         newBookings.sort((a, b) => {
           const dateA = a.checkIn instanceof Timestamp ? a.checkIn.toDate() : new Date(a.checkIn);
           const dateB = b.checkIn instanceof Timestamp ? b.checkIn.toDate() : new Date(b.checkIn);
           return dateA - dateB;
         });
-        
-        // Update the new room document
+  
         await updateDoc(newRoomRef, {
           bookings: newBookings,
           lastUpdated: Timestamp.now()
@@ -566,10 +524,9 @@ const Reservations = () => {
     }
   };
 
-  // Send extension confirmation email
+
   const sendExtensionConfirmation = async (reservation, extensionDays, extensionCost, newCheckout) => {
     try {
-      // Here you would call a server endpoint to handle email sending
       console.log("Would send email confirmation to:", reservation.email);
       console.log("Extension details:", {
         guestName: reservation.guestName,
@@ -587,7 +544,7 @@ const Reservations = () => {
     }
   };
 
-  // Fetch reservations from Firestore
+  // Fetch reservations from db
   useEffect(() => {
     const fetchReservations = async () => {
       try {
@@ -602,13 +559,11 @@ const Reservations = () => {
         
         let rooms = roomSnapshot.docs.map((doc) => {
           const data = doc.data();
-          
-          // Parse dates safely with error handling
+
           let checkInDate, checkOutDate, createdAt;
           try {
             const rawCheckOut = data.extendedCheckOut || data.checkOut;
-          
-            // ✅ Add this block
+
             const rawCheckIn = data.checkIn;
             if (rawCheckIn instanceof Timestamp) {
               checkInDate = rawCheckIn.toDate();
@@ -617,8 +572,7 @@ const Reservations = () => {
             } else {
               checkInDate = new Date(rawCheckIn);
             }
-          
-            // ✅ Existing logic for checkOut
+    
             if (rawCheckOut instanceof Timestamp) {
               checkOutDate = rawCheckOut.toDate();
             } else if (rawCheckOut && rawCheckOut.seconds) {
@@ -646,11 +600,10 @@ const Reservations = () => {
             createdAt = new Date();
           }
           
-          // Calculate stay length in days
+
           const stayLengthMs = checkOutDate - checkInDate;
           const stayLengthDays = Math.ceil(stayLengthMs / (1000 * 60 * 60 * 24));
-          
-          // Get guest name using our helper function
+
           const guestName = getGuestNameFromBookingData(data);
           
           return {
@@ -663,13 +616,12 @@ const Reservations = () => {
             checkOutDate: checkOutDate,
             createdAt: createdAt,
             stayLength: stayLengthDays,
-            month: checkInDate.getMonth() + 1, // 1-12 for Jan-Dec
+            month: checkInDate.getMonth() + 1, 
             year: checkInDate.getFullYear(),
             guestName: guestName
           };
         });
 
-        // Conference room bookings
         const confSnapshot = await getDocs(query(
           collection(db, "conferenceBookings"),
           // Filter out incomplete bookings
@@ -678,8 +630,7 @@ const Reservations = () => {
         
         let conferences = confSnapshot.docs.map((doc) => {
           const data = doc.data();
-          
-          // Parse dates safely with error handling
+
           let checkInDate, checkOutDate, createdAt;
           try {
             if (data.checkIn instanceof Timestamp) {
@@ -715,16 +666,12 @@ const Reservations = () => {
             checkOutDate = new Date();
             createdAt = new Date();
           }
-          
-          // Calculate event length in hours
+
           const eventLengthMs = checkOutDate - checkInDate;
           const eventLengthHours = Math.ceil(eventLengthMs / (1000 * 60 * 60));
           
           const venueId = data.room || data.venue;
           const venueName = data.roomName || getVenueName(venueId) || "N/A";
-          
-          
-          // Get organizer/guest name using our helper function
           const guestName = getGuestNameFromBookingData(data);
           
           return {
@@ -738,7 +685,7 @@ const Reservations = () => {
             checkOutDate: checkOutDate,
             createdAt: createdAt,
             eventLength: eventLengthHours,
-            month: checkInDate.getMonth() + 1, // 1-12 for Jan-Dec
+            month: checkInDate.getMonth() + 1, 
             year: checkInDate.getFullYear(),
             venue: venueName,
             venueId: venueId,
@@ -746,7 +693,7 @@ const Reservations = () => {
           };
         });
 
-        // Sort by check-in date (ascending)
+
         const sortedRooms = rooms.sort((a, b) => a.checkInDate - b.checkInDate);
         const sortedConf = conferences.sort((a, b) => a.checkInDate - b.checkInDate);
 
@@ -769,8 +716,6 @@ const setupExtensionModal = useCallback(async () => {
   
   try {
     setIsProcessing(true);
-    
-    // Reset the fields
     setExtendDays(MIN_EXTENSION_DAYS);
     setNotes("");
     
@@ -809,13 +754,12 @@ if (activeTab === "room") {
           setSelectedNewRoom(alternatives[0].id);
         }
       }
-      
-      // Calculate base daily rate for room bookings
+    
       let calculatedBaseRate = 0;
       if (selectedReservation.originalPrice && selectedReservation.stayLength) {
         calculatedBaseRate = selectedReservation.originalPrice / selectedReservation.stayLength;
       } else {
-        // Try to get room price from database as fallback
+  
         try {
           if (selectedReservation.roomNumber) {
             const roomRef = doc(db, "rooms", selectedReservation.roomNumber);
@@ -823,20 +767,20 @@ if (activeTab === "room") {
             if (roomSnap.exists()) {
               calculatedBaseRate = roomSnap.data().price || 100;
             } else {
-              calculatedBaseRate = 100; // Default if price not available
+              calculatedBaseRate = 100; 
             }
           } else {
-            calculatedBaseRate = 100; // Default fallback
+            calculatedBaseRate = 100; 
           }
         } catch (error) {
           console.error("Error fetching room price:", error);
-          calculatedBaseRate = 100; // Default fallback on error
+          calculatedBaseRate = 100; 
         }
       }
       
       setBaseRate(calculatedBaseRate);
       
-      // Calculate initial cost details
+      // Calculate initial cost 
       const costDetails = calculateExtensionCost(
         calculatedBaseRate,
         selectedReservation.checkOutDate,
@@ -845,21 +789,20 @@ if (activeTab === "room") {
       
       setExtensionRateDetails(costDetails);
     } else {
-      // For conference bookings
-      setIsRoomAvailable(true); // Conference venues don't check for room availability
+    
+      setIsRoomAvailable(true); 
       
-      // Conference bookings use hours instead of days
       const extensionHours = MIN_EXTENSION_DAYS * 8;
       
-      // For conference bookings, we need to determine the hourly rate
+     
       let calculatedBaseRate = 0;
       if (selectedReservation.originalPrice && selectedReservation.eventLength) {
-        // Calculate from the original booking
+
         const totalDays = Math.ceil((new Date(selectedReservation.checkOutDate) - new Date(selectedReservation.checkInDate)) / (1000 * 60 * 60 * 24));
 calculatedBaseRate = selectedReservation.originalPrice / totalDays;
 
       } else {
-        // Try to get venue price from database as fallback
+
         try {
           if (selectedReservation.venueId) {
             const venueRef = doc(db, "conferenceVenues", selectedReservation.venueId);
@@ -867,20 +810,19 @@ calculatedBaseRate = selectedReservation.originalPrice / totalDays;
             if (venueSnap.exists()) {
               calculatedBaseRate = venueSnap.data().hourlyRate || 50;
             } else {
-              calculatedBaseRate = 50; // Default if price not available
+              calculatedBaseRate = 50; 
             }
           } else {
-            calculatedBaseRate = 50; // Default fallback
+            calculatedBaseRate = 50; 
           }
         } catch (error) {
           console.error("Error fetching venue price:", error);
-          calculatedBaseRate = 50; // Default fallback on error
+          calculatedBaseRate = 50; 
         }
       }
       
       setBaseRate(calculatedBaseRate);
       
-      // Use conference-specific pricing function
       const costDetails = calculateConferenceExtensionCost(baseRate, extendDays);
 
       
@@ -893,7 +835,6 @@ calculatedBaseRate = selectedReservation.originalPrice / totalDays;
   }
 }, [selectedReservation, isModalOpen, activeTab, MIN_EXTENSION_DAYS, checkRoomAvailability, findAvailableRooms, calculateExtensionCost, calculateConferenceExtensionCost]);
 
-// Then use it in useEffect
 useEffect(() => {
   setupExtensionModal();
 }, [setupExtensionModal]);
@@ -934,13 +875,12 @@ useEffect(() => {
       const baseCheckOut = normalizeToMidnight(selectedReservation.checkOutDate);
       const newCheckoutDate = new Date(baseCheckOut);
       newCheckoutDate.setDate(baseCheckOut.getDate() + parseInt(extendDays));
-      
-      // For conference bookings, we use hours instead of days
+ 
       const isConference = activeTab === "conference";
       const extensionUnit = isConference ? "hours" : "days";
       const extensionAmount = isConference ? (extendDays * 8) : extendDays;
       
-      // Check room availability for the extension period (only for room bookings)
+      // Check room availability for the extension  
       let roomAvailable = true;
       if (!isConference) {
         roomAvailable = await checkRoomAvailability(
@@ -954,9 +894,6 @@ useEffect(() => {
       ? (selectedReservation.venueId || selectedReservation.venue || selectedReservation.room || "unknown")
       : selectedReservation.roomNumber;
     
-    
-      
-      // If room is not available, use selected alternative (only for room bookings)
       if (!isConference && !roomAvailable && selectedNewRoom) {
         roomId = selectedNewRoom;
       } else if (!isConference && !roomAvailable && availableRooms.length === 0) {
@@ -965,27 +902,24 @@ useEffect(() => {
         return;
       }
       
-      // Use extension cost from calculated details
       const extensionCost = extensionRateDetails.totalCost;
       
-      // Format extension note with billing details
       const extensionNote = notes 
         ? `${new Date().toLocaleString()}: Extended by ${extendDays} day(s). Additional charge: ${extensionCost.toFixed(2)}. ${notes}` 
         : `${new Date().toLocaleString()}: Extended by ${extendDays} day(s). Additional charge: ${extensionCost.toFixed(2)}.`;
   
-      // Get current timestamp
+
       const now = Timestamp.now();
       
-      // Create extension history record
-// Create extension history record
+// Creation of extension history record
 const extensionHistoryRecord = {
   id: `ext-${Date.now()}`,
   date: now,
-  originalCheckOut: selectedReservation.checkOutDate || now, // fallback to now if undefined
-  newCheckOut: newCheckoutDate || now, // fallback to now if undefined
-  days: isConference ? 0 : (extendDays || 0), // default to 0 if undefined
-  hours: isConference ? (extendDays * 8 || 0) : 0, // default to 0 if undefined
-  cost: extensionCost || 0, // default to 0 if undefined
+  originalCheckOut: selectedReservation.checkOutDate || now, 
+  newCheckOut: newCheckoutDate || now, 
+  days: isConference ? 0 : (extendDays || 0), 
+  hours: isConference ? (extendDays * 8 || 0) : 0, 
+  cost: extensionCost || 0, 
   approvedBy: auth.currentUser?.uid || "unknown",
   approvedByName: auth.currentUser?.displayName || "Staff",
   roomChanged: roomId !== (isConference ? selectedReservation.venueId : selectedReservation.roomNumber),
@@ -994,14 +928,12 @@ const extensionHistoryRecord = {
   notes: notes || ""
 };
       
-      // Collection reference
+
       const collectionName = activeTab === "room" ? "bookings" : "conferenceBookings";
       const bookingsRef = collection(db, collectionName);
-      
-      // 1. Update original reservation 
+
       const originalReservationRef = doc(db, collectionName, selectedReservation.id);
-      
-      // Get extension history or create if it doesn't exist
+ 
       const extensionHistory = selectedReservation.extensionHistory 
         ? [...selectedReservation.extensionHistory, extensionHistoryRecord] 
         : [extensionHistoryRecord];
@@ -1009,7 +941,7 @@ const extensionHistoryRecord = {
         await updateDoc(originalReservationRef, {
           hasBeenExtended: true,
           lastUpdated: now,
-          extensionHistory: extensionHistory || [], // ensure array
+          extensionHistory: extensionHistory || [], 
           notes: selectedReservation.notes 
             ? `${selectedReservation.notes}\n${extensionNote}`
             : extensionNote
@@ -1017,7 +949,6 @@ const extensionHistoryRecord = {
       
         
         const extensionBookingData = {
-          // Ensure all required fields have defaults
           checkIn: Timestamp.fromDate(selectedReservation.checkOutDate || new Date()),
           checkOut: Timestamp.fromDate(newCheckoutDate || new Date()),
           status: "Confirmed",
@@ -1029,34 +960,31 @@ const extensionHistoryRecord = {
         phone: selectedReservation.phone || "", 
         guests: selectedReservation.guests || [],
         
-        // Payment information - FIXED: Ensure these are never undefined
         originalPrice: extensionRateDetails.totalCost || 0,
         remainderDue: extensionRateDetails.totalCost || 0,
-        deposit: 0, // No deposit for extension
+        deposit: 0, 
         paymentMethod: selectedReservation.paymentMethod || "Unknown",
         
-        // Extension specific fields
+
         isExtension: true, 
         originalBookingId: selectedReservation.id,
         
-        // Metadata
+
         createdAt: now,
         lastUpdated: now,
         notes: `Extension booking created from reservation #${selectedReservation.id}. ${notes || ""}`
       };
       
-      // Add type-specific fields
       if (activeTab === "room") {
         extensionBookingData.roomNumber = roomId;
         extensionBookingData.roomType = selectedReservation.roomType || "";
         extensionBookingData.extensionDays = extendDays;
       } else {
-        // Conference booking specific fields - following same pattern as room bookings
-        extensionBookingData.room = roomId; // or venue field
+
+        extensionBookingData.room = roomId; 
         extensionBookingData.venue = roomId;
         extensionBookingData.extensionDays = extendDays;
-  
-        // Add any additional fields that exist in the original conference booking
+
         if (selectedReservation.packageType) {
           extensionBookingData.packageType = selectedReservation.packageType;
         }
@@ -1064,13 +992,12 @@ const extensionHistoryRecord = {
           extensionBookingData.attendees = selectedReservation.attendees;
         }
       }
-      
-      // Validate critical fields before creating the booking
+
       if (
         extensionBookingData.originalPrice === undefined ||
         extensionBookingData.remainderDue === undefined
       ) {
-        console.error("❌ Prevented addDoc due to undefined field values:", {
+        console.error("Prevented addDoc due to undefined field values:", {
           originalPrice: extensionBookingData.originalPrice,
           remainderDue: extensionBookingData.remainderDue
         });
@@ -1079,7 +1006,7 @@ const extensionHistoryRecord = {
         return;
       }
       if (!roomId || roomId === "unknown") {
-        console.error("❌ Cannot create booking: roomId is undefined or invalid for conference.");
+        console.error("Cannot create booking: roomId is undefined or invalid for conference.");
         alert("Failed to extend booking due to missing venue information.");
         setIsProcessing(false);
         return;
@@ -1087,7 +1014,6 @@ const extensionHistoryRecord = {
       
       let newBookingId = null;
       if (activeTab === "room" && roomId === selectedReservation.roomNumber) {
-        // Same room: DO NOT update 'checkOut', add 'extendedCheckOut' instead
         await updateDoc(originalReservationRef, {
           extendedCheckOut: Timestamp.fromDate(newCheckoutDate),
           hasBeenExtended: true,
@@ -1098,7 +1024,7 @@ const extensionHistoryRecord = {
             : extensionNote
         });
       
-        newBookingId = selectedReservation.id; // reuse ID
+        newBookingId = selectedReservation.id; 
       
         await updateSameRoomBookings(
           roomId,
@@ -1110,7 +1036,6 @@ const extensionHistoryRecord = {
         );
       }
       else if (activeTab === "conference" && roomId === selectedReservation.venueId) {
-        // Same conference venue: Just update extendedCheckOut + history
         await updateDoc(originalReservationRef, {
           extendedCheckOut: Timestamp.fromDate(newCheckoutDate),
           hasBeenExtended: true,
@@ -1121,9 +1046,9 @@ const extensionHistoryRecord = {
             : extensionNote
         });
       
-        newBookingId = selectedReservation.id; // reuse ID
+        newBookingId = selectedReservation.id; 
       } else {
-        // Room change or different venue: create new booking
+
         const newBookingRef = await addDoc(bookingsRef, extensionBookingData);
         newBookingId = newBookingRef.id;
       
@@ -1153,31 +1078,28 @@ const extensionHistoryRecord = {
       
       // Validate before updating original booking
       if (!newBookingId) {
-        console.error("❌ Failed to create extension booking");
+        console.error("Failed to create extension booking");
         alert("Failed to extend stay due to internal error. Please try again.");
         setIsProcessing(false);
         return;
       }
       
-      // 3. Update the original booking with reference to extension
+      // Update the original booking after extension
       await updateDoc(originalReservationRef, {
         extensionBookingId: newBookingId
       });
-      
-      // 4. Update room documents as needed (only for room bookings)
+
       if (activeTab === "room") {
         if (roomId !== selectedReservation.roomNumber) {
-          // Handle room change case - update both old and new room
           await updateRoomBookings(selectedReservation.roomNumber, roomId, selectedReservation.id, newBookingId, 
                                 selectedReservation.checkOutDate, newCheckoutDate, selectedReservation.guestName);
         } else {
-          // Same room case - just update the room's bookings array
           await updateSameRoomBookings(roomId, selectedReservation.id, newBookingId, 
                                     selectedReservation.checkOutDate, newCheckoutDate, selectedReservation.guestName);
         }
       }
       
-      // 5. Add transaction record for billing/finance tracking
+      // Addition off transaction record for billing
       const transactionData = {
         bookingId: newBookingId,
         originalBookingId: selectedReservation.id,
@@ -1192,7 +1114,7 @@ const extensionHistoryRecord = {
         userId: auth.currentUser?.uid || "unknown"
       };
       
-      // Add booking type specific fields
+
       if (activeTab === "room") {
         transactionData.roomNumber = roomId;
         transactionData.regularDays = extensionRateDetails.regularDays;
@@ -1208,7 +1130,7 @@ const extensionHistoryRecord = {
       
       await addDoc(collection(db, "transactions"), transactionData);
       
-      // 6. Send email confirmation if available
+  
       if (selectedReservation.email) {
         await sendExtensionConfirmation(
           {
@@ -1232,21 +1154,19 @@ const extensionHistoryRecord = {
       setAvailableRooms([]);
       setSelectedNewRoom("");
       
-      // Prepare success message based on booking type
       let successMessage = "";
       if (activeTab === "room") {
         successMessage = roomId !== selectedReservation.roomNumber
           ? `Stay extension created successfully! New booking #${newBookingId} in Room ${roomId}. Additional charge of GHS ${extensionCost.toFixed(2)} has been added to the guest's bill.`
           : `Stay extension created successfully! New booking #${newBookingId}. Additional charge of GHS ${extensionCost.toFixed(2)} has been added to the guest's bill.`;
       } else {
-        // Conference booking success message
         successMessage = `Venue booking extended successfully! Additional ${extendDays} days added. Additional charge of GHS ${extensionCost.toFixed(2)} has been added to the invoice.`;
       }
       
       setSuccessMessage(successMessage);
       setShowSuccessPopup(true);
       
-      // Hide popup after 4 seconds
+
       setTimeout(() => {
           const popup = document.querySelector('.success-popup');
           if (popup) popup.classList.add('fade-out');
@@ -1261,9 +1181,6 @@ const extensionHistoryRecord = {
     }
   };
 
-/// The issue is that the stats summary doesn't update immediately after termination
-// We need to update the terminateReservation function to update the stats locally
-
 // Function to terminate a reservation
 const terminateReservation = async () => {
   if (!selectedReservation) return;
@@ -1272,10 +1189,10 @@ const terminateReservation = async () => {
     setIsProcessing(true);
     const collectionName = activeTab === "room" ? "bookings" : "conferenceBookings";
     
-    // ✅ Move this line up and define it first
+
     let reservationToTerminate = selectedReservation;
 
-    // ✅ Check if it's an extension
+    // Check for extensions
     if (reservationToTerminate.isExtension && reservationToTerminate.originalBookingId) {
       const originalRef = doc(db, collectionName, reservationToTerminate.originalBookingId);
       const originalSnap = await getDoc(originalRef);
@@ -1289,7 +1206,6 @@ const terminateReservation = async () => {
     // Get current timestamp
     const now = Timestamp.now();
     
-    // Create termination note
     const terminationNote = `${new Date().toLocaleString()}: Reservation terminated by ${auth.currentUser?.displayName || "Staff"}.`;
     
     await updateDoc(reservationRef, {
@@ -1301,7 +1217,6 @@ const terminateReservation = async () => {
       notes: `${reservationToTerminate.notes || ''}\n${terminationNote}`
     });
     
-    // Update room availability if applicable
     if (activeTab === "room" && reservationToTerminate.roomNumber) {
       const roomRef = doc(db, "rooms", reservationToTerminate.roomNumber);
       
@@ -1311,7 +1226,6 @@ const terminateReservation = async () => {
           const roomData = roomSnapshot.data();
           const bookings = roomData.bookings || [];
           
-          // Filter out this booking from the room's bookings array
           const updatedBookings = bookings.filter(booking => 
             booking.bookingId !== reservationToTerminate.id
           );
@@ -1322,7 +1236,7 @@ const terminateReservation = async () => {
             lastUpdated: now
           });
         } else {
-          // Fallback if room document doesn't exist
+       
           await updateDoc(roomRef, { 
             isAvailable: true,
             lastUpdated: now
@@ -1333,7 +1247,7 @@ const terminateReservation = async () => {
       }
     }
     
-    // Add a record to terminations collection for tracking/reporting
+    // Add a record to terminations
     try {
       await addDoc(collection(db, "terminations"), {
         bookingId: reservationToTerminate.id,
@@ -1350,8 +1264,7 @@ const terminateReservation = async () => {
     } catch (error) {
       console.error("Error adding termination record:", error);
     }
-    
-    // ✅ Update the local state to immediately reflect the termination
+
     if (activeTab === "room") {
       setRoomReservations(prevReservations => 
         prevReservations.map(res => 
@@ -1370,17 +1283,16 @@ const terminateReservation = async () => {
       );
     }
     
-    // Close any open modal and reset state
+
     setConfirmationModalOpen(false);
     setSelectedReservation(null);
     setDataChanged(true);
     setIsProcessing(false);
     
-    // Show success popup
     setSuccessMessage("Reservation terminated successfully");
     setShowSuccessPopup(true);
     
-    // Hide popup after 4 seconds
+
     setTimeout(() => {
       setShowSuccessPopup(false);
     }, 4000);
@@ -1391,7 +1303,7 @@ const terminateReservation = async () => {
     alert("Failed to terminate reservation. Please try again.");
   }
 };
-// Get status class
+
 const getStatusClass = (status) => {
   if (!status) return 'pending';
   
@@ -1415,7 +1327,6 @@ const getStatusClass = (status) => {
   }
 };
 
-// Get months for filtering
 const getMonthName = (monthNumber) => {
   const months = [
     'January', 'February', 'March', 'April', 'May', 'June', 
@@ -1453,17 +1364,17 @@ const getUniqueMonths = () => {
 
 const filterData = (data) => {
   return data.filter(res => {
-    // Name search
+    // name search
     const nameMatch = res.guestName ? 
       res.guestName.toLowerCase().includes(search.toLowerCase()) : 
       `${res.firstName || ''} ${res.lastName || ''}`.toLowerCase().includes(search.toLowerCase());
 
-    // Status filter
+    //filter by status
     const statusMatch = filterStatus ? 
       (res.status || '').toLowerCase() === filterStatus.toLowerCase() : 
       true;
 
-    // Date filter
+    // filter by date
     let dateMatch = true;
     if (filterDate) {
       const filterDateObj = new Date(filterDate);
@@ -1478,25 +1389,23 @@ const filterData = (data) => {
       dateMatch = (checkInDate <= filterDateObj && checkOutDate >= filterDateObj);
     }
 
-    // Month filter
+    // Monthly filter
     let monthMatch = true;
     if (filterMonth) {
       const [month, year] = filterMonth.split('-').map(Number);
       monthMatch = (res.month === month && res.year === year);
     }
 
-    // Past Reservation filter - Fixed logic
+   
     let pastMatch = true;
     const today = new Date();
     today.setHours(0, 0, 0, 0);
     const resCheckOut = new Date(res.checkOutDate);
     resCheckOut.setHours(0, 0, 0, 0);
     
-    // If we want to show ONLY past reservations
     if (includePastReservations === true) {
       pastMatch = resCheckOut < today;
     }
-    // If we want to show ONLY current/future reservations (default behavior)
     else if (includePastReservations === false) {
       pastMatch = resCheckOut >= today;
     }
@@ -1506,11 +1415,10 @@ const filterData = (data) => {
 };
 
 
-// Get the active data based on the current tab
 const activeData = activeTab === "room" ? roomReservations : conferenceReservations;
 const filteredData = filterData(activeData);
 
-// Calculate statistics
+// Calculating statistics
 const getStatistics = () => {
   const total = filteredData.length;
   const confirmed = filteredData.filter(res => 
@@ -1621,7 +1529,7 @@ return (
 
   </div>
 </div>
-      {/* Tab Selector */}
+
       <div className="tabs-container">
         <div 
           className={`tab ${activeTab === "room" ? "active" : ""}`}
@@ -1637,7 +1545,6 @@ return (
         </div>
       </div>
 
-      {/* Reservations Table */}
       <div className="table-container">
         {loading || isProcessing ? (
           <div className="loading">
@@ -1652,7 +1559,7 @@ return (
     <th>Guest Name</th>
     <th>Check-in</th>
     <th>Check-out</th>
-    <th>Extended Check-out</th> {/* <-- NEW */}
+    <th>Extended Check-out</th> 
     <th>{activeTab === "room" ? "Room" : "Venue"}</th>
     <th>{activeTab === "room" ? "Stay" : "Duration"}</th>
     <th>Created</th>
@@ -1660,7 +1567,6 @@ return (
     <th>Actions</th>
   </tr>
 </thead>
-{/* Modify this section in your Reservations.jsx code */}
 <tbody>
   {filteredData.length > 0 ? (
     filteredData.map((res) => (
@@ -1697,7 +1603,6 @@ return (
           </span>
         </td>
         <td className="actions-cell">
-          {/* Modified this condition to include "Reserved" status */}
           {(res.status === "Confirmed" ||
             res.status === "Checked in" ||
             res.status === "Checked-in" ||
@@ -1750,7 +1655,7 @@ return (
       </div>
     </div>
     
-    {/* Extension Modal */}
+
     {isModalOpen && selectedReservation && (
       <div className="modal-overlay">
         <div className="modal-content modal-content-large">

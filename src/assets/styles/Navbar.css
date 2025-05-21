@@ -1,27 +1,27 @@
-/* Navbar Container */
+
 .navbar {
   display: flex;
   justify-content: space-between;
   align-items: center;
   background: white;
-  border-radius: 0.75rem; /* 12px -> 0.75rem */
+  border-radius: 0.75rem; 
   width: 100%;
-  max-width: 75rem; /* Keep max width but allow flexibility */
+  max-width: 75rem; 
   padding: 1rem 2rem;
   
 }
 
-/* Left Side - Brand Name */
+
 .navbar-left .brand-name {
-  font-size: 1.25rem; /* 20px -> 1.25rem */
+  font-size: 1.25rem; 
   font-weight: bold;
   color: black;
-  margin-left: 0; /* ✅ Remove the extreme -300% margin */
+  margin-left: 0; 
 }
 
-/* Center - Navigation Links */
+
 .navbar-center {
-  flex: 1; /* ✅ This centers it properly */
+  flex: 1; 
   display: flex;
   justify-content: center;
 }
@@ -29,12 +29,12 @@
 .navbar-center ul {
   list-style: none;
   display: flex;
-  gap: 1.25rem; /* 20px -> 1.25rem */
+  gap: 1.25rem; 
   padding: 0;
 }
 
 .navbar-center ul li {
-  font-size: 1rem; /* 16px -> 1rem */
+  font-size: 1rem; 
   font-weight: 500;
 }
 
@@ -48,16 +48,16 @@
   color: #2563eb;
 }
 
-/* Right Side - Icons */
+
 .navbar-right {
   display: flex;
   align-items: center;
-  gap: 1rem; /* 16px -> 1rem */
+  gap: 1rem; 
 }
 
-/* Icons */
+
 .icon {
-  font-size: 1.125rem; /* 18px -> 1.125rem */
+  font-size: 1.125rem; 
   cursor: pointer;
   color: gray;
   transition: color 0.3s ease;
@@ -67,10 +67,10 @@
   color: black;
 }
 
-/* Profile Icon */
+
 .profile-icon {
-  height: 1.75rem; /* 28px -> 1.75rem */
-  width: 1.875rem; /* 30px -> 1.875rem */
+  height: 1.75rem; 
+  width: 1.875rem; 
   cursor: pointer;
   color: gray;
   transition: color 0.3s ease;
@@ -80,8 +80,8 @@
   color: black;
 }
 
-/* 🔹 Mobile Optimization */
-@media (max-width: 768px) {
+
+@media (max-width: 48rem) {
   .navbar {
     flex-direction: column;
     align-items: center;

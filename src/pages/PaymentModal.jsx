@@ -1,8 +1,7 @@
-// src/components/PaymentModal.js
+
 import React, { useState } from 'react';
 import { collection, addDoc, doc, updateDoc, writeBatch, getDocs, query, where, getFirestore } from 'firebase/firestore';
-import "../assets/styles/PaymentModal.css"; // Create this CSS file for styling
-
+import "../assets/styles/PaymentModal.css"; 
 const PaymentModal = ({ show, onHide, guest, paymentType, amount, onPaymentComplete }) => {
   const [paymentMethod, setPaymentMethod] = useState('Cash');
   const [reference, setReference] = useState('');
@@ -36,7 +35,7 @@ const PaymentModal = ({ show, onHide, guest, paymentType, amount, onPaymentCompl
   const handleSubmit = async (e) => {
     e.preventDefault();
     
-    // Validate email if email receipt is selected
+
     if (emailReceipt && !guestEmail) {
       alert("Please enter guest email address for email receipt");
       return;
@@ -56,17 +55,17 @@ const PaymentModal = ({ show, onHide, guest, paymentType, amount, onPaymentCompl
         type: paymentType,
         method: paymentMethod,
         reference: reference,
-        collectedBy: "Front Desk", // Ideally use current user ID
+        collectedBy: "Front Desk",
         timestamp: new Date(),
         status: "Completed",
         emailSent: emailReceipt,
         guestEmail: emailReceipt ? guestEmail : null
       };
       
-      // Add payment to Firestore
+      // Add payment to dbv
       const paymentRef = await addDoc(collection(db, "payments"), paymentData);
       
-      // Update the appropriate records based on payment type
+
       if (paymentType === 'accommodation') {
         const bookingRef = doc(db, "bookings", guest.id);
         await updateDoc(bookingRef, {
@@ -76,8 +75,7 @@ const PaymentModal = ({ show, onHide, guest, paymentType, amount, onPaymentCompl
           lastPaymentId: paymentRef.id
         });
       } else if (paymentType === 'food') {
-        // Update food orders (not extension charges)
-        // First, get all food orders that are not extensions
+
         const foodOrders = guest.foodOrders.filter(order => 
           order.type === "food" && 
           !(order.description && order.description.toLowerCase().includes("extension"))
@@ -95,8 +93,7 @@ const PaymentModal = ({ show, onHide, guest, paymentType, amount, onPaymentCompl
             });
           }
         }
-        
-        // Commit the batch
+
         await batch.commit();
       } else if (paymentType === 'extension') {
         const extensionOrders = guest.foodOrders.filter(order =>
@@ -115,7 +112,7 @@ const PaymentModal = ({ show, onHide, guest, paymentType, amount, onPaymentCompl
           }
         }
       
-        // ✅ Update each transaction
+        // Update each transaction
         for (const transactionId of transactionIds) {
           const transRef = doc(db, "transactions", transactionId);
           batch.update(transRef, {
@@ -126,14 +123,14 @@ const PaymentModal = ({ show, onHide, guest, paymentType, amount, onPaymentCompl
           });
         }
       
-        // ✅ Clear inline extensionCharges from booking
+
         batch.update(bookingRef, {
           extensionCharges: [],
           lastPaymentDate: new Date(),
           lastPaymentId: paymentRef.id
         });
       
-        // ✅ Optionally mark extensionHistory as paid
+       
         const bookingDocSnap = await getDocs(query(collection(db, "bookings"), where("id", "==", guest.id)));
         if (!bookingDocSnap.empty) {
           const bookingDoc = bookingDocSnap.docs[0];
@@ -158,9 +155,9 @@ const PaymentModal = ({ show, onHide, guest, paymentType, amount, onPaymentCompl
       
       
       
-      // Handle email receipt if selected
+      // Handle email receipt 
       if (emailReceipt) {
-        // Create a record for the email to be sent
+
         await addDoc(collection(db, "emailQueue"), {
           to: guestEmail,
           subject: `Receipt from Ampomaah Tourist Hotel - ${formatPaymentType(paymentType)}`,
@@ -180,8 +177,7 @@ const PaymentModal = ({ show, onHide, guest, paymentType, amount, onPaymentCompl
           createdAt: new Date()
         });
       }
-      
-      // Notify parent component that payment is complete
+    
       const paymentDetails = {
         method: paymentMethod,
         reference: reference,
@@ -189,22 +185,21 @@ const PaymentModal = ({ show, onHide, guest, paymentType, amount, onPaymentCompl
         email: emailReceipt ? guestEmail : null
       };
       onPaymentComplete(paymentType, paymentDetails);
-      
-      // Close the modal
+    
       onHide();
       
-      // Show success message
-      alert(`✅ Payment of $${amount.toFixed(2)} for ${guest.name}'s ${formatPaymentType(paymentType)} has been processed successfully.`);
+      
+      alert(`Payment of $${amount.toFixed(2)} for ${guest.name}'s ${formatPaymentType(paymentType)} has been processed successfully.`);
       
     } catch (error) {
       console.error("Payment processing error:", error);
-      alert(`❌ Error processing payment: ${error.message}`);
+      alert(` Error processing payment: ${error.message}`);
     } finally {
       setProcessingPayment(false);
     }
   };
   
-  // Format the type string for display
+  // Formatingt the type string for display
   const formatPaymentType = (type) => {
     switch(type) {
       case 'accommodation':
@@ -235,10 +230,10 @@ const PaymentModal = ({ show, onHide, guest, paymentType, amount, onPaymentCompl
   
   const modalStyle = {
     backgroundColor: 'white',
-    borderRadius: '8px',
-    padding: '20px',
+    borderRadius: '0.5rem',
+    padding: '1.25rem',
     width: '100%',
-    maxWidth: '500px',
+    maxWidth: '31.25rem',
     maxHeight: '90vh',
     overflowY: 'auto'
   };

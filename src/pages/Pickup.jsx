@@ -6,45 +6,43 @@ import NotificationsComponent from "../components/Notification";
 import "../assets/styles/Dashboard.css";
 import "../assets/styles/Pickup.css";
 
-// Date utility functions
+
 const dateUtils = {
-  /**
-   * Parse a date string and time string into a Date object
-   */
+
   parseDateTime: (dateStr, timeStr) => {
     try {
-      // Handle different time formats
+    
       let hours = 0;
       let minutes = 0;
       
       if (timeStr.includes('AM') || timeStr.includes('PM')) {
-        // Parse "12:30 PM" format
+       
         const timeParts = timeStr.replace(/ /g, '').match(/(\d+):(\d+)(AM|PM)/i);
         if (timeParts) {
           hours = parseInt(timeParts[1]);
           minutes = parseInt(timeParts[2]);
           const period = timeParts[3].toUpperCase();
           
-          // Convert to 24-hour format
+
           if (period === 'PM' && hours < 12) hours += 12;
           if (period === 'AM' && hours === 12) hours = 0;
         }
       } else {
-        // Parse "14:30" format (24-hour)
+      
         const [hoursStr, minutesStr] = timeStr.split(':');
         hours = parseInt(hoursStr);
         minutes = parseInt(minutesStr);
       }
       
-      // Handle different date formats
+     
       let year, month, day;
       
       if (dateStr.includes('-')) {
-        // Parse YYYY-MM-DD format
+        
         [year, month, day] = dateStr.split('-').map(num => parseInt(num));
-        month = month - 1; // JavaScript months are 0-indexed
+        month = month - 1; 
       } else if (dateStr.includes(',')) {
-        // Parse "Thu, May 1" format
+
         const dateParts = dateStr.split(',')[1].trim().split(' ');
         const monthName = dateParts[0];
         day = parseInt(dateParts[1]);
@@ -61,14 +59,13 @@ const dateUtils = {
         const currentMonth = currentDate.getMonth();
         
         year = currentDate.getFullYear();
-        // If the month is earlier than current month and day is earlier than current day,
-        // it's probably for next year
+ 
         if ((month < currentMonth) || 
             (month === currentMonth && day < currentDate.getDate())) {
           year++;
         }
       } else {
-        // Default to today if unparseable
+      
         const now = new Date();
         year = now.getFullYear();
         month = now.getMonth();
@@ -78,13 +75,11 @@ const dateUtils = {
       return new Date(year, month, day, hours, minutes);
     } catch (error) {
       console.error('Error parsing date/time:', error, { dateStr, timeStr });
-      return new Date(); // Fallback to current date
+      return new Date(); 
     }
   },
   
-  /**
-   * Format a date for display
-   */
+ 
   formatDate: (dateStr) => {
     try {
       const date = new Date(dateStr);
@@ -95,14 +90,11 @@ const dateUtils = {
       return "Invalid date";
     }
   },
-  
-  /**
-   * Format a time for display
-   */
+
   formatTime: (timeStr) => {
     try {
       if (timeStr.includes('AM') || timeStr.includes('PM')) {
-        return timeStr; // Already properly formatted
+        return timeStr;
       }
       
       const [hours, minutes] = timeStr.split(':');
@@ -114,9 +106,7 @@ const dateUtils = {
     }
   },
   
-  /**
-   * Get pickup status based on date/time
-   */
+  
   getPickupStatus: (pickupDate, pickupTime) => {
     try {
       const now = new Date();
@@ -133,9 +123,7 @@ const dateUtils = {
     }
   },
   
-  /**
-   * Get reminder status with timing details
-   */
+ 
   getReminderStatus: (pickupDate, pickupTime) => {
     try {
       const now = new Date();
@@ -157,11 +145,9 @@ const dateUtils = {
   }
 };
 
-// Reminder service functions
+// Reminder  functions
 const reminderService = {
-  /**
-   * Check for upcoming pickups and create reminders
-   */
+ 
   checkForUpcomingPickups: async () => {
     try {
       // Get current time
@@ -192,12 +178,11 @@ const reminderService = {
             booking.pickupDetails.pickupDate, 
             booking.pickupDetails.pickupTime
           );
-          
-          // Calculate time difference in minutes
+
           const diffMs = pickupTime - now;
           const diffMinutes = diffMs / (1000 * 60);
           
-          // Check if pickup is between 55-65 minutes away (to avoid duplicate reminders)
+  
           if (diffMinutes >= 55 && diffMinutes <= 65) {
             remindersToCreate.push({
               sourceId: doc.id,
@@ -225,11 +210,10 @@ const reminderService = {
             transaction.pickupDetails.pickupTime
           );
           
-          // Calculate time difference in minutes
+        
           const diffMs = pickupTime - now;
           const diffMinutes = diffMs / (1000 * 60);
-          
-          // Check if pickup is between 55-65 minutes away
+ 
           if (diffMinutes >= 55 && diffMinutes <= 65) {
             remindersToCreate.push({
               sourceId: doc.id,
@@ -266,7 +250,7 @@ const reminderService = {
           await addDoc(remindersRef, reminder);
           console.log(`Created 1-hour reminder for ${reminder.firstName} ${reminder.lastName}'s pickup`);
           
-          // Browser notification if supported
+
           if (Notification.permission === "granted") {
             new Notification("Upcoming Airport Pickup", {
               body: `Pickup for ${reminder.firstName} ${reminder.lastName} in 1 hour`,
@@ -283,16 +267,14 @@ const reminderService = {
     }
   },
   
-  /**
-   * Get pending reminders
-   */
+
   getPendingReminders: async () => {
     try {
       const remindersRef = collection(db, "reminders");
       const remindersQuery = query(
         remindersRef,
         where("status", "==", "pending"),
-        where("created", ">=", new Date(Date.now() - 24 * 60 * 60 * 1000)) // Last 24 hours
+        where("created", ">=", new Date(Date.now() - 24 * 60 * 60 * 1000)) 
       );
       
       const remindersSnapshot = await getDocs(remindersQuery);
@@ -312,9 +294,7 @@ const reminderService = {
     }
   },
   
-  /**
-   * Mark a reminder as read
-   */
+ 
   markReminderAsRead: async (reminderId) => {
     try {
       const reminderRef = doc(db, "reminders", reminderId);
@@ -330,9 +310,7 @@ const reminderService = {
     }
   },
   
-  /**
-   * Mark all reminders as read
-   */
+ 
   markAllRemindersAsRead: async () => {
     try {
       const remindersRef = collection(db, "reminders");
@@ -355,7 +333,7 @@ const reminderService = {
       });
       
       await Promise.all(updatePromises);
-      return pendingSnapshot.size; // Number of reminders updated
+      return pendingSnapshot.size; 
     } catch (error) {
       console.error("Error marking all reminders as read:", error);
       throw error;
@@ -363,7 +341,7 @@ const reminderService = {
   }
 };
 
-// Component for the header section
+
 const PickupHeader = ({ upcomingCount, urgentCount }) => (
   <div className="dashboard-header">
     <h1 className="dashboard-title">Airport Pickup Schedule</h1>
@@ -380,7 +358,7 @@ const PickupHeader = ({ upcomingCount, urgentCount }) => (
   </div>
 );
 
-// Component for search and filter controls
+
 const PickupControls = ({ searchTerm, setSearchTerm, filter, setFilter }) => (
   <div className="pickup-controls">
     <div className="search-container">
@@ -422,7 +400,7 @@ const PickupControls = ({ searchTerm, setSearchTerm, filter, setFilter }) => (
   </div>
 );
 
-// Loading state component
+
 const LoadingState = () => (
   <div className="loading-state" role="status" aria-live="polite">
     <div className="loading-spinner" aria-hidden="true"></div>
@@ -430,7 +408,7 @@ const LoadingState = () => (
   </div>
 );
 
-// Empty state component
+
 const EmptyState = ({ filter, searchTerm }) => (
   <div className="empty-state">
     <div className="empty-icon" aria-hidden="true">🚗</div>
@@ -439,7 +417,6 @@ const EmptyState = ({ filter, searchTerm }) => (
   </div>
 );
 
-// Error state component
 const ErrorState = ({ error, retry }) => (
   <div className="error-state" role="alert">
     <div className="error-icon">⚠️</div>
@@ -448,7 +425,7 @@ const ErrorState = ({ error, retry }) => (
   </div>
 );
 
-// Pickup table component
+
 const PickupTable = ({ pickups }) => (
   <div className="table-container">
     <table className="pickup-table" aria-label="Airport pickup schedule">
@@ -495,7 +472,7 @@ const PickupTable = ({ pickups }) => (
   </div>
 );
 
-// Custom hook for fetching pickup data
+
 const usePickupData = () => {
   const [pickups, setPickups] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -506,7 +483,7 @@ const usePickupData = () => {
       setLoading(true);
       setError(null);
       
-      // Fetch from bookings collection with limit
+      // Fetch from bookings collection 
       const bookingsRef = collection(db, "bookings");
       const bookingsQuery = query(
         bookingsRef, 
@@ -520,7 +497,7 @@ const usePickupData = () => {
       bookingsSnapshot.forEach(doc => {
         const data = doc.data();
         if (data.pickupDetails) {
-          // Add status calculation
+
           const status = dateUtils.getPickupStatus(
             data.pickupDetails.pickupDate, 
             data.pickupDetails.pickupTime
@@ -534,7 +511,7 @@ const usePickupData = () => {
         }
       });
       
-      // Fetch from transactions collection with limit
+     
       const transactionsRef = collection(db, "transactions");
       const transactionsQuery = query(
         transactionsRef, 
@@ -548,7 +525,7 @@ const usePickupData = () => {
       transactionsSnapshot.forEach(doc => {
         const data = doc.data();
         if (data.pickupDetails) {
-          // Add status calculation
+         
           const status = dateUtils.getPickupStatus(
             data.pickupDetails.pickupDate, 
             data.pickupDetails.pickupTime
@@ -561,11 +538,9 @@ const usePickupData = () => {
           });
         }
       });
-      
-      // Combine both collections
+ 
       const allPickups = [...bookingPickups, ...transactionPickups];
       
-      // Sort by pickup date and time
       allPickups.sort((a, b) => {
         try {
           const dateA = dateUtils.parseDateTime(
@@ -600,15 +575,14 @@ const usePickupData = () => {
   };
 };
 
-// Main component
+
 const AdminPickupTracker = () => {
   const [filter, setFilter] = useState("all");
   const [searchTerm, setSearchTerm] = useState("");
-  const [refreshKey, setRefreshKey] = useState(0); // For triggering refreshes
+  const [refreshKey, setRefreshKey] = useState(0); 
   
   const { pickups, loading, error, fetchPickupBookings } = usePickupData();
   
-  // Request notification permission on component mount
   useEffect(() => {
     if (Notification.permission !== "granted" && Notification.permission !== "denied") {
       Notification.requestPermission();
@@ -618,7 +592,7 @@ const AdminPickupTracker = () => {
   useEffect(() => {
     fetchPickupBookings();
     
-    // Set up refresh interval (every 5 minutes)
+
     const refreshInterval = setInterval(() => {
       setRefreshKey(prevKey => prevKey + 1);
     }, 5 * 60 * 1000);
@@ -626,7 +600,7 @@ const AdminPickupTracker = () => {
     return () => clearInterval(refreshInterval);
   }, [fetchPickupBookings, refreshKey]);
   
-  // Set up the reminder checker (runs every minute)
+
   useEffect(() => {
     const checkReminders = async () => {
       try {
@@ -639,25 +613,23 @@ const AdminPickupTracker = () => {
       }
     };
     
-    // Run immediately and then set interval
     checkReminders();
-    const intervalId = setInterval(checkReminders, 60 * 1000); // Every minute
+    const intervalId = setInterval(checkReminders, 60 * 1000); 
     
     return () => clearInterval(intervalId);
   }, []);
   
-  // Prepare filtered data
+
   const filteredPickups = pickups.filter(pickup => {
     const reminder = dateUtils.getReminderStatus(
       pickup.pickupDetails.pickupDate, 
       pickup.pickupDetails.pickupTime
     );
     
-    // Apply filter
+    // Apply filters
     if (filter === "upcoming" && reminder === "past") return false;
     if (filter === "past" && reminder !== "past") return false;
-    
-    // Apply search
+
     if (searchTerm) {
       const searchLower = searchTerm.toLowerCase();
       return (
@@ -671,7 +643,7 @@ const AdminPickupTracker = () => {
     return true;
   });
   
-  // Calculate stats
+
   const upcomingCount = pickups.filter(p => {
     const status = dateUtils.getReminderStatus(
       p.pickupDetails.pickupDate, 
@@ -688,7 +660,7 @@ const AdminPickupTracker = () => {
     return status === "1hr" || status === "1day";
   }).length;
 
-  // Render
+
   return (
     <div className="dashboard-container">
       <Sidebar />

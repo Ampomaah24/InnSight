@@ -1,6 +1,4 @@
-/* Enhanced GuestBills.css - Professional Hotel Theme */
 
-/* Reset and Base Styles */
 * {
   margin: 0;
   padding: 0;
@@ -15,27 +13,27 @@
   min-height: 100vh;
 
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  padding-top: 3.75rem; /* Account for fixed navbar */
+  padding-top: 3.75rem; 
   background-color: #ffffff !important;
 }
 
 .guest-bills-card {
   background-color: #ffffff;
-  max-width: 1200px;
+  max-width: 75rem;
   width: 100%;
   margin: 2rem auto;
-  border-radius: 16px;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
+  border-radius: 1rem;
+  box-shadow: 0 0.5rem 2rem rgba(0, 0, 0, 0.08);
   overflow: hidden;
   display: flex;
   flex-direction: column;
-  border: 1px solid rgba(0, 0, 0, 0.06);
+  border: 0.0625rem solid rgba(0, 0, 0, 0.06);
 }
 
 .guest-bills-header {
   padding: 2.5rem 3rem;
   background: linear-gradient(135deg, #fff7ed, #ffedd5);
-  border-bottom: 1px solid #fed7aa;
+  border-bottom: 0.0625rem solid #fed7aa;
 }
 
 .guest-bills-title {
@@ -54,9 +52,9 @@
   bottom: -0.75rem;
   left: 0;
   width: 4rem;
-  height: 4px;
+  height: 0.25rem;
   background: linear-gradient(90deg, #f97316, #ea580c);
-  border-radius: 2px;
+  border-radius: 0.125rem;
 }
 
 .guest-bills-subtitle {
@@ -71,7 +69,7 @@
   flex: 1;
 }
 
-/* Loading state */
+
 .loading-container {
   display: flex;
   justify-content: center;
@@ -81,14 +79,14 @@
 }
 
 .loading-spinner {
-  width: 48px;
-  height: 48px;
-  border: 4px solid rgba(249, 115, 22, 0.15);
-  border-top: 4px solid #f97316;
+  width: 3rem;
+  height: 3rem;
+  border: 0.25rem solid rgba(249, 115, 22, 0.15);
+  border-top: 0.25rem solid #f97316;
   border-radius: 50%;
   animation: spin 1s cubic-bezier(0.4, 0, 0.2, 1) infinite;
   margin: 0 auto 1.5rem;
-  filter: drop-shadow(0 4px 8px rgba(249, 115, 22, 0.15));
+  filter: drop-shadow(0 0.25rem 0.5rem rgba(249, 115, 22, 0.15));
 }
 
 @keyframes spin {
@@ -101,7 +99,7 @@
   font-weight: 500;
 }
 
-/* Error state */
+
 .error-container {
   padding: 4rem;
   text-align: center;
@@ -111,11 +109,11 @@
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  max-width: 500px;
+  max-width: 31.25rem;
   margin: 3rem auto;
   background: #ffffff;
-  border-radius: 16px;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+  border-radius: 1rem;
+  box-shadow: 0 0.5rem 1.5rem rgba(0, 0, 0, 0.08);
 }
 
 .error-container p {
@@ -129,26 +127,26 @@
   color: white;
   border: none;
   padding: 0.875rem 2.5rem;
-  border-radius: 12px;
+  border-radius: 0.75rem;
   cursor: pointer;
   font-weight: 600;
   font-size: 1.05rem;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  box-shadow: 0 6px 16px rgba(249, 115, 22, 0.3);
+  box-shadow: 0 0.375rem 1rem rgba(249, 115, 22, 0.3);
 }
 
 .retry-button:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 24px rgba(249, 115, 22, 0.4);
+  transform: translateY(-0.125rem);
+  box-shadow: 0 0.5rem 1.5rem rgba(249, 115, 22, 0.4);
   background: linear-gradient(135deg, #fb923c, #f97316);
 }
 
-/* Booking tabs */
+
 .booking-tabs {
   display: flex;
   overflow-x: auto;
   margin-bottom: 2rem;
-  border-bottom: 1px solid #e5e7eb;
+  border-bottom: 0.0625rem solid #e5e7eb;
   padding-bottom: 0;
   scrollbar-width: thin;
   scrollbar-color: #e5e7eb #f8f9fa;
@@ -156,7 +154,7 @@
 }
 
 .booking-tabs::-webkit-scrollbar {
-  height: 6px;
+  height: 0.375rem;
 }
 
 .booking-tabs::-webkit-scrollbar-track {
@@ -165,7 +163,7 @@
 
 .booking-tabs::-webkit-scrollbar-thumb {
   background-color: #e5e7eb;
-  border-radius: 6px;
+  border-radius: 0.375rem;
 }
 
 .booking-tab {
@@ -179,7 +177,7 @@
   white-space: nowrap;
   transition: all 0.2s ease;
   font-size: 1rem;
-  border-radius: 8px 8px 0 0;
+  border-radius: 0.5rem 0.5rem 0 0;
 }
 
 .booking-tab:hover {
@@ -199,18 +197,18 @@
   bottom: 0;
   left: 0;
   width: 100%;
-  height: 3px;
+  height: 0.1875rem;
   background: linear-gradient(90deg, #f97316, #ea580c);
 }
 
-/* Booking details */
+
 .booking-header {
   margin-bottom: 2rem;
   background-color: #fafafa;
   padding: 1.75rem 2rem;
-  border-radius: 12px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
-  border: 1px solid #e5e7eb;
+  border-radius: 0.75rem;
+  box-shadow: 0 0.125rem 0.5rem rgba(0, 0, 0, 0.04);
+  border: 0.0625rem solid #e5e7eb;
 }
 
 .booking-header-info {
@@ -238,13 +236,13 @@
 
 .booking-status {
   padding: 0.5rem 1.25rem;
-  border-radius: 24px;
+  border-radius: 1.5rem;
   font-size: 0.875rem;
   font-weight: 600;
   text-transform: uppercase;
   display: inline-block;
   letter-spacing: 0.05em;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+  box-shadow: 0 0.125rem 0.375rem rgba(0, 0, 0, 0.08);
 }
 
 .booking-status.checked-in {
@@ -267,11 +265,11 @@
   color: white;
 }
 
-/* Tabs navigation */
+
 .tab-nav {
   display: flex;
   margin-bottom: 2rem;
-  border-bottom: 1px solid #e5e7eb;
+  border-bottom: 0.0625rem solid #e5e7eb;
   width: 100%;
   gap: 0.5rem;
 }
@@ -286,7 +284,7 @@
   position: relative;
   transition: all 0.2s ease;
   font-size: 1.05rem;
-  border-radius: 12px 12px 0 0;
+  border-radius: 0.75rem 0.75rem 0 0;
 }
 
 .tab-button:hover {
@@ -303,14 +301,14 @@
 .tab-button.active::after {
   content: '';
   position: absolute;
-  bottom: -1px;
+  bottom: -0.0625rem;
   left: 0;
   width: 100%;
-  height: 3px;
+  height: 0.1875rem;
   background: linear-gradient(90deg, #f97316, #ea580c);
 }
 
-/* Tab content */
+
 .tab-content {
   padding: 2rem 0;
 }
@@ -334,12 +332,12 @@
 
 .payment-status {
   padding: 0.5rem 1.25rem;
-  border-radius: 24px;
+  border-radius: 1.5rem;
   font-size: 0.875rem;
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+  box-shadow: 0 0.125rem 0.375rem rgba(0, 0, 0, 0.08);
 }
 
 .payment-status.outstanding {
@@ -352,21 +350,21 @@
   color: white;
 }
 
-/* Charges details */
+
 .charges-details {
   background-color: #fafafa;
-  border-radius: 12px;
+  border-radius: 0.75rem;
   padding: 1.75rem 2rem;
   margin-bottom: 2rem;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
-  border: 1px solid #e5e7eb;
+  box-shadow: 0 0.125rem 0.5rem rgba(0, 0, 0, 0.04);
+  border: 0.0625rem solid #e5e7eb;
 }
 
 .charge-item {
   display: flex;
   justify-content: space-between;
   padding: 1.25rem 0;
-  border-bottom: 1px dashed #e5e7eb;
+  border-bottom: 0.0625rem dashed #e5e7eb;
   transition: background-color 0.2s ease;
   font-size: 1.05rem;
 }
@@ -375,7 +373,7 @@
   background-color: rgba(249, 115, 22, 0.02);
   margin: 0 -1rem;
   padding: 1.25rem 1rem;
-  border-radius: 8px;
+  border-radius: 0.5rem;
 }
 
 .charge-item:last-child {
@@ -397,13 +395,13 @@
   justify-content: space-between;
   padding: 1.5rem 0;
   margin-top: 0.5rem;
-  border-top: 2px solid #e5e7eb;
+  border-top: 0.125rem solid #e5e7eb;
   font-weight: 700;
   font-size: 1.4rem;
   color: #1a1a1a;
   background-color: #fff7ed;
   padding: 1.5rem;
-  border-radius: 8px;
+  border-radius: 0.5rem;
   margin: 1rem -1rem 0;
 }
 
@@ -411,14 +409,14 @@
   color: #f97316;
 }
 
-/* Payment instructions */
+
 .payment-instructions {
   background: linear-gradient(135deg, #fff7ed, #ffedd5);
-  border-radius: 12px;
+  border-radius: 0.75rem;
   padding: 1.75rem 2rem;
   margin: 2rem 0;
-  border-left: 4px solid #f97316;
-  box-shadow: 0 2px 8px rgba(249, 115, 22, 0.08);
+  border-left: 0.25rem solid #f97316;
+  box-shadow: 0 0.125rem 0.5rem rgba(249, 115, 22, 0.08);
 }
 
 .payment-instructions h4 {
@@ -436,13 +434,13 @@
   line-height: 1.6;
 }
 
-/* Food orders table */
+
 .table-container {
   overflow-x: auto;
   margin: 1.5rem 0;
-  border-radius: 12px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
-  border: 1px solid #e5e7eb;
+  border-radius: 0.75rem;
+  box-shadow: 0 0.125rem 0.5rem rgba(0, 0, 0, 0.04);
+  border: 0.0625rem solid #e5e7eb;
 }
 
 .food-orders-table {
@@ -470,11 +468,11 @@
 }
 
 .food-orders-table th:first-child {
-  border-top-left-radius: 12px;
+  border-top-left-radius: 0.75rem;
 }
 
 .food-orders-table th:last-child {
-  border-top-right-radius: 12px;
+  border-top-right-radius: 0.75rem;
 }
 
 .food-orders-table tr {
@@ -486,7 +484,7 @@
 }
 
 .food-orders-table td {
-  border-bottom: 1px solid #e5e7eb;
+  border-bottom: 0.0625rem solid #e5e7eb;
   color: #1a1a1a;
 }
 
@@ -496,7 +494,7 @@
 }
 
 .food-orders-table .total-row td {
-  border-top: 2px solid #fed7aa;
+  border-top: 0.125rem solid #fed7aa;
   border-bottom: none;
   padding-top: 1.5rem;
   padding-bottom: 1.5rem;
@@ -507,7 +505,7 @@
   color: #f97316;
 }
 
-/* Extension tab styling */
+
 .extension-charge {
   font-weight: 600;
   color: #f97316;
@@ -518,7 +516,7 @@
 }
 
 .extension-row td {
-  border-bottom: 1px solid #fed7aa;
+  border-bottom: 0.0625rem solid #fed7aa;
 }
 
 .extension-row:hover {
@@ -532,16 +530,16 @@
   margin-top: 0.5rem;
 }
 
-/* Empty states */
+
 .empty-food-orders,
 .no-bookings {
   text-align: center;
   padding: 4rem 2rem;
   background-color: #fafafa;
-  border-radius: 12px;
+  border-radius: 0.75rem;
   color: #64748b;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
-  border: 1px solid #e5e7eb;
+  box-shadow: 0 0.125rem 0.5rem rgba(0, 0, 0, 0.04);
+  border: 0.0625rem solid #e5e7eb;
 }
 
 .no-bookings h3,
@@ -558,10 +556,10 @@
   line-height: 1.6;
 }
 
-/* Buttons */
+
 .btn {
   padding: 0.875rem 2rem;
-  border-radius: 12px;
+  border-radius: 0.75rem;
   cursor: pointer;
   font-size: 1.05rem;
   font-weight: 600;
@@ -576,25 +574,25 @@
 .btn-primary {
   background: linear-gradient(135deg, #f97316, #ea580c);
   color: white;
-  box-shadow: 0 6px 16px rgba(249, 115, 22, 0.3);
+  box-shadow: 0 0.375rem 1rem rgba(249, 115, 22, 0.3);
 }
 
 .btn-primary:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 24px rgba(249, 115, 22, 0.4);
+  transform: translateY(-0.125rem);
+  box-shadow: 0 0.5rem 1.5rem rgba(249, 115, 22, 0.4);
   background: linear-gradient(135deg, #fb923c, #f97316);
 }
 
 .btn-outline {
   background-color: transparent;
-  border: 2px solid #f97316;
+  border: 0.125rem solid #f97316;
   color: #f97316;
 }
 
 .btn-outline:hover {
   background-color: #fff7ed;
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(249, 115, 22, 0.15);
+  transform: translateY(-0.125rem);
+  box-shadow: 0 0.25rem 0.75rem rgba(249, 115, 22, 0.15);
 }
 
 .user-actions {
@@ -605,8 +603,8 @@
   flex-wrap: wrap;
 }
 
-/* Responsive design */
-@media (max-width: 768px) {
+
+@media (max-width: 48rem) {
   .guest-bills-content,
   .guest-bills-header {
     padding: 1.75rem 1.5rem;
@@ -666,11 +664,11 @@
   
   .guest-bills-card {
     margin: 1rem;
-    border-radius: 12px;
+    border-radius: 0.75rem;
   }
 }
 
-@media (max-width: 480px) {
+@media (max-width: 30rem) {
   .booking-tab {
     padding: 0.875rem 1.25rem;
     font-size: 0.875rem;

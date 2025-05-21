@@ -3,15 +3,15 @@ import { auth, db } from "../config/firebase";
 import { doc, getDoc } from "firebase/firestore";
 import { onAuthStateChanged } from "firebase/auth";
 
-// Create a context for user data
+
 export const UserContext = createContext(null);
 
 export const UserProvider = ({ children }) => {
   const [currentUser, setCurrentUser] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [userRole, setUserRole] = useState(null); // Add role state
+  const [userRole, setUserRole] = useState(null); 
 
-  // Function to normalize user data
+
   const normalizeUserData = (user, data) => {
     // Extract first name and last name from fullName if available
     let firstName = "";
@@ -29,8 +29,7 @@ export const UserProvider = ({ children }) => {
       firstName = nameParts[0] || "";
       lastName = nameParts.slice(1).join(' ') || "";
     }
-    
-    // Extract role with default fallback
+  
     const role = data.role || 'staff';
     
     return {
@@ -41,8 +40,7 @@ export const UserProvider = ({ children }) => {
       email: user.email,
       photoURL: data.photoURL || user.photoURL || null,
       avatar: data.avatar || null,
-      role: role, // Ensure role is included
-      // Additional properties from your user object
+      role: role, 
       phone: data.phone || "",
       address: data.address || "",
       dateOfBirth: data.dateOfBirth || "",
@@ -52,7 +50,7 @@ export const UserProvider = ({ children }) => {
     };
   };
 
-  // Fetch user data from Firestore
+  // Fetch user data from db
   const fetchUserData = async (user) => {
     if (!user) return null;
     
@@ -72,34 +70,31 @@ export const UserProvider = ({ children }) => {
   };
 
   useEffect(() => {
-    // Listen for auth state changes
+ 
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
       if (user) {
         try {
-          // Get user data from Firestore
+          
           const firestoreData = await fetchUserData(user);
           
           if (firestoreData) {
-            // Normalize user data
             const normalizedUser = normalizeUserData(user, firestoreData);
-            
-            // Update context state
+          
             setCurrentUser(normalizedUser);
-            
-            // Set role separately for easy access
+        
             setUserRole(normalizedUser.role);
             
-            // Update sessionStorage
+            
             sessionStorage.setItem('currentUser', JSON.stringify(normalizedUser));
           } else {
             console.error("User document not found in Firestore");
             
-            // Default user with staff role if no Firestore data
+            
             const defaultUser = {
               id: user.uid,
               email: user.email,
               displayName: user.displayName || "User",
-              role: 'staff' // Default role
+              role: 'staff' 
             };
             
             setCurrentUser(defaultUser);
@@ -107,12 +102,12 @@ export const UserProvider = ({ children }) => {
           }
         } catch (err) {
           console.error("Error in auth state change:", err);
-          // Set basic user info if Firestore fetch fails
+   
           const basicUser = {
             id: user.uid,
             email: user.email,
             displayName: user.displayName || "User",
-            role: 'staff' // Default role
+            role: 'staff'
           };
           
           setCurrentUser(basicUser);
@@ -121,7 +116,7 @@ export const UserProvider = ({ children }) => {
           setLoading(false);
         }
       } else {
-        // User is logged out
+      
         setCurrentUser(null);
         setUserRole(null);
         sessionStorage.removeItem('currentUser');
@@ -129,7 +124,7 @@ export const UserProvider = ({ children }) => {
       }
     });
     
-    // Check sessionStorage on initial load
+   
     const storedUser = sessionStorage.getItem('currentUser');
     if (storedUser) {
       try {
@@ -142,11 +137,11 @@ export const UserProvider = ({ children }) => {
       }
     }
     
-    // Clean up subscription
+    
     return () => unsubscribe();
   }, []);
 
-  // Create role-based helper properties
+  // Creating role-based properties
   const isAdmin = userRole === 'admin' || userRole === 'superadmin';
   const isSuperAdmin = userRole === 'superadmin';
 
@@ -166,7 +161,7 @@ export const UserProvider = ({ children }) => {
   );
 };
 
-// Custom hook to use the user context
+
 export const useUser = () => {
   const context = useContext(UserContext);
   if (context === undefined) {

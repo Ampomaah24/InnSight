@@ -4,11 +4,11 @@ export const getAvailableRooms = async (checkIn, checkOut, roomType) => {
   try {
     const roomsCollection = collection(db, "rooms");
 
-    // Ensure we're only getting rooms of the correct type and that are available
+  
     const q = query(
       roomsCollection,
       where("t_room", "==", roomType),
-      where("availability", "==", true) // ✅ Explicitly check availability
+      where("availability", "==", true) 
     );
 
     const querySnapshot = await getDocs(q);

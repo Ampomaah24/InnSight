@@ -1,8 +1,7 @@
-// Modified ProfileSection.jsx with inline styles
+
 import React, { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { getAuth, signOut } from "firebase/auth";
-// Not importing external CSS
 
 const ProfileSection = ({ user, onLogout }) => {
   const navigate = useNavigate();
@@ -10,8 +9,7 @@ const ProfileSection = ({ user, onLogout }) => {
   const [showDropdown, setShowDropdown] = useState(false);
   const dropdownRef = useRef(null);
   const [localUser, setLocalUser] = useState(user);
-  
-  // Add custom styles directly to the component
+ 
   const styles = {
     profileSection: {
       display: "flex",
@@ -55,7 +53,7 @@ const ProfileSection = ({ user, onLogout }) => {
     dropdownIcon: {
       color: "#777",
       fontSize: "0.5rem",
-      marginTop: "2px",
+      marginTop: "0.125rem",
     },
     dropdownContainer: {
       position: "relative",
@@ -67,14 +65,14 @@ const ProfileSection = ({ user, onLogout }) => {
       width: "12rem",
       background: "white",
       borderRadius: "0.35rem",
-      boxShadow: "0 2px 10px rgba(0, 0, 0, 0.1)",
+      boxShadow: "0 0.125rem 0.625rem rgba(0, 0, 0, 0.1)",
       zIndex: 100,
       overflow: "hidden",
-      border: "1px solid rgba(0, 0, 0, 0.08)",
+      border: "0.0625rem solid rgba(0, 0, 0, 0.08)",
     },
     dropdownHeader: {
       padding: "0.75rem 1rem",
-      borderBottom: "1px solid rgba(0, 0, 0, 0.06)",
+      borderBottom: "0.0625rem solid rgba(0, 0, 0, 0.06)",
       backgroundColor: "#f8f8f8",
     },
     headerName: {
@@ -100,37 +98,30 @@ const ProfileSection = ({ user, onLogout }) => {
       transition: "background-color 0.2s ease",
     },
     logoutItem: {
-      borderTop: "1px solid rgba(0, 0, 0, 0.06)",
+      borderTop: "0.0625rem solid rgba(0, 0, 0, 0.06)",
       marginTop: "0.25rem",
       paddingTop: "0.75rem",
     },
     icon: {
       color: "#e05206",
       marginRight: "0.75rem",
-      width: "16px",
-      height: "16px",
+      width: "1rem",
+      height: "1rem",
     },
     logoutIcon: {
       color: "#e74c3c",
       marginRight: "0.75rem",
-      width: "16px",
-      height: "16px",
+      width: "1rem",
+      height: "1rem",
     },
     logoutText: {
       color: "#e74c3c",
     }
   };
   
-  // Sync local user with prop or session storage
+
   useEffect(() => {
-    // If props user exists, use it
-    // if (user) {
-    //   console.log("Using user from props:", user);
-    //   setLocalUser(user);
-    //   return;
-    // }
-    
-    // Otherwise, try to get from sessionStorage
+  
     const storedUser = sessionStorage.getItem('currentUser');
     if (storedUser) {
       try {
@@ -141,7 +132,7 @@ const ProfileSection = ({ user, onLogout }) => {
         console.error("Error parsing user data from sessionStorage:", error);
       }
     } else if (auth.currentUser) {
-      // Last resort - create from auth
+    
       const authUser = {
         id: auth.currentUser.uid,
         fname: auth.currentUser.displayName?.split(' ')[0] || "User",
@@ -175,7 +166,7 @@ const ProfileSection = ({ user, onLogout }) => {
     };
   }, []);
   
-  // Close dropdown when clicking outside
+ 
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
@@ -198,10 +189,9 @@ const ProfileSection = ({ user, onLogout }) => {
   const toggleDropdown = () => {
     setShowDropdown(!showDropdown);
   };
-  
-  // Get user initials for avatar fallback
+
   const getInitials = () => {
-    // If we have fullName, use that first
+ 
     if (localUser?.fullName) {
       const nameParts = localUser.fullName.split(' ');
       if (nameParts.length >= 2) {
@@ -210,23 +200,22 @@ const ProfileSection = ({ user, onLogout }) => {
       return localUser.fullName.charAt(0);
     }
     
-    // Fallback to fname and lname
+   
     return `${localUser?.fname?.charAt(0) || ''}${localUser?.lname?.charAt(0) || ''}`;
   };
   
   // Get first name for display
   const getDisplayName = () => {
-    // First check for fname directly
+   
     if (localUser?.fname && localUser.fname !== "Guest") {
       return localUser.fname;
     }
     
-    // Then try to get first part of fullName
+   
     if (localUser?.fullName) {
       return localUser.fullName.split(' ')[0];
     }
-    
-    // Then check Firebase auth for displayName's first part
+
     if (auth.currentUser?.displayName) {
       return auth.currentUser.displayName.split(' ')[0];
     }
@@ -234,7 +223,7 @@ const ProfileSection = ({ user, onLogout }) => {
     return 'Guest';
   };
   
-  // Get full name for dropdown header
+  
   const getFullName = () => {
     if (localUser?.fullName) {
       return localUser.fullName;
@@ -251,15 +240,15 @@ const ProfileSection = ({ user, onLogout }) => {
     return 'Guest';
   };
   
-  // Handle logout functionality
+ 
   const handleLogout = async () => {
     try {
-      // Use the onLogout prop if provided
+      
       if (onLogout) {
         onLogout();
       } else {
         await signOut(auth);
-        // Clear user data from sessionStorage
+        
         sessionStorage.removeItem('currentUser');
         setShowDropdown(false);
         setLocalUser(null);

@@ -10,7 +10,7 @@ import "../assets/styles/SignUp.css";
 import signUP1 from "../assets/images/IMG_0123.JPG";
 
 export default function SignUp() {
-  // State hook to manage form data (user's input fields)
+
   const [formData, setFormData] = useState({
     fullName: "",
     email: "",
@@ -18,19 +18,14 @@ export default function SignUp() {
     confirmPassword: "",
   });
 
-  // State hook to handle error messages
+
   const [error, setError] = useState("");
-  // State to track if submission is in progress
   const [isSubmitting, setIsSubmitting] = useState(false);
-  // State to track success message
   const [successMessage, setSuccessMessage] = useState("");
-  
-  // React Router's navigate hook to redirect users after successful sign up
   const navigate = useNavigate();
 
-  // Sanitize input to prevent XSS attacks
   const sanitizeInput = (input) => {
-    // Basic sanitization - remove script tags and convert special chars
+    
     return input
       .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
       .trim();
@@ -39,12 +34,12 @@ export default function SignUp() {
   // Handles form input changes and updates the state with user input
   const handleChange = (e) => {
     const { name, value } = e.target;
-    // Sanitize the input before updating state
+    // sanitizing input
     const sanitizedValue = sanitizeInput(value);
     setFormData({ ...formData, [name]: sanitizedValue });
   };
 
-  // Provide user-friendly error messages
+  //  user friendly error messages
   const getFriendlyErrorMessage = (errorCode) => {
     switch (errorCode) {
       case "auth/email-already-in-use":
@@ -62,7 +57,7 @@ export default function SignUp() {
     }
   };
 
-  // Enhanced password strength validation
+  // password strngth validation
   const validatePasswordStrength = (password) => {
     // Check length
     if (password.length < 8) {
@@ -89,11 +84,10 @@ export default function SignUp() {
       return "Password must include at least one special character (@$!%*?&.).";
     }
     
-    // All checks passed
     return null;
   };
 
-  // Handles form submission, creating a new user in Firebase
+  // Handles form submission
   const handleSubmit = async (e) => {
     e.preventDefault();
     
@@ -111,7 +105,7 @@ export default function SignUp() {
       return;
     }
 
-    // Email format validation (more thorough than HTML5 validation)
+    // Email format validation 
     const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
     if (!emailRegex.test(formData.email)) {
       setError("Please enter a valid email address.");
@@ -126,7 +120,6 @@ export default function SignUp() {
       return;
     }
 
-    // Enhanced password strength validation
     const passwordError = validatePasswordStrength(formData.password);
     if (passwordError) {
       setError(passwordError);
@@ -135,7 +128,6 @@ export default function SignUp() {
     }
 
     try {
-      // Create a new user with email and password using Firebase Authentication
       const userCredential = await createUserWithEmailAndPassword(
         auth,
         formData.email,
@@ -156,7 +148,6 @@ export default function SignUp() {
         emailVerified: false,
       });
 
-      // Show success message and navigate after a delay
       setSuccessMessage("Account created successfully! Please check your email to verify your account.");
       
       // Clear form data
@@ -167,13 +158,12 @@ export default function SignUp() {
         confirmPassword: "",
       });
       
-      // Navigate to login page after short delay
       setTimeout(() => {
         navigate("/login");
       }, 3000);
       
     } catch (err) {
-      // Catch any errors from Firebase and display user-friendly error message
+
       console.error("Firebase error:", err.code, err.message);
       setError(getFriendlyErrorMessage(err.code));
     } finally {
@@ -186,32 +176,23 @@ export default function SignUp() {
       <div >
         <img src={signUP1} alt="" className="signup-image" />
       </div>
-                 {/* Success message display */}
+
     {successMessage && (
     <p className="success-message" role="status">
       {successMessage}
     </p>
   )}
-
-  {/* Error message display */}
-
-  
       <div className="signup-form-container">
         <div className="signup-form">
  
 
           <h2 className="signup-title">Sign Up</h2>
-          
-          {/* Error message display */}
           {error && (
   <p className="error-message" role="alert">
     <span style={{ marginRight: "0.5rem" }}>⚠️</span>{error}
   </p>
 )}
 
-          
-          {/* Success message display */}
-          {/* {successMessage && <p className="success-message" role="status">{successMessage}</p>} */}
           
           <form onSubmit={handleSubmit} className="signup-form-fields" noValidate>
             <div>

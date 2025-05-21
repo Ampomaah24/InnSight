@@ -5,7 +5,7 @@ const SessionTimeoutWarning = () => {
   const [visible, setVisible] = useState(false);
   const [countdown, setCountdown] = useState(0);
   
-  // Handle warning event
+  
   const handleWarning = useCallback((event) => {
     setCountdown(event.detail.timeRemaining);
     setVisible(true);
@@ -19,8 +19,7 @@ const SessionTimeoutWarning = () => {
       document.removeEventListener('sessionTimeout:warning', handleWarning);
     };
   }, [handleWarning]);
-  
-  // Handle countdown timer
+
   useEffect(() => {
     let interval;
     
@@ -42,14 +41,13 @@ const SessionTimeoutWarning = () => {
     };
   }, [visible, countdown]);
   
-  // Handle staying logged in
+
   const handleStayLoggedIn = () => {
     const stayLoggedInEvent = new CustomEvent('sessionTimeout:stayLoggedIn');
     document.dispatchEvent(stayLoggedInEvent);
     setVisible(false);
   };
-  
-  // Handle logging out now
+
   const handleLogoutNow = () => {
     const logoutNowEvent = new CustomEvent('sessionTimeout:logoutNow');
     document.dispatchEvent(logoutNowEvent);

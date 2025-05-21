@@ -1,26 +1,26 @@
-/* FinancialReports.css */
+
 .main-content {
   padding: 0;
   background-color: #f8f9fa;
   min-height: 100vh;
 }
 
-/* Financial Overview */
+
 .financial-container {
-  padding: 25px 35px;
+  padding: 1.5625rem 2.1875rem;
   width: 100%;
-  max-width: 1400px;
+  max-width: 87.5rem;
   margin: 0 auto;
 }
 
 .financial-title {
-  font-size: 28px;
+  font-size: 1.75rem;
   font-weight: 600;
   color: #333;
   text-align: center;
-  margin-bottom: 35px;
+  margin-bottom: 2.1875rem;
   position: relative;
-  padding-bottom: 15px;
+  padding-bottom: 0.9375rem;
 }
 
 .financial-title:after {
@@ -29,35 +29,35 @@
   bottom: 0;
   left: 50%;
   transform: translateX(-50%);
-  width: 80px;
-  height: 3px;
-  background-color: #e67e22; /* Accent color matching InnSight theme */
-  border-radius: 2px;
+  width: 50rem;
+  height: 0.1875rem;
+  background-color: #e67e22; 
+  border-radius: 0.125rem;
 }
 
-/* Card layout */
+
 .financial-cards {
   display: flex;
   justify-content: space-between;
-  gap: 24px;
-  margin-bottom: 45px;
+  gap: 1.5rem;
+  margin-bottom: 2.8125rem;
 }
 
 .financial-card {
   flex: 1;
-  border-radius: 10px;
-  padding: 25px 20px;
+  border-radius: 0.625rem;
+  padding: 1.5625rem 1.25rem;
   color: white;
   text-align: center;
-  box-shadow: 0 6px 15px rgba(0,0,0,0.1);
+  box-shadow: 0 0.375rem 0.9375rem rgba(0,0,0,0.1);
   transition: all 0.3s ease;
   position: relative;
   overflow: hidden;
 }
 
 .financial-card:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+  transform: translateY(-0.3125rem);
+  box-shadow: 0 0.5rem 1.25rem rgba(0,0,0,0.15);
 }
 
 .financial-card::before {
@@ -84,59 +84,59 @@
 }
 
 .card-label {
-  font-size: 18px;
-  margin-bottom: 15px;
+  font-size: 1.125rem;
+  margin-bottom: 0.9375rem;
   font-weight: 500;
   position: relative;
   z-index: 2;
 }
 
 .card-amount {
-  font-size: 28px;
+  font-size: 1.75rem;
   font-weight: 700;
   position: relative;
   z-index: 2;
 }
 
-/* Transaction section */
+
 .transaction-section {
-  margin-bottom: 40px;
+  margin-bottom: 2.5rem;
   background-color: #fff;
-  border-radius: 12px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
-  padding: 25px;
+  border-radius: 0.75rem;
+  box-shadow: 0 0.25rem 0.75rem rgba(0,0,0,0.08);
+  padding: 1.5625rem;
 }
 
 .section-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 25px;
+  margin-bottom: 1.5625rem;
 }
 
 .section-header h2 {
-  font-size: 22px;
+  font-size: 1.375rem;
   font-weight: 600;
   color: #333;
   margin: 0;
 }
 
-/* Tab selector */
+
 .tab-selector {
   display: flex;
-  margin-bottom: 25px;
-  border-bottom: 1px solid #ddd;
+  margin-bottom: 1.5625rem;
+  border-bottom: 0.0625rem solid #ddd;
 }
 
 .tab {
-  padding: 12px 24px;
+  padding: 0.75rem 1.5rem;
   cursor: pointer;
   background-color: #f8f9fa;
-  border: 1px solid #ddd;
+  border: 0.0625rem solid #ddd;
   border-bottom: none;
-  margin-right: 6px;
-  border-top-left-radius: 8px;
-  border-top-right-radius: 8px;
+  margin-right: 0.375rem;
+  border-top-left-radius: 0.5rem;
+  border-top-right-radius: 0.5rem;
   font-weight: 500;
   transition: all 0.2s ease;
 }
@@ -146,49 +146,49 @@
 }
 
 .tab.active {
-  background-color: #e67e22; /* Match InnSight theme */
+  background-color: #e67e22; 
   color: white;
   border-color: #e67e22;
 }
 
-/* Export button */
+
 .export-actions {
   display: flex;
   justify-content: flex-end;
-  margin-bottom: 25px;
+  margin-bottom: 1.5625rem;
 }
 
 .export-button {
-  background-color: #e67e22; /* Match InnSight theme */
+  background-color: #e67e22; 
   color: white;
   border: none;
-  padding: 10px 20px;
-  border-radius: 6px;
+  padding: 0.625rem 1.25rem;
+  border-radius: 0.375rem;
   cursor: pointer;
   transition: all 0.3s;
   font-weight: 500;
   display: flex;
   align-items: center;
-  gap: 8px;
-  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+  gap: 0.5rem;
+  box-shadow: 0 0.125rem 0.3125rem rgba(0,0,0,0.1);
 }
 
 .export-button::before {
   content: "📄";
-  font-size: 16px;
+  font-size: 1rem;
 }
 
 .export-button:hover {
-  background-color: #d35400; /* Darker shade for hover */
-  box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+  background-color: #d35400; 
+  box-shadow: 0 0.25rem 0.5rem rgba(0,0,0,0.15);
 }
 
-/* Table styling */
+
 .transaction-table-container {
   background-color: #fff;
-  border-radius: 8px;
+  border-radius: 0.5rem;
   overflow: hidden;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+  box-shadow: 0 0.0625rem 0.1875rem rgba(0,0,0,0.05);
 }
 
 .transaction-table {
@@ -197,23 +197,23 @@
 }
 
 .transaction-table thead {
-  background-color: #e67e22; /* Match InnSight theme */
+  background-color: #e67e22; 
   color: white;
 }
 
 .transaction-table th {
-  padding: 14px 18px;
+  padding: 0.875rem 1.125rem;
   text-align: left;
   font-weight: 500;
   color: white;
-  font-size: 14px;
-  letter-spacing: 0.5px;
+  font-size: 0.875rem;
+  letter-spacing: 0.03125rem;
 }
 
 .transaction-table td {
-  padding: 14px 18px;
-  border-bottom: 1px solid #eee;
-  font-size: 14px;
+  padding: 0.875rem 1.125rem;
+  border-bottom: 0.0625rem solid #eee;
+  font-size: 0.875rem;
 }
 
 .transaction-table tr:nth-child(even) {
@@ -234,23 +234,23 @@
   font-weight: 600;
 }
 
-/* Make expenses appear in a different color */
+
 .expenses-table .amount-cell {
   color: #e53935;
 }
 
-/* No data message */
+
 .no-data {
   text-align: center;
-  padding: 30px 0;
+  padding: 1.875rem 0;
   color: #757575;
   font-style: italic;
 }
 
-/* Responsive design */
-@media (max-width: 992px) {
+
+@media (max-width: 62rem) {
   .financial-container {
-    padding: 20px;
+    padding: 1.25rem;
   }
   
   .financial-cards {
@@ -258,14 +258,14 @@
   }
   
   .financial-card {
-    flex: 0 0 calc(50% - 12px);
-    margin-bottom: 20px;
+    flex: 0 0 calc(50% - 0.75rem);
+    margin-bottom: 1.25rem;
   }
 }
 
-@media (max-width: 768px) {
+@media (max-width: 48rem) {
   .financial-title {
-    font-size: 24px;
+    font-size: 1.5rem;
   }
 
   .financial-cards {
@@ -282,22 +282,22 @@
   }
   
   .section-header h2 {
-    margin-bottom: 15px;
+    margin-bottom: 0.9375rem;
   }
   
   .transaction-table th, 
   .transaction-table td {
-    padding: 12px 10px;
-    font-size: 13px;
+    padding: 0.75rem 0.625rem;
+    font-size: 0.8125rem;
   }
   
   .tab {
-    padding: 10px 16px;
-    font-size: 14px;
+    padding: 0.625rem 1rem;
+    font-size: 0.875rem;
   }
 }
 
-@media (max-width: 576px) {
+@media (max-width: 36rem) {
   .transaction-table {
     display: block;
     overflow-x: auto;

@@ -1,4 +1,4 @@
-/* Import the Google Fonts from ProfilePage */
+
 @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=Poppins:wght@300;400;500;600;700&display=swap');
 
 * {
@@ -8,8 +8,8 @@
 }
 
 :root {
-  --primary: #e67e22; /* Keep original color or change to #e05206 to match profile */
-  --primary-dark: #d35400; /* Or #c04400 to match profile */
+  --primary: #e67e22; 
+  --primary-dark: #d35400; 
   --primary-light: #ff7a3c;
   --secondary: #343377;
   --dark: #333;
@@ -447,7 +447,7 @@ html, body {
   margin-top: 1rem;
 }
 
-/* Add availability error styles */
+
 .availability-error {
   color: var(--error);
   background-color: rgba(231, 76, 60, 0.1);

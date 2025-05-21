@@ -45,7 +45,6 @@ const ConferenceBooking = () => {
 
   const duration = calculateDuration();
 
-  // Redirect to services page if missing date information
   useEffect(() => {
     if (!startDate || !endDate) {
       navigate('/services');
@@ -53,10 +52,10 @@ const ConferenceBooking = () => {
   }, [startDate, endDate, navigate]);
 
   useEffect(() => {
-    // Fix any scrolling issues
+  
     window.scrollTo(0, 0);
     
-    // Force scrolling to work properly
+   
     document.documentElement.style.overflow = 'auto';
     document.body.style.overflow = 'auto';
     
@@ -85,9 +84,8 @@ const ConferenceBooking = () => {
           const selectedStartDate = new Date(startDate);
           const selectedEndDate = new Date(endDate);
 
-          // Check for booking conflicts, accounting for both naming conventions
           const isBooked = room.bookings.some((booking) => {
-            // Support both naming conventions (startDate/endDate and checkIn/checkOut)
+           
             const bookedStart = booking.startDate ? new Date(booking.startDate) : 
                             (booking.checkIn ? new Date(booking.checkIn) : null);
                             
@@ -286,7 +284,7 @@ const ConferenceBooking = () => {
                 totalPrice: totalPrice
               });
 
-              // Navigate to booking form
+             
               navigate("/book-room");
             }}
           >
