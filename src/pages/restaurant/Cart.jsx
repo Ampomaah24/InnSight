@@ -41,7 +41,7 @@ const Cart = () => {
       setAuthChecked(true);
     });
 
-    // Cleanup subscription on unmount
+  
     return () => unsubscribe();
   }, [auth]);
 
@@ -64,12 +64,12 @@ const Cart = () => {
     }
   };
 
-  // Fetch cart only after auth state is checked and userId is set
+  // Fetch cart only after auth nd userId is set
   useEffect(() => {
     if (authChecked && userId) {
       window.scrollTo(0, 0);
       
-      // Check if we're returning from a completed order
+      
       const orderCompleted = localStorage.getItem("orderCompleted");
       if (orderCompleted === "true") {
         localStorage.removeItem("orderCompleted");
@@ -143,7 +143,7 @@ const Cart = () => {
         vat,
         nhil,
         total: grandTotal,
-        userId, // Pass userId to checkout
+        userId, 
       },
     });
   };

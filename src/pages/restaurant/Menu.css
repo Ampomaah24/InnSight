@@ -1,4 +1,4 @@
-/* General Page Styling */
+
 #root {
   width: 100% !important;
   margin: 0 !important;
@@ -36,7 +36,7 @@ body, html {
   padding-bottom: 2rem;
 }
 
-/* Menu Page Container */
+
 .menu-page {
   font-family: 'Segoe UI', sans-serif;
   overflow-x: hidden;
@@ -47,7 +47,7 @@ body, html {
   max-width: 100%;
 }
 
-/* Menu Banner */
+
 .menu-banner {
   width: 100%;
   min-height: 15.625rem;
@@ -71,7 +71,7 @@ body, html {
   margin-bottom: -15.5rem;
 }
 
-/* Add a subtle pattern overlay to the banner */
+
 .menu-banner::before {
   content: '';
   position: absolute;
@@ -110,7 +110,7 @@ body, html {
   }
 }
 
-/* Menu Tabs */
+
 .menu-tabs {
   display: flex;
   justify-content: center;
@@ -147,7 +147,7 @@ body, html {
   border-radius: 1.5rem;
 }
 
-/* Menu Section */
+
 .menu-section {
   padding: 0 2rem;
   margin: 0 auto 3rem;
@@ -178,7 +178,7 @@ body, html {
   border-radius: 0.125rem;
 }
 
-/* Menu Grid */
+
 .menu-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(15rem, 1fr));
@@ -186,7 +186,7 @@ body, html {
   margin: 0 auto;
 }
 
-/* Menu Card */
+
 .menu-card {
   background: white;
   border-radius: 1rem;
@@ -263,7 +263,7 @@ body, html {
   transform: translateY(0);
 }
 
-/* Floating Cart */
+
 .floating-cart {
   position: fixed;
   top: 1.25rem;
@@ -306,27 +306,27 @@ body, html {
   box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.1);
 }
 
-/* Simplified Add to Cart Notification */
+
 .add-to-cart-notification {
   position: fixed;
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
   background-color: white;
-  padding: 16px 24px;
-  border-radius: 8px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  padding: 1rem 1.5rem;
+  border-radius: 0.5rem;
+  box-shadow: 0 0.25rem 0.75rem rgba(0, 0, 0, 0.15);
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 0.75rem;
   z-index: 1000;
-  font-size: 16px;
+  font-size: 1rem;
   animation: fade-in 0.3s ease-out;
 }
 
 .add-to-cart-notification svg {
   color: #4CAF50;
-  font-size: 20px;
+  font-size: 1.25rem;
 }
 
 @keyframes fade-in {
@@ -340,7 +340,7 @@ body, html {
   }
 }
 
-/* Optional: Add this if you want it to automatically fade out */
+
 .add-to-cart-notification.auto-hide {
   animation: fade-out 0.3s forwards;
   animation-delay: 2s;
@@ -355,7 +355,7 @@ body, html {
   }
 }
 
-/* Loading Text */
+
 .loading-text {
   text-align: center;
   font-size: 1.25rem;
@@ -363,7 +363,7 @@ body, html {
   padding: 2rem;
 }
 
-/* Navigation menu */
+
 .nav-menu {
   position: fixed;
   top: 0;
@@ -385,7 +385,7 @@ body, html {
   transform: translateX(0);
 }
 
-/* Menu Button */
+
 .menu-button {
   display: flex !important;
   visibility: visible !important;
@@ -408,7 +408,7 @@ body, html {
   background-color: #f5f5f5;
 }
 
-/* Media Queries for Responsiveness */
+
 @media (max-width: 64rem) {
   .menu-banner-text h1 {
     font-size: 2rem;

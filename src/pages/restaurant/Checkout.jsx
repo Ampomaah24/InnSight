@@ -734,7 +734,7 @@ const Checkout = () => {
                   <span>GHS {orderTotals.subtotal.toFixed(2)}</span>
                 </div>
                 
-                {/* Show tax breakdown regardless of whether taxes are included or not */}
+               
                 <div className="checkout-line">
                   <span>VAT ({taxRates.vatRate}%)</span>
                   <span>GHS {orderTotals.vat.toFixed(2)}</span>
@@ -769,7 +769,7 @@ const Checkout = () => {
               </div>
             </div>
 
-            {/* Customer Details */}
+            {/*  Details */}
             <div className="checkout-right">
               <h2 className="section-heading">Order Details</h2>
               <form onSubmit={handleSubmit} className="checkout-form">
@@ -801,7 +801,7 @@ const Checkout = () => {
 
 
                 
-                {/* Delivery Method Selection */}
+                {/* Select delivery method */}
                 <label>
                   <div className="field-tooltip">
                     Delivery Method
@@ -874,7 +874,7 @@ const Checkout = () => {
                   </label>
                 )}
 
-                {/* Payment Method Selection - Only show if delivery method is pickup */}
+             
                 {formData.deliveryMethod === "pickup" && (
                   <label>
                     <div className="field-tooltip">
@@ -905,7 +905,7 @@ const Checkout = () => {
                 {/* For room service, payment is always on hotel tab */}
                 {formData.deliveryMethod === "roomService" && (
                   <div className="room-service-payment-note">
-                    <FaHotel style={{ marginRight: '8px' }} />
+                    <FaHotel style={{ marginRight: '0.5rem' }} />
                     <span>Room service will be charged to your hotel room tab</span>
                   </div>
                 )}

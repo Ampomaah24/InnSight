@@ -18,9 +18,9 @@ const Orders = () => {
   const [userId, setUserId] = useState(null);
   const [menuOpen, setMenuOpen] = useState(false);
 
-  // Status normalization mapping (copied from AdminFoodOrders)
+ 
   const STATUS_MAPPING = {
-    // Basic status mapping
+    //  status mapping
     'pending': 'pending',
     'confirmed': 'confirmed',
     'preparing': 'preparing',
@@ -29,11 +29,11 @@ const Orders = () => {
     'completed': 'completed',
     'cancelled': 'cancelled',
     
-    // Payment status mapping
+    // Payment  mapping
     'paid': 'confirmed',
     'on-hotel-tab': 'confirmed',
     
-    // Pickup status mapping
+    // Pickup  mapping
     'awaiting-pickup': 'pending',
     'awaiting pickup': 'pending',
     'awaiting_pickup': 'pending',
@@ -47,13 +47,13 @@ const Orders = () => {
     // Cash on Pickup mapping
     'Cash on Pickup': 'pending',
     
-    // Delivery status mapping
+    // Delivery  mapping
     'awaiting-delivery': 'pending',
     'out-for-delivery': 'delivering',
     'delivering': 'delivering',
     'delivered': 'delivered',
     
-    // Room service status mapping
+    // Room service  mapping
     'room-service-pending': 'pending',
     'room-service-on-hotel-tab': 'confirmed',
     'room-service-paid': 'confirmed',
@@ -61,75 +61,74 @@ const Orders = () => {
     'room-service-delivering': 'delivering',
     'room-service-delivered': 'delivered',
     
-    // Handle raw statuses that might appear from Checkout.js
+ 
     'Room Service Pending': 'pending',
     'Room Service - Paid': 'confirmed',
     'On Hotel Tab': 'confirmed'
   };
 
-  // Normalize status (copied from AdminFoodOrders)
+ 
   const normalizeStatus = (status) => {
     if (!status) return 'pending';
     
-    // First, convert to lowercase and replace spaces with hyphens
+ 
     const normalizedStatus = status.toString().toLowerCase().replace(/\s+/g, '-');
     
-    // Check if this status is in our mapping
+
     return STATUS_MAPPING[normalizedStatus] || normalizedStatus;
   };
 
-  // Helper function to get user-friendly display status
+  //  function to get  status
   const getDisplayStatus = (status) => {
     const normalized = normalizeStatus(status);
     return normalized.charAt(0).toUpperCase() + normalized.slice(1).replace(/-/g, ' ');
   };
 
-  // Get color for status badge (copied from AdminFoodOrders)
+  
   const getStatusColor = (status) => {
     const normalized = normalizeStatus(status);
     switch (normalized) {
-      case 'pending': return '#f59e0b';   // Amber
-      case 'confirmed': return '#3b82f6'; // Blue
-      case 'preparing': return '#8b5cf6'; // Purple
-      case 'ready': return '#10b981';     // Green
-      case 'delivering': return '#0ea5e9'; // Sky Blue
-      case 'delivered': return '#14b8a6';  // Teal
-      case 'picked-up': return '#6b7280'; // Gray
-      case 'completed': return '#22c55e'; // Green
-      case 'cancelled': return '#ef4444'; // Red
-      default: return '#6b7280';          // Gray
+      case 'pending': return '#f59e0b';   
+      case 'confirmed': return '#3b82f6'; 
+      case 'preparing': return '#8b5cf6'; 
+      case 'ready': return '#10b981';     
+      case 'delivering': return '#0ea5e9'; 
+      case 'delivered': return '#14b8a6';  
+      case 'picked-up': return '#6b7280'; 
+      case 'completed': return '#22c55e'; 
+      case 'cancelled': return '#ef4444'; 
+      default: return '#6b7280';         
     }
   };
 
-  // Handle authentication state changes and persist user ID
+  // Handle authentication 
   useEffect(() => {
     const auth = getAuth();
     
-    // Set up auth state listener
+   
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       if (user) {
-        // User is signed in
+       
         setUserId(user.uid);
         localStorage.setItem("currentUserId", user.uid);
       } else {
-        // User is signed out, try to get guest ID
+ 
         const guestId = localStorage.getItem("guestId");
         if (guestId) {
           setUserId(guestId);
         } else {
-          // Neither logged in nor guest ID available
+
           setUserId(null);
         }
       }
     });
 
-    // Check if we already have a userId in localStorage (for faster loading)
+
     const savedUserId = localStorage.getItem("currentUserId") || localStorage.getItem("guestId");
     if (savedUserId) {
       setUserId(savedUserId);
     }
 
-    // Clean up subscription
     return () => unsubscribe();
   }, []);
 
@@ -157,13 +156,13 @@ const Orders = () => {
       const orderList = snapshot.docs.map((doc) => {
         const data = doc.data();
 
-        // Ensure timestamp is handled properly
+
         let timestamp = new Date();
         if (data.timestamp) {
           timestamp = data.timestamp.toDate ? data.timestamp.toDate() : new Date(data.timestamp);
         }
 
-        // Normalize order status to match AdminFoodOrders
+    
         const rawStatus = (data.status || '').toString();
         const normalizedStatus = normalizeStatus(rawStatus);
 
@@ -184,14 +183,12 @@ const Orders = () => {
     }
   };
 
-  // Format date more elegantly
   const formatDate = (timestamp) => {
     if (!timestamp) return "Pending";
     if (typeof timestamp === 'object' && timestamp.toDate) {
       timestamp = timestamp.toDate();
     }
-    
-    // Ensure timestamp is a Date object
+
     const date = timestamp instanceof Date ? timestamp : new Date(timestamp);
     
     return date.toLocaleDateString('en-US', {
@@ -248,8 +245,8 @@ const Orders = () => {
                 <div className="status-badge" style={{ 
                   backgroundColor: getStatusColor(order.orderStatus || order.status),
                   color: 'white',
-                  padding: '4px 8px',
-                  borderRadius: '4px',
+                  padding: '0.25rem 0.5rem',
+                  borderRadius: '0.25rem',
                   fontSize: '0.85rem',
                   fontWeight: '500'
                 }}>
@@ -277,9 +274,9 @@ const Orders = () => {
                 </div>
               </div>
               
-              {/* Show additional status information based on order status */}
+ 
               {['confirmed', 'preparing', 'ready', 'delivering', 'picked-up'].includes(normalizeStatus(order.orderStatus || order.status)) && (
-                <div className="order-status-info" style={{ marginTop: '12px', fontSize: '0.9rem', color: '#4b5563' }}>
+                <div className="order-status-info" style={{ marginTop: '0.75rem', fontSize: '0.9rem', color: '#4b5563' }}>
                   {normalizeStatus(order.orderStatus || order.status) === 'confirmed' && (
                     <p>Your order has been confirmed and will be prepared soon.</p>
                   )}

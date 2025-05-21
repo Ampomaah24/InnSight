@@ -16,7 +16,7 @@ import "./Menu.css";
 import NoImage from "../../assets/images/pixelcut-export.jpeg";
 import { FaShoppingCart, FaUtensils, FaWineGlassAlt } from 'react-icons/fa';
 
-// Helper to get a unique guest ID and persist in localStorage
+
 let persistentUserId;
 const getOrCreateUserId = () => {
   if (persistentUserId) return persistentUserId;
@@ -102,7 +102,7 @@ const Menu = () => {
 
       setCartCount((prev) => prev + 1);
       
-      // Show added to cart notification
+      //  added to cart notification
       setAddedToCart(meal.name);
       setTimeout(() => setAddedToCart(null), 2000);
       
@@ -119,18 +119,17 @@ const Menu = () => {
 
   return (
     <div className="main-container">
-      {/* NavMenu in top left */}
+    
 
 
       <div className="menu-page">
-        {/* Floating cart icon */}
+     
 
         <div className="floating-cart" onClick={goToCart} title="Go to Cart">
           <FaShoppingCart />
           {cartCount > 0 && <span className="cart-badge">{cartCount}</span>}
         </div>
 
-        {/* Added to cart notification */}
         {addedToCart && (
           <div className="add-to-cart-notification">
             <FaShoppingCart /> {addedToCart} added to cart!
