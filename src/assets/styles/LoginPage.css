@@ -126,7 +126,7 @@
    
 
    .login-button {
-    width: 60%; /* Reduced from 100% */
+    width: 60%; 
     background: var(--primary-color);
     color: #fff;
     border: none;

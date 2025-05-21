@@ -784,7 +784,7 @@ textarea:focus {
   }
 }
 
-/* Print styles */
+
 @media print {
   .nav-container,
   .floating-back-button,
